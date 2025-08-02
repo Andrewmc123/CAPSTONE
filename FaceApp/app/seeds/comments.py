@@ -6,7 +6,7 @@ def seed_comments():
     comment1 = Comment(
         post_id=1,
         user_id=2,
-        content="Omg this filter is *fireee* 🔥🔥",
+        body="Omg this filter is *fireee* 🔥🔥",
         created_at=datetime(2025, 7, 16, 10, 30),
         updated_at=datetime(2025, 7, 16, 10, 30)
     )
@@ -14,7 +14,7 @@ def seed_comments():
     comment2 = Comment(
         post_id=1,
         user_id=3,
-        content="No wayy I was at that same spot 😭 I think I saw u lol",
+        body="No wayy I was at that same spot 😭 I think I saw u lol",
         created_at=datetime(2025, 7, 16, 11, 5),
         updated_at=datetime(2025, 7, 16, 11, 5)
     )
@@ -22,7 +22,7 @@ def seed_comments():
     comment3 = Comment(
         post_id=2,
         user_id=4,
-        content="Drop the location 👀 that backdrop is insane",
+        body="Drop the location 👀 that backdrop is insane",
         created_at=datetime(2025, 7, 15, 18, 42),
         updated_at=datetime(2025, 7, 15, 18, 42)
     )
@@ -30,7 +30,7 @@ def seed_comments():
     comment4 = Comment(
         post_id=3,
         user_id=1,
-        content="Bro this pic goes HARD 🔥 might set it as my wallpaper 😩",
+        body="Bro this pic goes HARD 🔥 might set it as my wallpaper 😩",
         created_at=datetime(2025, 7, 14, 9, 12),
         updated_at=datetime(2025, 7, 14, 9, 12)
     )
@@ -38,7 +38,7 @@ def seed_comments():
     comment5 = Comment(
         post_id=1,
         user_id=1,
-        content="This app lowkey makin everyone look ✨ flawless ✨",
+        body="This app lowkey makin everyone look ✨ flawless ✨",
         created_at=datetime(2025, 7, 14, 9, 12),
         updated_at=datetime(2025, 7, 14, 9, 12)
     )
@@ -46,7 +46,7 @@ def seed_comments():
     comment6 = Comment(
         post_id=2,
         user_id=5,
-        content="SLAYED. that's it. that’s the comment 💅",
+        body="SLAYED. that's it. that’s the comment 💅",
         created_at=datetime(2025, 7, 13, 15, 22),
         updated_at=datetime(2025, 7, 13, 15, 22)
     )
@@ -54,7 +54,7 @@ def seed_comments():
     comment7 = Comment(
         post_id=5,
         user_id=6,
-        content="Giving ✨ main character ✨ energy",
+        body="Giving ✨ main character ✨ energy",
         created_at=datetime(2025, 7, 12, 17, 41),
         updated_at=datetime(2025, 7, 12, 17, 41)
     )
@@ -62,7 +62,7 @@ def seed_comments():
     comment8 = Comment(
         post_id=4,
         user_id=3,
-        content="okayyy faceapp you ate with this filter 🤖💯",
+        body="okayyy faceapp you ate with this filter 🤖💯",
         created_at=datetime(2025, 7, 11, 20, 55),
         updated_at=datetime(2025, 7, 11, 20, 55)
     )

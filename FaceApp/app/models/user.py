@@ -2,6 +2,7 @@ from .db import db, environment, SCHEMA, add_prefix_for_prod
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from datetime import datetime
+from sqlalchemy.orm import foreign
 
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
@@ -19,8 +20,25 @@ class User(db.Model, UserMixin):
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
-    # This is doing: defining the reverse side of the Post.user relationship
     posts = db.relationship('Post', back_populates='user', cascade="all, delete-orphan")
+    likes = db.relationship('Like', back_populates='user', cascade='all, delete')
+    comments = db.relationship('Comment', back_populates='user', cascade='all, delete-orphan')
+
+    sent_requests = db.relationship(
+        'Friend',
+        back_populates='requester',
+        foreign_keys='Friend.requester_id',
+        primaryjoin='User.id == foreign(Friend.requester_id)',
+        cascade='all, delete-orphan'
+    )
+
+    received_requests = db.relationship(
+        'Friend',
+        back_populates='receiver',
+        foreign_keys='Friend.receiver_id',
+        primaryjoin='User.id == foreign(Friend.receiver_id)',
+        cascade='all, delete-orphan'
+    )
 
     @property
     def password(self):

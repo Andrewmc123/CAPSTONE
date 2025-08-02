@@ -8,7 +8,7 @@ class Notification(db.Model):
     recipient_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     message = db.Column(db.String(255), nullable=False)
-    link = db.Column(db.String(255), nullable=True)
+    type = db.Column(db.String(255), nullable=True)
     is_read = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -21,7 +21,7 @@ def to_dict(self):
         'recipient_id': self.recipient_id,
         'sender_id': self.sender_id,
         'message': self.message,
-        'link': self.link,
+        'type': self.type,
         'is_read': self.is_read,
         'created_at': self.created_at.isoformat()
     }

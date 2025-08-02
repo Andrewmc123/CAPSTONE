@@ -1,5 +1,5 @@
 from .db import db, environment, SCHEMA, add_prefix_for_prod
-from .likes import like
+from .likes import Like
 
 class Post(db.Model):
     __tablename__ = 'posts'

@@ -5,19 +5,21 @@ from sqlalchemy.sql import text
 # Adds a demo user, you can add other users here if you want
 def seed_users():
     users = [
-        User(username="demo", email="demo@aa.io", password="password"),
-        User(username="skyqueen99", email="sky@aa.io", password="password"),
-        User(username="astro_boi", email="astro@aa.io", password="password"),
-        User(username="munchygirl", email="munchy@aa.io", password="password"),
-        User(username="nightcrawler", email="crawl@aa.io", password="password"),
-        User(username="pixiepop", email="pixie@aa.io", password="password"),
-        User(username="fitking", email="fit@aa.io", password="password"),
-        User(username="dnd_lord", email="dnd@aa.io", password="password"),
-        User(username="plantmom", email="plant@aa.io", password="password"),
+        User(username="demo", email="demo@aa.io", password="password", firstname="Demo", lastname="User"),
+        User(username="skyqueen99", email="sky@aa.io", password="password", firstname="Sky", lastname="Queen"),
+        User(username="astro_boi", email="astro@aa.io", password="password", firstname="Astro", lastname="Boi"),
+        User(username="munchygirl", email="munchy@aa.io", password="password", firstname="Munchy", lastname="Girl"),
+        User(username="nightcrawler", email="crawl@aa.io", password="password", firstname="Night", lastname="Crawler"),
+        User(username="pixiepop", email="pixie@aa.io", password="password", firstname="Pixie", lastname="Pop"),
+        User(username="fitking", email="fit@aa.io", password="password", firstname="Fit", lastname="King"),
+        User(username="dnd_lord", email="dnd@aa.io", password="password", firstname="Dnd", lastname="Lord"),
+        User(username="plantmom", email="plant@aa.io", password="password", firstname="Plant", lastname="Mom"),
     ]
 
     db.session.add_all(users)
     db.session.commit()
+
+
 # Uses a raw SQL query to TRUNCATE or DELETE the users table. SQLAlchemy doesn't
 # have a built in function to do this. With postgres in production TRUNCATE
 # removes all the data from the table, and RESET IDENTITY resets the auto

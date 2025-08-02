@@ -1,6 +1,6 @@
 from .db import db, environment, SCHEMA, add_prefix_for_prod
 
-class Likes(db.Model):
+class Like(db.Model):
     __tablename__ = 'likes'
 
     id = db.Column(db.Integer, primary_key=True)

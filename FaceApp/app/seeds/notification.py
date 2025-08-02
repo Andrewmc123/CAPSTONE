@@ -5,7 +5,7 @@ from datetime import datetime
 def seed_notifications():
     notif1 = Notification(
         sender_id=2,
-        receiver_id=1,
+        recipient_id=1,
         type="comment",
         message="Jay commented on your post 👀",
         is_read=False,
@@ -14,7 +14,7 @@ def seed_notifications():
 
     notif2 = Notification(
         sender_id=3,
-        receiver_id=1,
+        recipient_id=1,
         type="like",
         message="Alex liked your post 💯",
         is_read=False,
@@ -23,7 +23,7 @@ def seed_notifications():
 
     notif3 = Notification(
         sender_id=4,
-        receiver_id=1,
+        recipient_id=1,
         type="friend_request",
         message="Luna sent you a friend request ",
         is_read=False,

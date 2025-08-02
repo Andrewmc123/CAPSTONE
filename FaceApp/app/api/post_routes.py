@@ -2,7 +2,7 @@
 
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
-from app.models import db, Post, Likes, Comment
+from app.models import db, Post, Like, Comment
 
 post_routes = Blueprint('posts', __name__)
 
