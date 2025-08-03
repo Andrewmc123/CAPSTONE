@@ -1,0 +1,6 @@
+.right-panel {
+  width: 240px;
+  background-color: #f8f8f8;
+  border-left: 1px solid #ddd;
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.2);
+}
