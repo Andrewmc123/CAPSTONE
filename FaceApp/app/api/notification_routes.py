@@ -9,17 +9,22 @@ notification_routes = Blueprint('notifications', __name__)
 
 
 # Get all notifications for the current user
-@notification_routes.route('/', methods=['GET'])
+@notification_routes.route('/')
 @login_required
 def get_notifications():
-    """
-    Gets all notifications for the current user
-    """
-    notifications = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.created_at.desc()).all()
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+    
+    pagination = Notification.query.filter_by(recipient_id=current_user.id)\
+        .order_by(Notification.created_at.desc())\
+        .paginate(page=page, per_page=per_page)
+    
     return {
-        "notifications": [note.to_dict() for note in notifications]
-    }, 200
-
+        'notifications': [n.to_dict() for n in pagination.items],
+        'total': pagination.total,
+        'pages': pagination.pages,
+        'current_page': page
+    }
 
 # Mark a notification as read
 @notification_routes.route('/<int:notification_id>/read', methods=['PUT'])

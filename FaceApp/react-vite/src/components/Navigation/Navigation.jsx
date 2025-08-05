@@ -15,7 +15,7 @@ function Navigation() {
           <NavLink to={sessionUser ? "/dashboard" : "/"}>
             <img
               // src="https://i.imgur.com/0V54BM4.png"
-              src="/aboutlastnight.png"
+              src="images/aboutlastnight.png"
               alt="About Last Night Logo"
               className="nav-logo"
             />

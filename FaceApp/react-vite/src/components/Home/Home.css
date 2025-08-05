@@ -1,159 +1,108 @@
-/* Container fills viewport and centers the box */
+/* Fullscreen background image party vibe */
 .home-box-container {
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #0a0a0a; /* dark background for party vibe */
+  background: url('/images/aboutlastnight.png') no-repeat center center/cover;
   padding: 20px;
+  backdrop-filter: brightness(0.9);
 }
 
-/* The box holding all content */
+/* Central content box */
 .home-box {
-  background-color: #111; /* very dark gray */
-  padding: 30px 40px;
-  border-radius: 12px;
-  box-shadow: 0 0 30px rgba(0, 255, 100, 0.5);
+  background: rgba(10, 10, 10, 0.85); /* semi-transparent black */
+  padding: 40px 50px;
+  border-radius: 16px;
+  box-shadow: 0 0 35px rgba(128, 0, 128, 0.5);
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
   text-align: center;
-  color: #f5f5f5;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #f0f0f0;
+  font-family: 'Orbitron', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  border: 2px solid #00ffab; /* emerald green neon border */
 }
 
-/* Main app title */
+/* Title styling */
 .home-box h1 {
-  font-size: 2.75rem;
-  margin-bottom: 0.25rem;
-  color: #00ff44; /* neon green for luxe party vibe */
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(90deg, #a020f0, #00ffab);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   text-transform: uppercase;
-  letter-spacing: 3px;
+  letter-spacing: 4px;
 }
 
 /* Tagline */
 .tagline {
   font-size: 1.125rem;
-  margin-bottom: 25px;
-  color: #f5a623; /* warm orange-yellow */
+  margin-bottom: 30px;
+  color: #ffd700; /* bright party yellow */
+  font-weight: 500;
 }
 
-/* Buttons */
+/* Shared button styles */
 .sign-up-button, .login-button {
   display: inline-block;
-  margin: 10px 10px 20px 10px;
-  padding: 12px 28px;
+  margin: 10px auto;
+  padding: 14px 32px;
   font-size: 1rem;
   font-weight: bold;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
-  color: #111;
-  background: linear-gradient(45deg, #02d43a, #ffa500);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  text-decoration: none;
-  width: fit-content;
+  background: linear-gradient(135deg, #00ffab, #a020f0);
+  color: #0a0a0a;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  width: 100%;
+  max-width: 260px;
 }
 
 .sign-up-button:hover, .login-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 0 12px #00ff44;
+  transform: translateY(-4px);
+  box-shadow: 0 0 20px rgba(255, 255, 0, 0.8);
 }
 
-/* Video container below buttons */
+/* Video section for extra vibe */
 .video-box {
-  margin-top: 25px;
-  border-radius: 10px;
+  margin-top: 30px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 0 30px rgba(255, 165, 0, 0.8);
+  box-shadow: 0 0 25px rgba(160, 32, 240, 0.6);
 }
 
-/* Video styles */
 .party-video {
   width: 100%;
   height: 220px;
   object-fit: cover;
-  filter: brightness(0.6) contrast(1.1) saturate(1.3) hue-rotate(-10deg);
-  border-radius: 10px;
+  filter: brightness(0.65) contrast(1.2) saturate(1.5) hue-rotate(15deg);
+  border-radius: 12px;
   user-select: none;
 }
 
-/* Keep your original classes unchanged below */
-
-/* Original home-container */
-.home-container {
-  background-color: #f5fffa;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  padding: 40px 20px;
+/* Text inside the modal area (bottom note) */
+.home-box p.text-sm {
+  font-size: 0.875rem;
+  color: #ccc;
+  margin-top: 10px;
 }
 
-.home-content {
-  max-width: 1200px;
-  width: 100%;
+/* Optional glowing ring */
+@keyframes pulse-glow {
+  0% {
+    box-shadow: 0 0 10px #00ffab;
+  }
+  50% {
+    box-shadow: 0 0 20px #a020f0, 0 0 30px #00ffab;
+  }
+  100% {
+    box-shadow: 0 0 10px #00ffab;
+  }
 }
 
-.hero-container {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 40px;
-}
-
-.hero-left {
-  flex: 1;
-  min-width: 300px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.hero-left h1 {
-  font-size: 2.75rem;
-  line-height: 1.2;
-  color: #333;
-}
-
-.tagline {
-  font-size: 1.125rem;
-  color: #555;
-  max-width: 500px;
-  padding: 5px;
-  line-height: 1.6;
-  padding-bottom: 20px;
-}
-
-.hero-right {
-  flex: 1;
-  min-width: 300px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.home-image {
-  width: 100%;
-  max-width: 400px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  object-fit: cover;
-}
-
-.sign-up-button {
-  padding: 12px 24px;
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  width: fit-content;
-}
-
-.sign-up-button:hover {
-  background-color: #d44132;
-  transform: translateY(-2px);
+.home-box {
+  animation: pulse-glow 6s infinite ease-in-out;
 }

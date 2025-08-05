@@ -24,21 +24,20 @@ class User(db.Model, UserMixin):
     likes = db.relationship('Like', back_populates='user', cascade='all, delete')
     comments = db.relationship('Comment', back_populates='user', cascade='all, delete-orphan')
 
+    # Updated friend relationships
     sent_requests = db.relationship(
-        'Friend',
-        back_populates='requester',
-        foreign_keys='Friend.requester_id',
-        primaryjoin='User.id == foreign(Friend.requester_id)',
-        cascade='all, delete-orphan'
-    )
+    'Friend',
+    foreign_keys='Friend.requester_id',
+    back_populates='requester',
+    cascade='all, delete-orphan'
+)
 
     received_requests = db.relationship(
-        'Friend',
-        back_populates='receiver',
-        foreign_keys='Friend.receiver_id',
-        primaryjoin='User.id == foreign(Friend.receiver_id)',
-        cascade='all, delete-orphan'
-    )
+    'Friend',
+    foreign_keys='Friend.receiver_id',
+    back_populates='receiver',
+    cascade='all, delete-orphan'
+)
 
     @property
     def password(self):

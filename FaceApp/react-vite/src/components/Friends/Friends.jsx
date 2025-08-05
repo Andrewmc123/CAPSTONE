@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { NavLink } from 'react-router-dom';
-import { getFriends } from '../../redux/friends';
+import { 
+  fetchFriends,
+  fetchPendingFriends,
+  sendFriendRequest,
+  removeFriend
+} from '../../redux/friends';
 import OpenModalButton from '../OpenModalButton/OpenModalButton';
 import FriendsAddRemoveModal from '../FriendsAddRemoveModal/FriendsAddRemoveModal';
 import './Friends.css';
@@ -12,6 +17,7 @@ const Friends = () => {
   const [friendRemoved, setFriendRemoved] = useState(null);
 
   const friendsObj = useSelector(state => state.friends?.allFriends || {});
+  const pendingFriends = useSelector(state => state.friends?.pending || {});
 
   const friends = useMemo(() => {
     return Object.values(friendsObj).sort((a, b) => {
@@ -22,17 +28,24 @@ const Friends = () => {
   }, [friendsObj]);
 
   useEffect(() => {
-    dispatch(getFriends());
+    dispatch(fetchFriends());
+    dispatch(fetchPendingFriends()); // Now using fetchPendingFriends
   }, [dispatch]);
 
-  const handleInviteSent = (friend) => {
-    setInviteSentFriend(friend);
-    setTimeout(() => setInviteSentFriend(null), 3000);
+  const handleInviteSent = async (friend) => {
+    const result = await dispatch(sendFriendRequest(friend.id)); // Now using sendFriendRequest
+    if (result === true) {
+      setInviteSentFriend(friend);
+      setTimeout(() => setInviteSentFriend(null), 3000);
+    }
   };
 
-  const handleRemoveFriend = (friend) => {
-    setFriendRemoved(friend);
-    setTimeout(() => setFriendRemoved(null), 3000);
+  const handleRemoveFriend = async (friend) => {
+    const result = await dispatch(removeFriend(friend.id)); // Now using removeFriend
+    if (result === true) {
+      setFriendRemoved(friend);
+      setTimeout(() => setFriendRemoved(null), 3000);
+    }
   };
 
   return (
@@ -63,7 +76,9 @@ const Friends = () => {
               modalComponent={<FriendsAddRemoveModal onInviteSent={handleInviteSent} />}
             />
             <NavLink to="/friends/pending">
-              <button className="pending-friend-request-button">Pending Requests</button>
+              <button className="pending-friend-request-button">
+                Pending Requests ({Object.keys(pendingFriends).length})
+              </button>
             </NavLink>
           </div>
         </div>

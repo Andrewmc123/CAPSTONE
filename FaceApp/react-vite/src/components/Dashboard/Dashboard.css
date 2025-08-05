@@ -1,64 +1,136 @@
-.dashboard {
-  margin: 0 auto;
-  padding: 20px;
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
 }
 
-.dashboard-header {
+.dashboard-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  padding-bottom: 60px; /* Space for bottom nav */
+}
+
+.welcome-header h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.post-form {
+  background: #fff;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.post-form h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.post-textarea {
+  width: 100%;
+  height: 80px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 10px;
+  resize: none;
+}
+
+.post-actions {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
 }
 
-.dashboard-add-expense {
-  text-align: center;
-  padding: 0.75rem 1.25rem;
-  background-color: #6CDBAB;
-  color: white;
+.add-photo-btn, .post-update-btn {
+  padding: 8px 15px;
   border: none;
-  border-radius: 6px;
-  font-size: 1rem;
+  border-radius: 5px;
+  font-weight: bold;
   cursor: pointer;
 }
 
-.dashboard-summary {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  margin-top: 20px;
+.add-photo-btn {
+  background: #f0f0f0;
+  color: #333;
 }
 
-.summary-card {
-  background-color: white;
-  border: 2px solid lightgray;
-  border-radius: 8px;
-  padding: 20px;
-  text-align: center;
+.post-update-btn {
+  background: #4a90e2;
+  color: white;
 }
 
-.summary-title {
-  color: black;
-  font-size: 0.9rem;
-  margin-bottom: 8px;
+.posts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
-.summary-amount {
-  font-size: 1.5rem;
-  font-weight: 600;
+.post-item {
+  background: #fff;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.amount-positive {
-  color: green;
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 14px;
 }
 
-.amount-negative {
-  color: red;
+.post-author {
+  font-weight: bold;
 }
 
-.amount-zero {
-  color: lightgray;
+.post-location {
+  color: #666;
 }
 
-.dashboard-add-expense:hover {
-  background-color: #5bc79a;
+.post-content {
+  margin: 10px 0;
+  line-height: 1.4;
 }
+
+.post-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.post-likes {
+  color: #666;
+  font-size: 14px;
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  background: #fff;
+  padding: 10px 0;
+  box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+}
+
+.nav-btn {
+  border: none;
+  background: none;
+  padding: 8px 15px;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+}
+
+.nav-btn.active {
+  color: #4a90e2;
+  font-weight: bold;
+}
+

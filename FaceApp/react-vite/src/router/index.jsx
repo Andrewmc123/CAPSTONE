@@ -1,40 +1,36 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import LoginFormPage from '../components/LoginFormPage';
 import SignupFormPage from '../components/SignupFormPage';
 import Home from '../components/Home/Home';
 import Dashboard from '../components/Dashboard/';
 import Layout from './Layout';
-import Friend from '../components/Friends';
+import Friends from '../components/Friends/Friends';
 
-export const router = createBrowserRouter([
-  {
-    element: <Layout />,
-    children: [
-      {
-        path: "/", // add check for user session? send to dashboard if logged in otherwise landing page
-        element: <Home />,
-      },
-      {
-        path: "/Dashboard",
-        element: <Dashboard />,
-      },
-      {
-        path: "/Home",
-        element: <Home/>,
-      },
-      {
-        path: "/login",
-        element: <LoginFormPage />,
-      },
-      {
-        path: "/signup",
-        element: <SignupFormPage />,
-       
-      }, 
-      {
-        path: "/friend",
-        element: <Friend />,
-      },
-    ],
-  },
-]);
+const createAppRouter = () => {
+  const AuthRedirect = ({ children }) => {
+    const sessionUser = useSelector(state => state.session.user);
+    return sessionUser ? <Navigate to="/dashboard" replace /> : children;
+  };
+
+  const AuthCheck = ({ children }) => {
+    const sessionUser = useSelector(state => state.session.user);
+    return sessionUser ? children : <Navigate to="/login" replace />;
+  };
+
+  return createBrowserRouter([
+    {
+      element: <Layout />,
+      children: [
+        { path: "/", element: <Home /> },
+        { path: "/home", element: <Home /> },
+        { path: "/Dashboard", element: <AuthCheck><Dashboard /></AuthCheck> },
+        { path: "/friends", element: <AuthCheck><Friends /></AuthCheck> },
+        { path: "/login", element: <AuthRedirect><LoginFormPage /></AuthRedirect> },
+        { path: "/signup", element: <AuthRedirect><SignupFormPage /></AuthRedirect> },
+      ],
+    },
+  ]);
+};
+
+export const router = createAppRouter();

@@ -6,51 +6,39 @@ import LoginFormModal from "../LoginFormModal";
 import './Home.css';
 
 const Home = () => {
-    // I believe this grabs the current user from the Redux store session slice
-    const user = useSelector(state => state.session.user);
+  // I believe this grabs the current user from the Redux store session slice
+  const user = useSelector(state => state.session.user);
 
-    // This is doing redirect to dashboard if user is already logged in
-    if (user) return <Navigate to="/Dashboard" />;
+  // This is doing redirect to dashboard if user is already logged in
+  if (user) return <Navigate to="/Dashboard" />;
 
-    return (
-        <div className="home-container">
-            <div className="home-content">
-                <div className="hero-container">
-                    <div className="hero-left">
-                        <h1>ABLN</h1>
-                        <p className="tagline">
-                          “Where the nights you barely remember live on forever.”
-                        </p>
-                        {/* This is doing open modal button that launches signup form modal */}
-                        <OpenModalButton 
-                            className="sign-up-button"
-                            buttonText="Sign Up!"
-                            modalComponent={<SignupFormModal />}
-                        />
-                        {/* This is doing open modal button that launches login form modal */}
-                        <OpenModalButton 
-                            className="login-button"
-                            buttonText="Log In"
-                            modalComponent={<LoginFormModal />}
-                        />
-                    </div>
-                    <div className="hero-right">
-                        {/* I believe this is the video box on the right side of the hero */}
-                        <div className="video-box">
-                            <video
-                                className="party-video"
-                                src="https://cdn.pixabay.com/video/2023/06/18/170652-834126365_large.mp4"
-                                autoPlay
-                                muted
-                                loop
-                                playsInline
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
+      <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6">
+        <h1 className="text-3xl font-bold text-center mb-2">ABLN</h1>
+        <p className="text-gray-600 text-center mb-6">
+          “Where the nights you barely remember live on forever.”
+        </p>
+        {/* This is doing open modal button that launches signup form modal */}
+        <OpenModalButton
+          className="sign-up-button w-full mb-4 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+          buttonText="Sign Up!"
+          modalComponent={<SignupFormModal />}
+        />
+        {/* This is doing open modal button that launches login form modal */}
+        <OpenModalButton
+          className="login-button w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+          buttonText="Log In"
+          modalComponent={<LoginFormModal />}
+        />
+        <div className="text-center mt-4">
+          <p className="text-sm text-gray-600">
+            For demo purposes, you can use any login.
+          </p>
         </div>
-    )
-}
+      </div>
+    </div>
+  );
+};
 
 export default Home;

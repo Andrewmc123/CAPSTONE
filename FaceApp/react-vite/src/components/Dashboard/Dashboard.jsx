@@ -1,69 +1,109 @@
 import { useSelector, useDispatch } from 'react-redux';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { getPosts } from '../../redux/post';
-import {getFriends}  from '../../redux/friends';
+import { getPosts, thunkCreatePost } from '../../redux/posts';
+import { fetchFriends } from '../../redux/friends';
+import RightPanel from '../RightPanel/RightPanel';
 import './Dashboard.css';
 
 function Dashboard() {
   const sessionUser = useSelector(state => state.session.user);
   const dispatch = useDispatch();
-  const posts = useSelector(state => Object.values(state.post.allPosts || {}));
+  const posts = useSelector(state => Object.values(state.posts?.allPosts || {}));
   const friends = useSelector(state => Object.values(state.friends.allFriends || {}));
+
+  const [newPostBody, setNewPostBody] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (sessionUser) {
       dispatch(getPosts());
-      dispatch(getFriends());
+      dispatch(fetchFriends());
     }
   }, [dispatch, sessionUser]);
 
   if (!sessionUser) return <Navigate to="/" replace={true} />;
 
+  const handlePostSubmit = async (e) => {
+    e.preventDefault();
+    if (!newPostBody.trim()) return;
+    setLoading(true);
+
+    // Create post expects JSON with body (adjust if backend expects different)
+    const postPayload = { body: newPostBody };
+    
+    const result = await dispatch(thunkCreatePost(JSON.stringify(postPayload)));
+    setLoading(false);
+
+    if (!result.error) {
+      setNewPostBody('');
+    }
+  };
+
+  const handleLikeToggle = (post) => {
+    // Implement your like toggle thunk here when ready
+    alert(`Toggle like for post id ${post.id}`);
+  };
+
   return (
-    <div className="dashboard" style={{ position: 'fixed', bottom: 0, width: '100%' }}>
-      <div className="dashboard-header">
-        <h1>Welcome back, {sessionUser.firstname}!</h1>
-      </div>
+    <div className="dashboard-container">
+      <div className="dashboard-main">
+        <div className="dashboard-content">
+          <div className="welcome-header">
+            <h1>Welcome, {sessionUser.firstname}</h1>
+          </div>
 
-      <div className="dashboard-summary">
-        <div className="summary-card">
-          <div className="summary-title">Friends</div>
-          <div className="summary-count">{friends.length}</div>
-        </div>
+          <form onSubmit={handlePostSubmit} className="post-form">
+            <h3>Yerr</h3>
+            <textarea
+              placeholder="What's happening in your area?"
+              className="post-textarea"
+              value={newPostBody}
+              onChange={e => setNewPostBody(e.target.value)}
+              rows={3}
+              disabled={loading}
+            />
+            <div className="post-actions">
+              <button type="button" className="add-photo-btn" disabled>
+                Add Photo
+              </button>
+              <button type="submit" className="post-update-btn" disabled={loading}>
+                {loading ? 'Posting...' : 'Post Update'}
+              </button>
+            </div>
+          </form>
 
-        <div className="summary-card">
-          <div className="summary-title">Posts Shared</div>
-          <div className="summary-count">{posts.length}</div>
-        </div>
-
-        <div className="summary-card">
-          <div className="summary-title">Notifications</div>
-          <div className="summary-count">
-            {sessionUser.notifications ? sessionUser.notifications.length : 0}
+          <div className="posts-list">
+            {posts.length === 0 ? (
+              <p>No posts to show. Start sharing updates!</p>
+            ) : (
+              posts.map(post => (
+                <div key={post.id} className="post-item">
+                  <div className="post-header">
+                    <span className="post-author">{post.user?.username || 'Unknown'}</span>
+                    <span className="post-location">Downtown • 10 minutes ago</span>
+                  </div>
+                  <p className="post-content">{post.body}</p>
+                  {post.image_url && (
+                    <img src={post.image_url} alt="post media" className="post-image" />
+                  )}
+                  <div className="post-footer">
+                    <button
+                      onClick={() => handleLikeToggle(post)}
+                      className="post-like-btn"
+                    >
+                      {post.like_count || 0} Likes
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
-        {/* This is doing: placeholder for Vault route */}
-        {/* <div className="summary-card">
-          <div className="summary-title">Vault</div>
-          <div className="summary-count">Coming Soon</div>
-        </div> */}
+        <RightPanel friends={friends} />
       </div>
 
-      <div className="dashboard-posts">
-        <h2>Recent Party Posts</h2>
-        {posts.length === 0 && <p>No posts to show. Start sharing your nights!</p>}
-        <ul>
-          {posts.map(post => (
-            <li key={post.id} className="post-item">
-              <img src={post.mediaUrl} alt={post.caption || "Party photo"} className="post-image" />
-              <p>{post.caption}</p>
-              <small>By {post.user?.username || 'Unknown'}</small>
-            </li>
-          ))}
-        </ul>
-      </div>
     </div>
   );
 }

@@ -1,42 +1,37 @@
 from flask import Blueprint, request
 from flask_login import login_required, current_user
-from app.models import Friend, User
-from app.models import db
+from app.models import Friend, User, db
 from datetime import datetime, timezone
+from sqlalchemy import or_, and_
 
 friend_routes = Blueprint('friends', __name__)
 
-
-# Get all confirmed friends
 @friend_routes.route('/', methods=['GET'])
 @login_required
 def get_friends():
-    friends_as_user = Friend.query.filter_by(user_id=current_user.id, status='friends').all()
-    friends_as_friend = Friend.query.filter_by(friend_id=current_user.id, status='friends').all()
+    friends_as_requester = Friend.query.filter_by(requester_id=current_user.id, status='friends').all()
+    friends_as_receiver = Friend.query.filter_by(receiver_id=current_user.id, status='friends').all()
 
-    all_friends = friends_as_user + friends_as_friend
+    all_friends = friends_as_requester + friends_as_receiver
 
     return {
         "friends": [friend.to_dict() for friend in all_friends]
     }
 
-
-# Get pending friend requests for current user
 @friend_routes.route('/pending', methods=['GET'])
 @login_required
 def get_pending_friends():
     pending = Friend.query.filter(
-        ((Friend.friend_id == current_user.id)) &
-        (Friend.status == 'pending')
+        and_(
+            Friend.receiver_id == current_user.id,
+            Friend.status == 'pending'
+        )
     ).all()
-
 
     return {
         "pending": [pending_request.to_dict() for pending_request in pending]
     }
 
-
-# Send a friend request
 @friend_routes.route('/add', methods=['POST'])
 @login_required
 def add_friend():
@@ -46,9 +41,14 @@ def add_friend():
     if not friend_id:
         return { "message": "Missing friendId in request body" }, 400
 
+    if int(friend_id) == current_user.id:
+        return { "message": "You cannot friend yourself." }, 400
+
     existing = Friend.query.filter(
-        ((Friend.user_id == current_user.id) & (Friend.friend_id == friend_id)) |
-        ((Friend.user_id == friend_id) & (Friend.friend_id == current_user.id))
+        or_(
+            and_(Friend.requester_id == current_user.id, Friend.receiver_id == friend_id),
+            and_(Friend.requester_id == friend_id, Friend.receiver_id == current_user.id)
+        )
     ).first()
 
     if existing:
@@ -57,8 +57,8 @@ def add_friend():
         }, 400
 
     new_request = Friend(
-        user_id=current_user.id,
-        friend_id=friend_id,
+        requester_id=current_user.id,
+        receiver_id=friend_id,
         status='pending',
         created_at=datetime.now(timezone.utc),
         updated_at=datetime.now(timezone.utc)
@@ -71,14 +71,12 @@ def add_friend():
         "friend": new_request.to_dict()
     }, 201
 
-
-# Accept a friend request
 @friend_routes.route('/accept/<int:friend_id>', methods=['PUT'])
 @login_required
 def accept_friend_request(friend_id):
     friend_request = Friend.query.filter_by(
-        user_id=friend_id,
-        friend_id=current_user.id,
+        requester_id=friend_id,
+        receiver_id=current_user.id,
         status='pending'
     ).first()
 
@@ -86,7 +84,7 @@ def accept_friend_request(friend_id):
         return { "message": "No pending friend request found." }, 404
 
     friend_request.status = 'friends'
-    friend_request.updated_at = datetime.now()
+    friend_request.updated_at = datetime.now(timezone.utc)
 
     db.session.commit()
 
@@ -95,14 +93,12 @@ def accept_friend_request(friend_id):
         "friend": friend_request.to_dict()
     }, 200
 
-
-# Decline a friend request
 @friend_routes.route('/decline/<int:friend_id>', methods=['DELETE'])
 @login_required
 def decline_friend_request(friend_id):
     friend_request = Friend.query.filter_by(
-        user_id=friend_id,
-        friend_id=current_user.id,
+        requester_id=friend_id,
+        receiver_id=current_user.id,
         status='pending'
     ).first()
 
@@ -121,30 +117,29 @@ def decline_friend_request(friend_id):
         "friend": friend_data
     }, 200
 
-
-# Remove a confirmed friend
 @friend_routes.route('/delete/<int:friend_id>', methods=['DELETE'])
 @login_required
 def delete_friend(friend_id):
-    friend = Friend.query.filter(
-        ((Friend.user_id == current_user.id) & (Friend.friend_id == friend_id)) |
-        ((Friend.user_id == friend_id) & (Friend.friend_id == current_user.id))
+    friendship = Friend.query.filter(
+        or_(
+            and_(Friend.requester_id == current_user.id, Friend.receiver_id == friend_id),
+            and_(Friend.requester_id == friend_id, Friend.receiver_id == current_user.id)
+        )
     ).first()
 
-    if not friend:
+    if not friendship:
         return { "message": "Friendship not found." }, 404
 
-    db.session.delete(friend)
+    friend_data = friendship.to_dict()
+
+    db.session.delete(friendship)
     db.session.commit()
 
     return {
         "message": "Removed friend from your list.",
-        "friend": friend.to_dict()
+        "friend": friend_data
     }, 200
 
-
-# Test route
 @friend_routes.route('/test', methods=['GET'])
 def test():
-    print('test')
     return "test"

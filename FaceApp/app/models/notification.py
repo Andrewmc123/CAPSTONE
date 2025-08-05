@@ -15,8 +15,8 @@ class Notification(db.Model):
     recipient = db.relationship('User', foreign_keys=[recipient_id], backref='notifications_received')
     sender = db.relationship('User', foreign_keys=[sender_id], backref='notifications_sent')
 
-def to_dict(self):
-    return {
+    def to_dict(self):
+        return {
         'id': self.id,
         'recipient_id': self.recipient_id,
         'sender_id': self.sender_id,
