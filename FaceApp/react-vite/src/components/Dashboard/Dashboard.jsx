@@ -1,7 +1,6 @@
-// frontend/src/components/Dashboard.jsx
 import { useSelector, useDispatch } from 'react-redux';
 import { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, NavLink } from 'react-router-dom';
 import { getAllPosts, getFriendsPosts } from '../../redux/posts';
 import { getFriends } from '../../redux/friends';
 import FriendsSidebar from '../FriendsSidebar/FriendsSidebar';
@@ -19,7 +18,7 @@ function Dashboard() {
     if (sessionUser) {
       dispatch(getFriends(sessionUser.id));
     }
-  }, [dispatch, sessionUser]); // ✅ fixed: added missing closing parenthesis
+  }, [dispatch, sessionUser]);
 
   useEffect(() => {
     if (filterFriendsOnly) {
@@ -31,7 +30,7 @@ function Dashboard() {
 
   const PostList = () => {
     if (!allPosts || allPosts.length === 0) {
-      return 
+      return <div className="no-posts">No posts to display</div>;
     }
 
     return (
@@ -88,13 +87,26 @@ function Dashboard() {
         </div>
       </div>
 
-      <FriendsSidebar friends={friends} sessionUser={sessionUser} />
+      <FriendsSidebar 
+        friends={Object.values(friends).filter(f => 
+          f.requester_id === sessionUser.id || f.receiver_id === sessionUser.id
+        )} 
+        sessionUser={sessionUser} 
+      />
 
       <div className="bottom-nav">
-        <button className="nav-btn">Home</button>
-        <button className="nav-btn">Camera</button>
-        <button className="nav-btn">Notifications</button>
-        <button className="nav-btn">Profile</button>
+        <NavLink to="/dashboard" className="nav-btn" activeClassName="active">
+          Home
+        </NavLink>
+        <NavLink to="/camera" className="nav-btn" activeClassName="active">
+          Camera
+        </NavLink>
+        <NavLink to="/notifications" className="nav-btn" activeClassName="active">
+          Notifications
+        </NavLink>
+        <NavLink to={`/users/${sessionUser.id}`} className="nav-btn" activeClassName="active">
+          Profile
+        </NavLink>
       </div>
     </div>
   );

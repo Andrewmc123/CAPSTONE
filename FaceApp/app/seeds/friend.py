@@ -70,7 +70,7 @@ def seed_friends():
     friend9 = Friend(
         requester_id=6,
         receiver_id=1,
-        status='pending',
+        status='accepted',
         created_at=datetime(2025, 7, 12, 20, 0),
         updated_at=datetime(2025, 7, 12, 20, 0)
     )

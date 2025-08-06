@@ -11,7 +11,7 @@ def seed_posts():
         Post(user_id=9, image_url="/images/cat1.jpg", body="I feel like i got caught coming in late at my parents house again 😭", created_at=datetime.utcnow(), updated_at=datetime.utcnow()),
         Post(user_id=4, image_url="/images/lastnightmovie.jpg", body="yooo last night was a movie 🍾🪩", created_at=datetime.utcnow(), updated_at=datetime.utcnow()),
         Post(user_id=6, image_url="/images/rooftop.jpg", body="pulling up to the rooftop in 10 😎 who’s already there?", created_at=datetime.utcnow(), updated_at=datetime.utcnow()),
-        Post(user_id=7, image_url="/images/bestiedance.gif", body="the way we danced ALL night 💃🔥", created_at=datetime.utcnow(), updated_at=datetime.utcnow()),
+        Post(user_id=7, image_url="/images/bestiedance.gif", body="Me and the Homie showing the yougins how its done Lastnight !😭🔥", created_at=datetime.utcnow(), updated_at=datetime.utcnow()),
         Post(user_id=8, image_url="/images/preame.jpg", body="someone said pregame at mine then head to the function? lmk", created_at=datetime.utcnow(), updated_at=datetime.utcnow()),
         Post(user_id=9, image_url="/images/thesquad2.jpg", body="me and the squad showing OUT last night 😎 ", created_at=datetime.utcnow(), updated_at=datetime.utcnow()),
         Post(user_id=3, image_url="/images/whotookthis.jpg", body="who took this pic??? i was GONE 💀📸", created_at=datetime.utcnow(), updated_at=datetime.utcnow()),

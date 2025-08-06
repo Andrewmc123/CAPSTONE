@@ -15,8 +15,10 @@ export default function Layout() {
   const location = useLocation();
 
   useEffect(() => {
-    dispatch(thunkAuthenticate()).then(() => setIsLoaded(true));
-  }, [dispatch]);
+  dispatch(thunkAuthenticate()).then(() => setIsLoaded(true));
+}, [dispatch]);
+
+if (!isLoaded) return null;
 
   const isHome = location.pathname === "/";
   const showBottomPanel = !!sessionUser && !isHome;

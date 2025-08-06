@@ -10,13 +10,19 @@ const loadFriends = (friends, currentUserId) => ({
 });
 
 // This is doing: fetching friends from backend and dispatching the action
-export const getFriends = (currentUserId) => async (dispatch) => {
-  const res = await fetch('/api/friends/');
+// redux/friends.js
+export const getFriends = () => async (dispatch) => {
+  const res = await fetch('/api/friends/', {
+    method: 'GET',
+    credentials: 'include' // ✅ this ensures cookie/session is sent
+  });
+
   if (res.ok) {
     const data = await res.json();
-    dispatch(loadFriends(data.accepted, currentUserId));
+    dispatch(loadFriends(data.accepted));
   }
 };
+
 
 const initialState = {};
 
@@ -25,20 +31,15 @@ const friendsReducer = (state = initialState, action) => {
   switch (action.type) {
     case LOAD_FRIENDS: {
       const newState = {};
-
       action.friends.forEach(friend => {
-        const { requester, receiver } = friend;
-
-        // This is doing: identifying the "other" user in the friendship
-        const otherUser =
-          requester.id === action.currentUserId ? receiver : requester;
-
-        newState[otherUser.id] = {
-          ...otherUser,
-          isOnline: Math.random() > 0.5 // simulate online status
+        // Store both requester and receiver with proper structure
+        newState[friend.id] = {
+          ...friend,
+          requester: friend.requester,
+          receiver: friend.receiver,
+          status: friend.status
         };
       });
-
       return newState;
     }
     default:

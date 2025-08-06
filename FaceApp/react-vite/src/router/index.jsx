@@ -5,6 +5,7 @@ import SignupFormPage from '../components/SignupFormPage';
 import Home from '../components/Home/Home';
 import Dashboard from '../components/Dashboard/';
 import Layout from './Layout';
+import UserProfilePage from '../components/UserProfilePage'; 
 //import Friends from '../components/Friends/Friends';
 
 
@@ -29,6 +30,7 @@ const createAppRouter = () => {
         //{ path: "/friends", element: <AuthCheck><Friends /></AuthCheck> },
         { path: "/login", element: <AuthRedirect><LoginFormPage /></AuthRedirect> },
         { path: "/signup", element: <AuthRedirect><SignupFormPage /></AuthRedirect> },
+        {path: "/users/:userId",element: <AuthCheck><UserProfilePage /></AuthCheck>,}
       ],
     },
   ]);
