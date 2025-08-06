@@ -4,8 +4,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { ModalProvider, Modal } from "../context/Modal";
 import { thunkAuthenticate } from "../redux/session";
 import Navigation from "../components/Navigation/Navigation";
-import RightPanel from "../components/RightPanel";
 import BottomPanel from "../components/BottomPanel";
+
 
 
 export default function Layout() {
@@ -22,27 +22,22 @@ export default function Layout() {
   const showBottomPanel = !!sessionUser && !isHome;
 
   return (
-    <>
-      <ModalProvider>
-        <div className={isHome ? "home-background" : ""}> {/* to fill bg color */}
-          <Navigation />
-          {/* {isLoaded && <Outlet />} */}
+  <>
+    <ModalProvider>
+      <div className={isHome ? "home-background" : ""}>
+        <Navigation />
+        {isLoaded && (
+          <div className="main-body">
+            {showBottomPanel && <BottomPanel />}
 
-          {isLoaded && (
-            <div className="main-body">
-              {showBottomPanel && <BottomPanel />}
-
-              {/* All Feature Components will render inside main-content div  */}
-              <div className="main-content">
-                <Outlet />
-              </div>
-
-              {showBottomPanel && <RightPanel />}
+            <div className="main-content">
+              <Outlet />  {/* Only render child routes here */}
             </div>
-          )}
-          <Modal />
-        </div>
-      </ModalProvider>
-    </>
-  );
+          </div>
+        )}
+        <Modal />
+      </div>
+    </ModalProvider>
+  </>
+);
 }

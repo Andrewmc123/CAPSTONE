@@ -6,7 +6,7 @@ def seed_posts():
     posts = [
         Post(user_id=2, image_url="/images/dyehairgirl.jpg", body="just dyed my hair for this party downtown tonight, what ya think? 🌈✨", created_at=datetime.utcnow(), updated_at=datetime.utcnow()),
         Post(user_id=3, image_url="/images/partycrowd.jpg", body="WHATTHEHELLLY??", created_at=datetime.utcnow(), updated_at=datetime.utcnow()),
-        Post(user_id=5, image_url="/images/weoutside.gif", body="we outsiiiiiiide!! 🌃 #latevibes", created_at=datetime.utcnow(), updated_at=datetime.utcnow()),
+        Post(user_id=1, image_url="/images/weoutside.gif", body="we outsiiiiiiide!! 🌃 #latevibes", created_at=datetime.utcnow(), updated_at=datetime.utcnow()),
         Post(user_id=1, image_url="/images/feltcute.jpg", body="hey im new ,just testing features felt cute 👀👋", created_at=datetime.utcnow(), updated_at=datetime.utcnow()),
         Post(user_id=9, image_url="/images/cat1.jpg", body="I feel like i got caught coming in late at my parents house again 😭", created_at=datetime.utcnow(), updated_at=datetime.utcnow()),
         Post(user_id=4, image_url="/images/lastnightmovie.jpg", body="yooo last night was a movie 🍾🪩", created_at=datetime.utcnow(), updated_at=datetime.utcnow()),
@@ -17,8 +17,9 @@ def seed_posts():
         Post(user_id=3, image_url="/images/whotookthis.jpg", body="who took this pic??? i was GONE 💀📸", created_at=datetime.utcnow(), updated_at=datetime.utcnow()),
         Post(user_id=2, image_url="/images/uzi.jpg", body="ig me and bro partying til sunrise again DAMNNNNN!!!!! ☀️🕺", created_at=datetime.utcnow(), updated_at=datetime.utcnow()),
         Post(user_id=5, image_url="/images/metthecity.jpg", body="i met half the city last night lol", created_at=datetime.utcnow(), updated_at=datetime.utcnow()),
+        Post(user_id=5, image_url="/images/weoutside.gif", body="we outsiiiiiiide!! 🌃 #latevibes", created_at=datetime.utcnow(), updated_at=datetime.utcnow()),
         Post(user_id=1, image_url="/images/hungover-britney.gif", body="Yea... i woke up with a hangover 😭", created_at=datetime.utcnow(), updated_at=datetime.utcnow())
-    ]
+    ]    
 
     db.session.add_all(posts)
     db.session.commit()

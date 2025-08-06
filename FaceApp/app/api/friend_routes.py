@@ -9,13 +9,13 @@ friend_routes = Blueprint('friends', __name__)
 @friend_routes.route('/', methods=['GET'])
 @login_required
 def get_friends():
-    friends_as_requester = Friend.query.filter_by(requester_id=current_user.id, status='friends').all()
-    friends_as_receiver = Friend.query.filter_by(receiver_id=current_user.id, status='friends').all()
+    friends_as_requester = Friend.query.filter_by(requester_id=current_user.id, status='accepted').all()
+    friends_as_receiver = Friend.query.filter_by(receiver_id=current_user.id, status='accepted').all()
 
     all_friends = friends_as_requester + friends_as_receiver
 
     return {
-        "friends": [friend.to_dict() for friend in all_friends]
+        "accepted": [friend.to_dict() for friend in all_friends]
     }
 
 @friend_routes.route('/pending', methods=['GET'])

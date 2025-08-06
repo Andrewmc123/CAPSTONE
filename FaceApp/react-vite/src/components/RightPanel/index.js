@@ -1,3 +1,3 @@
-import LeftPanel from './RightPanel';
+import RightPanel from './RightPanel';
 
-export default LeftPanel;
+export default RightPanel;

@@ -3,42 +3,53 @@
   flex-direction: column;
   height: 100vh;
   width: 100%;
-}
-
-.dashboard-content {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
-  padding-bottom: 60px; /* Space for bottom nav */
+  background: #0e0e10;
+  color: #f8f8f8;
+  font-family: 'Arial', sans-serif;
 }
 
 .welcome-header h1 {
-  font-size: 24px;
+  font-size: 26px;
   margin-bottom: 20px;
-  color: #333;
+  color: #ff8c00;
+  text-shadow: 0 0 12px #32ff32;
+}
+
+.filter-bar {
+  margin-bottom: 20px;
+  font-size: 16px;
+  color: #ff8c00;
+}
+
+.filter-bar input[type="checkbox"] {
+  margin-right: 8px;
+  accent-color: #32ff32;
 }
 
 .post-form {
-  background: #fff;
-  border-radius: 10px;
+  background: #1a1a1d;
+  border-radius: 12px;
   padding: 15px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 0 10px rgba(50, 255, 50, 0.3);
 }
 
 .post-form h3 {
   margin-top: 0;
   margin-bottom: 10px;
-  font-size: 16px;
+  font-size: 18px;
+  color: #ff8c00;
 }
 
 .post-textarea {
-  width: 100%;
+  width: 90%;
   height: 80px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
+  border: 1px solid #ff8c00;
+  background: #0e0e10;
+  border-radius: 6px;
   padding: 10px;
   margin-bottom: 10px;
+  color: #f8f8f8;
   resize: none;
 }
 
@@ -47,35 +58,52 @@
   justify-content: space-between;
 }
 
-.add-photo-btn, .post-update-btn {
+.add-photo-btn,
+.post-update-btn {
   padding: 8px 15px;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   font-weight: bold;
   cursor: pointer;
+  transition: all 0.2s ease-in-out;
 }
 
 .add-photo-btn {
-  background: #f0f0f0;
-  color: #333;
+  background: #333;
+  color: #ff8c00;
 }
 
 .post-update-btn {
-  background: #4a90e2;
-  color: white;
+  background: #32ff32;
+  color: #0e0e10;
+}
+
+.add-photo-btn:hover,
+.post-update-btn:hover {
+  box-shadow: 0 0 10px #32ff32;
+}
+
+.posts-container {
+  margin-top: 30px;
+}
+
+.posts-container h1 {
+  color: #ce8124ff;
+  text-shadow: 0 0 10px #32ff32;
+  margin-bottom: 15px;
 }
 
 .posts-list {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
 }
 
 .post-item {
-  background: #fff;
-  border-radius: 10px;
+  background: #1a1a1d;
+  border-radius: 12px;
   padding: 15px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 0 10px rgba(255, 140, 0, 0.4);
 }
 
 .post-header {
@@ -83,19 +111,24 @@
   justify-content: space-between;
   margin-bottom: 10px;
   font-size: 14px;
+  color: #ccc;
 }
 
 .post-author {
   font-weight: bold;
+  color: #32ff32;
+  text-shadow: 0 0 6px #32ff32;
 }
 
 .post-location {
-  color: #666;
+  color: #888;
+  font-style: italic;
 }
 
 .post-content {
   margin: 10px 0;
-  line-height: 1.4;
+  line-height: 1.5;
+  color: #f0f0f0;
 }
 
 .post-footer {
@@ -104,7 +137,7 @@
 }
 
 .post-likes {
-  color: #666;
+  color: #ff8c00;
   font-size: 14px;
 }
 
@@ -115,22 +148,86 @@
   right: 0;
   display: flex;
   justify-content: space-around;
-  background: #fff;
-  padding: 10px 0;
-  box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
+  background: #0e0e10;
+  padding: 12px 0;
+  box-shadow: 0 -2px 6px rgba(50, 255, 50, 0.4);
+  z-index: 1000;
 }
 
 .nav-btn {
   border: none;
   background: none;
   padding: 8px 15px;
-  font-size: 14px;
-  color: #666;
+  font-size: 15px;
+  color: #ff8c00;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-btn:hover {
+  color: #32ff32;
+  text-shadow: 0 0 8px #32ff32;
 }
 
 .nav-btn.active {
-  color: #4a90e2;
+  color: #ffffff;
   font-weight: bold;
+  text-shadow: 0 0 10px #32ff32;
 }
 
+.post-image {
+  width: 100%;
+  max-height: 300px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-top: 10px;
+  border: 2px solid #32ff32;
+}
+
+.top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px; /* or your nav height */
+  background: #0e0e10;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  z-index: 1100; /* higher than sidebar */
+  box-shadow: 0 2px 6px rgba(50, 255, 50, 0.4);
+  color: #ff8c00;
+}
+
+/* Make your existing nav-container fixed at top and overlap sidebar */
+.top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  min-height: 60px;
+  z-index: 1100; /* higher than sidebar */
+  box-shadow: 0 2px 6px rgba(50, 255, 50, 0.4);
+}
+
+/* Fix FriendsSidebar position, start below top nav */
+.friends-sidebar {
+  position: fixed;
+  top: 96px; /* height of top nav */
+  right: 0;
+  width: 190px;
+  margin-right:23px; 
+  height: calc(100vh - 60px); /* full height minus top nav */
+  background-color: #323235ff; /* keep your existing background */
+  box-shadow: -4px 0 12px rgba(241, 234, 234, 0.2);
+  z-index: 1000; /* below top nav */
+  overflow-y: auto;
+}
+
+/* Add right padding to dashboard content so it doesn't go under sidebar */
+.dashboard-content {
+  padding-top: 60px; /* space for fixed top nav */
+  padding-right: 240px; /* space for sidebar */
+  overflow-y: auto;
+  height: calc(100vh - 60px);
+}

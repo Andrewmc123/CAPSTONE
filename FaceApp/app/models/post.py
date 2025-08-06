@@ -21,20 +21,22 @@ class Post(db.Model):
 
     def to_dict(self):
          return {
-        'id': self.id,
-        'user_id': self.user_id,
-        'body': self.body,
-        'image_url': self.image_url,
-        'created_at': self.created_at.isoformat(),
-        'updated_at': self.updated_at.isoformat(),
-        'user': self.user.to_dict() if self.user else None,
-        'like_count': len(self.likes),
-    }
+            'id': self.id,
+            'user_id': self.user_id,
+            'body': self.body,
+            'image_url': self.image_url,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat(),
+            'user': self.user.to_dict() if self.user else None,
+            'like_count': len(self.likes),
+            'comment_count': len(self.comments),
+        }
 
     def to_dict_basic(self):
         return {
             'id': self.id,
             'user_id': self.user_id,
             'body': self.body,
-            'image_url': self.image_url
+            'image_url': self.image_url,
+            'comment_count': len(self.comments)
         }

@@ -1,0 +1,38 @@
+.friend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid #ccc;
+}
+
+.friend-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #32ff32;
+}
+
+.friend-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.friend-username {
+  font-weight: 600;
+  color: #333;
+}
+
+.friend-status {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.friend-status.online {
+  color: #32ff32;
+}
+
+.friend-status.offline {
+  color: #888;
+}
