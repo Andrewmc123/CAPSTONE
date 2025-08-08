@@ -1,121 +1,140 @@
 // frontend/src/redux/friends.js
-
 const GET_FRIENDS = 'friends/GET_FRIENDS';
 const GET_PENDING_FRIENDS = 'friends/GET_PENDING_FRIENDS';
+const SET_FRIENDS_LOADING = 'friends/SET_LOADING';
+const SET_FRIENDS_ERROR = 'friends/SET_ERROR';
 
-const loadFriends = (friends) => ({ 
-    type: GET_FRIENDS, 
-    friends 
-});
+// Action Creators
+const loadFriends = (friends) => ({ type: GET_FRIENDS, friends });
+const loadPending = (pending) => ({ type: GET_PENDING_FRIENDS, pending });
+const setLoading = (loading) => ({ type: SET_FRIENDS_LOADING, loading });
+const setError = (error) => ({ type: SET_FRIENDS_ERROR, error });
 
-const loadPending = (pending) => ({ 
-    type: GET_PENDING_FRIENDS, 
-    pending 
-});
-
-// Get All Friends
+// Thunks
 export const getFriends = () => async (dispatch) => {
-  const res = await fetch('/api/friends/');
-  if (res.ok) {
+  dispatch(setLoading(true));
+  try {
+    const res = await fetch('/api/friends/');
+    if (!res.ok) throw new Error('Failed to fetch friends');
     const data = await res.json();
     dispatch(loadFriends(data.friends));
+  } catch (err) {
+    dispatch(setError(err.message));
+  } finally {
+    dispatch(setLoading(false));
   }
 };
 
-// Get All Pending Friends
 export const getPendingFriends = () => async (dispatch) => {
-  const res = await fetch('/api/friends/pending');
-  if (res.ok) {
+  dispatch(setLoading(true));
+  try {
+    const res = await fetch('/api/friends/pending');
+    if (!res.ok) throw new Error('Failed to fetch pending requests');
     const data = await res.json();
     dispatch(loadPending(data.pending));
+  } catch (err) {
+    dispatch(setError(err.message));
+  } finally {
+    dispatch(setLoading(false));
   }
 };
 
-// Accept a Pending Friend Request
 export const acceptFriendRequest = (friendId) => async (dispatch) => {
-  const res = await fetch(`/api/friends/accept/${friendId}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' }
-  });
-
-  if (res.ok) {
-    dispatch(getPendingFriends());
-    dispatch(getFriends());
+  dispatch(setLoading(true));
+  try {
+    const res = await fetch(`/api/friends/accept/${friendId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (!res.ok) throw new Error('Failed to accept friend request');
+    await Promise.all([dispatch(getFriends()), dispatch(getPendingFriends())]);
     return true;
+  } catch (err) {
+    dispatch(setError(err.message));
+    return false;
+  } finally {
+    dispatch(setLoading(false));
   }
-  return false;
 };
 
-// Decline a Pending Friend Request
 export const declineFriendRequest = (friendId) => async (dispatch) => {
-  const res = await fetch(`/api/friends/decline/${friendId}`, {
-    method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' }
-  });
-
-  if (res.ok) {
+  dispatch(setLoading(true));
+  try {
+    const res = await fetch(`/api/friends/decline/${friendId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (!res.ok) throw new Error('Failed to decline friend request');
     dispatch(getPendingFriends());
     return true;
+  } catch (err) {
+    dispatch(setError(err.message));
+    return false;
+  } finally {
+    dispatch(setLoading(false));
   }
-  return false;
 };
 
-// Add a Friend
 export const sendFriendRequest = (friendId) => async (dispatch) => {
-  const res = await fetch(`/api/friends/add`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ friendId }),
-  });
-
-  if (res.ok) {
+  dispatch(setLoading(true));
+  try {
+    const res = await fetch(`/api/friends/add`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ friendId }),
+    });
+    if (!res.ok) throw new Error(res.message || "Could not send request");
     dispatch(getPendingFriends());
     return true;
-  } else {
-    const data = await res.json();
-    return data.message || "Could not send request";
+  } catch (err) {
+    dispatch(setError(err.message));
+    return err.message;
+  } finally {
+    dispatch(setLoading(false));
   }
 };
 
-// Remove a Friend
 export const removeFriend = (friendId) => async (dispatch) => {
-  const res = await fetch(`/api/friends/delete/${friendId}`, {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-  });
-
-  if (res.ok) {
+  dispatch(setLoading(true));
+  try {
+    const res = await fetch(`/api/friends/delete/${friendId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) throw new Error(res.message || "Could not remove friend");
     dispatch(getFriends());
     return true;
-  } else {
-    const data = await res.json();
-    return data.message || "Could not remove friend";
+  } catch (err) {
+    dispatch(setError(err.message));
+    return err.message;
+  } finally {
+    dispatch(setLoading(false));
   }
 };
 
 const initialState = {
   friends: {},
-  pending: {}
+  pending: {},
+  loading: false,
+  error: null
 };
 
 export default function friendsReducer(state = initialState, action) {
   switch (action.type) {
-    case GET_FRIENDS: {
-      const newFriends = {};
-      action.friends.forEach((friend) => {
-        newFriends[friend.id] = friend;
-      });
-      return { ...state, friends: newFriends };
-    }
-
-    case GET_PENDING_FRIENDS: {
-      const newPending = {};
-      action.pending.forEach((friend) => {
-        newPending[friend.id] = friend;
-      });
-      return { ...state, pending: newPending };
-    }
-
+    case GET_FRIENDS:
+      return { ...state, friends: action.friends.reduce((acc, friend) => {
+        acc[friend.id] = friend;
+        return acc;
+      }, {}), error: null };
+    case GET_PENDING_FRIENDS:
+      return { ...state, pending: action.pending.reduce((acc, pending) => {
+        acc[pending.id] = pending;
+        return acc;
+      }, {}), error: null };
+    case SET_FRIENDS_LOADING:
+      return { ...state, loading: action.loading };
+    case SET_FRIENDS_ERROR:
+      return { ...state, error: action.error };
     default:
       return state;
   }

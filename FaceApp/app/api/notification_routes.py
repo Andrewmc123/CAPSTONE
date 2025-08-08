@@ -1,7 +1,7 @@
 # notification_routes.py
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify
 from flask_login import login_required, current_user
-from app.models import db, Notification
+from app.models import db, Notification, Friend, User
 from datetime import datetime
 
 notification_routes = Blueprint('notifications', __name__)
@@ -9,12 +9,39 @@ notification_routes = Blueprint('notifications', __name__)
 @notification_routes.route('/')
 @login_required
 def get_user_notifications():
-    """
-    Get all notifications for current user
-    """
-    notifications = Notification.query.filter_by(recipient_id=current_user.id)\
-                                    .order_by(Notification.created_at.desc())\
-                                    .all()
+    """Get all notifications for current user"""
+    # Check for pending friend requests without notifications
+    pending_requests = Friend.query.filter_by(
+        friend_id=current_user.id,
+        status='pending'
+    ).all()
+
+    for req in pending_requests:
+        exists = Notification.query.filter_by(
+            sender_id=req.user_id,
+            recipient_id=current_user.id,
+            notification_type='friend_request'
+        ).first()
+        
+        if not exists:
+            requesting_user = User.query.get(req.user_id)
+            if requesting_user:
+                notification = Notification(
+                    sender_id=req.user_id,
+                    recipient_id=current_user.id,
+                    notification_type='friend_request',
+                    message=f"{requesting_user.username} sent you a friend request",
+                    created_at=req.created_at
+                )
+                db.session.add(notification)
+    
+    db.session.commit()
+
+    notifications = Notification.query.filter_by(
+        recipient_id=current_user.id
+    ).order_by(
+        Notification.created_at.desc()
+    ).all()
 
     unread_count = Notification.query.filter_by(
         recipient_id=current_user.id,

@@ -1,6 +1,6 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom'; // Added this import
+import { Navigate } from 'react-router-dom';
 import { getAllPosts, getFriendsPosts, thunkLikePost, thunkAddComment, thunkCreatePost, thunkDeletePost } from '../../redux/posts';
 import { getFriends } from '../../redux/friends';
 import FriendsSidebar from '../FriendsSidebar/FriendsSidebar';
@@ -12,13 +12,17 @@ function Dashboard() {
   const dispatch = useDispatch();
   const allPostsObj = useSelector(state => state.posts.posts);
   const friendsState = useSelector(state => state.friends);
-  const allPosts = Object.values(allPostsObj);
+  // Sort posts by creation date (newest first)
+  const allPosts = Object.values(allPostsObj).sort((a, b) => 
+    new Date(b.created_at) - new Date(a.created_at)
+  );
   const friends = Object.values(friendsState.friends || {});
   const [filterFriendsOnly, setFilterFriendsOnly] = useState(false);
   const [commentTexts, setCommentTexts] = useState({});
   const [showComments, setShowComments] = useState({});
   const [postContent, setPostContent] = useState('');
   const [postImage, setPostImage] = useState(null);
+  const [newPostAdded, setNewPostAdded] = useState(false);
 
   useEffect(() => {
     if (sessionUser) {
@@ -32,7 +36,8 @@ function Dashboard() {
     } else {
       dispatch(getAllPosts());
     }
-  }, [dispatch, filterFriendsOnly]);
+    setNewPostAdded(false);
+  }, [dispatch, filterFriendsOnly, newPostAdded]);
 
   const handleLike = (postId) => {
     dispatch(thunkLikePost(postId));
@@ -64,8 +69,7 @@ function Dashboard() {
       await dispatch(thunkCreatePost(postData));
       setPostContent('');
       setPostImage(null);
-      
-      dispatch(filterFriendsOnly ? getFriendsPosts() : getAllPosts());
+      setNewPostAdded(true); // Trigger refresh of posts
     } catch (error) {
       console.error('Error creating post:', error);
     }
@@ -107,7 +111,9 @@ function Dashboard() {
                 </UserLink>
               </div>
               <div>
-                <span className="post-time">10m ago</span>
+                <span className="post-time">
+                  {formatPostTime(post.created_at)}
+                </span>
                 {post.user?.id === sessionUser.id && (
                   <button 
                     className="delete-post-btn"
@@ -187,11 +193,27 @@ function Dashboard() {
             >
               {post.comments?.length ? `View all ${post.comments.length} comments` : 'View comments'}
             </div>
-            <div className="post-time-full">Posted 10 minutes ago</div>
+            <div className="post-time-full">
+              Posted {formatPostTime(post.created_at)}
+            </div>
           </div>
         ))}
       </div>
     );
+  };
+
+  // Helper function to format post time
+  const formatPostTime = (dateString) => {
+    if (!dateString) return 'recently';
+    
+    const now = new Date();
+    const postDate = new Date(dateString);
+    const diffInSeconds = Math.floor((now - postDate) / 1000);
+    
+    if (diffInSeconds < 60) return 'just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    return `${Math.floor(diffInSeconds / 86400)}d ago`;
   };
 
   if (!sessionUser) return <Navigate to="/" replace={true} />;

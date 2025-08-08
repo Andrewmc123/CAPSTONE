@@ -6,7 +6,7 @@ from flask_login import current_user
 class Friend(db.Model):
     __tablename__ = 'friends'
 
-    if environment == "production": 
+    if environment == "production":
         __table_args__ = (
             CheckConstraint("status IN ('friends', 'pending')", name="check_status_valid"),
             {'schema': SCHEMA}
@@ -23,7 +23,7 @@ class Friend(db.Model):
     friend = db.relationship('User', foreign_keys=[friend_id])
 
     def to_dict(self):
-        # Return the friend info that is NOT the current user
+        # Determine which user is not the current user
         if self.user_id == current_user.id:
             other_user = self.friend
         else:
@@ -36,11 +36,9 @@ class Friend(db.Model):
             'updated_at': self.updated_at.isoformat(),
             'friend': {
                 'id': other_user.id,
+                'username': other_user.username,
                 'firstname': other_user.firstname,
                 'lastname': other_user.lastname,
-                'username': other_user.username,
-                'email': other_user.email,
-                'profile_img': other_user.profile_img,
-                'isOnline': other_user.isOnline if hasattr(other_user, 'isOnline') else False
+                'profile_img': other_user.profile_img
             }
         }

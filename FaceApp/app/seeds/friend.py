@@ -6,7 +6,7 @@ def seed_friends():
     friend1 = Friend(
         user_id=1,
         friend_id=2,
-        status='accepted',
+        status='friends',
         created_at=datetime(2025, 7, 10, 14, 30),
         updated_at=datetime(2025, 7, 10, 14, 30)
     )
@@ -14,7 +14,7 @@ def seed_friends():
     friend2 = Friend(
         user_id=4,
         friend_id=5,
-        status='accepted',
+        status='friends',
         created_at=datetime(2025, 7, 11, 9, 15),
         updated_at=datetime(2025, 7, 11, 9, 15)
     )
@@ -22,7 +22,7 @@ def seed_friends():
     friend3 = Friend(
         user_id=3,
         friend_id=1,
-        status='accepted',
+        status='friends',
         created_at=datetime(2025, 7, 12, 18, 45),
         updated_at=datetime(2025, 7, 12, 18, 45)
     )
@@ -30,7 +30,7 @@ def seed_friends():
     friend4 = Friend(
         user_id=4,
         friend_id=6,
-        status='accepted',
+        status='friends',
         created_at=datetime(2025, 7, 13, 20, 0),
         updated_at=datetime(2025, 7, 13, 20, 0)
     )
@@ -38,7 +38,7 @@ def seed_friends():
     friend5 = Friend(
         user_id=2,
         friend_id=3,
-        status='accepted',
+        status='friends',
         created_at=datetime(2025, 7, 13, 20, 0),
         updated_at=datetime(2025, 7, 13, 20, 0)
     )
@@ -46,7 +46,7 @@ def seed_friends():
     friend6 = Friend(
         user_id=5,
         friend_id=6,
-        status='accepted',
+        status='friends',
         created_at=datetime(2025, 7, 13, 20, 0),
         updated_at=datetime(2025, 7, 13, 20, 0)
     )
@@ -54,7 +54,7 @@ def seed_friends():
     friend7 = Friend(
         user_id=1,
         friend_id=4,
-        status='accepted',
+        status='friends',
         created_at=datetime(2025, 7, 10, 20, 0),
         updated_at=datetime(2025, 7, 10, 20, 0)
     )
@@ -62,7 +62,7 @@ def seed_friends():
     friend8 = Friend(
         user_id=1,
         friend_id=5,
-        status='accepted',
+        status='friends',
         created_at=datetime(2025, 7, 11, 20, 0),
         updated_at=datetime(2025, 7, 11, 20, 0)
     )
@@ -70,7 +70,7 @@ def seed_friends():
     friend9 = Friend(
         user_id=6,
         friend_id=1,
-        status='accepted',
+        status='friends',
         created_at=datetime(2025, 7, 12, 20, 0),
         updated_at=datetime(2025, 7, 12, 20, 0)
     )

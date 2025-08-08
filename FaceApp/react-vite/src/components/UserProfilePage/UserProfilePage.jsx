@@ -34,7 +34,9 @@ export default function UserProfilePage() {
   // Calculate stats that will be displayed
   const postCount = userPosts.length;
   const likeCount = userPosts.reduce((total, post) => total + (post.like_count || 0), 0);
-  const friendCount = user?.friend_count || 0;
+  const friendCount = Object.values(friendsState.friends || {}).filter(friend => 
+  friend.status === 'friends'
+).length;
 
   // Memoized function to check friend status
   const checkFriendStatus = useCallback(() => {

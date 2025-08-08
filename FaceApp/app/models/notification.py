@@ -38,12 +38,11 @@ class Notification(db.Model):
         if self.post_id:
             return f"/posts/{self.post_id}"
         return "#"
-
-    def generate_message(self):
-        messages = {
-            'post_like': f"{self.sender.username} liked your post",
-            'post_comment': f"{self.sender.username} commented on your post",
-            'friend_request': f"{self.sender.username} sent you a friend request",
-            'friend_request_accepted': f"{self.sender.username} accepted your friend request"
-        }
-        return messages.get(self.notification_type, "New notification")
+def generate_message(self):
+    messages = {
+        'post_like': f"{self.sender.username} liked your post",
+        'post_comment': f"{self.sender.username} commented on your post",
+        'friend_request': f"{self.sender.username} wants to be your friend",
+        'friend_request_accepted': f"{self.sender.username} accepted your friend request"
+    }
+    return messages.get(self.notification_type, "New notification")

@@ -75,3 +75,41 @@
   padding: 40px;
   color: #8e8e8e;
 }
+
+.notification-content-wrapper {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.friend-request-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.accept-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.decline-btn {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.accept-btn:hover {
+  background-color: #45a049;
+}
+
+.decline-btn:hover {
+  background-color: #d32f2f;
+}
