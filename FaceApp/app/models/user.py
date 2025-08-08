@@ -2,7 +2,6 @@ from .db import db, environment, SCHEMA, add_prefix_for_prod
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from datetime import datetime
-from sqlalchemy.orm import foreign
 
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
@@ -20,24 +19,25 @@ class User(db.Model, UserMixin):
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
+    # Existing relationships
     posts = db.relationship('Post', back_populates='user', cascade="all, delete-orphan")
     likes = db.relationship('Like', back_populates='user', cascade='all, delete')
     comments = db.relationship('Comment', back_populates='user', cascade='all, delete-orphan')
 
-    # Updated friend relationships
-    sent_requests = db.relationship(
-    'Friend',
-    foreign_keys='Friend.requester_id',
-    back_populates='requester',
-    cascade='all, delete-orphan'
-)
+    # Updated friend relationships (using user_id/friend_id instead of requester_id/receiver_id)
+    friends_sent = db.relationship(
+        'Friend',
+        foreign_keys='Friend.user_id',
+        back_populates='user',
+        cascade='all, delete-orphan'
+    )
 
-    received_requests = db.relationship(
-    'Friend',
-    foreign_keys='Friend.receiver_id',
-    back_populates='receiver',
-    cascade='all, delete-orphan'
-)
+    friends_received = db.relationship(
+        'Friend',
+        foreign_keys='Friend.friend_id',
+        back_populates='friend',
+        cascade='all, delete-orphan'
+    )
 
     @property
     def password(self):
@@ -59,5 +59,8 @@ class User(db.Model, UserMixin):
             'lastname': self.lastname,
             'profile_img': self.profile_img,
             'created_at': self.created_at,
-            'updated_at': self.updated_at
+            'updated_at': self.updated_at,
+            # Optional: include friend counts if needed
+            'friends_count': len([f for f in self.friends_sent + self.friends_received 
+                                if f.status == 'accepted'])
         }

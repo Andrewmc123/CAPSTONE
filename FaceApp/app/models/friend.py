@@ -1,101 +1,46 @@
 from .db import db, environment, SCHEMA, add_prefix_for_prod
+from sqlalchemy import CheckConstraint
 from datetime import datetime
-from enum import Enum
-
-class FriendStatus(Enum):
-    PENDING = 'pending'
-    ACCEPTED = 'accepted'
-    DECLINED = 'declined'
-    BLOCKED = 'blocked'
+from flask_login import current_user
 
 class Friend(db.Model):
     __tablename__ = 'friends'
 
-    if environment == "production":
+    if environment == "production": 
         __table_args__ = (
-            {'schema': SCHEMA},
-            db.CheckConstraint(
-                "status IN ('pending', 'accepted', 'declined', 'blocked')",
-                name='check_status_values'
-            ),
-            db.CheckConstraint(
-                "pending IN (TRUE, FALSE)",
-                name='check_pending_boolean'
-            ),
-            db.UniqueConstraint(
-                'requester_id', 'receiver_id',
-                name='unique_friendship'
-            )
-        )
-    else:
-        __table_args__ = (
-            db.CheckConstraint(
-                "status IN ('pending', 'accepted', 'declined', 'blocked')",
-                name='check_status_values'
-            ),
-            db.CheckConstraint(
-                "pending IN (TRUE, FALSE)",
-                name='check_pending_boolean'
-            ),
-            db.UniqueConstraint(
-                'requester_id', 'receiver_id',
-                name='unique_friendship'
-            )
+            CheckConstraint("status IN ('friends', 'pending')", name="check_status_valid"),
+            {'schema': SCHEMA}
         )
 
     id = db.Column(db.Integer, primary_key=True)
-    requester_id = db.Column(
-        db.Integer, 
-        db.ForeignKey(add_prefix_for_prod('users.id')), 
-        nullable=False
-    )
-    receiver_id = db.Column(
-        db.Integer, 
-        db.ForeignKey(add_prefix_for_prod('users.id')), 
-        nullable=False
-    )
-    status = db.Column(
-        db.Enum(FriendStatus),
-        nullable=False,
-        default=FriendStatus.PENDING
-    )
-    pending = db.Column(
-        db.Boolean,
-        nullable=False,
-        default=True,
-        server_default='true'
-    )
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey(add_prefix_for_prod('users.id')), nullable=False)
+    friend_id = db.Column(db.Integer, db.ForeignKey(add_prefix_for_prod('users.id')), nullable=False)
+    status = db.Column(db.String, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
-    requester = db.relationship(
-        'User',
-        foreign_keys=[requester_id],
-        back_populates='sent_requests'
-    )
-
-    receiver = db.relationship(
-        'User',
-        foreign_keys=[receiver_id],
-        back_populates='received_requests'
-    )
-
-    def __init__(self, **kwargs):
-        super(Friend, self).__init__(**kwargs)
-        if isinstance(self.status, str):
-            self.status = FriendStatus(self.status)
-        if 'pending' not in kwargs:
-            self.pending = self.status == FriendStatus.PENDING
+    user = db.relationship('User', foreign_keys=[user_id])
+    friend = db.relationship('User', foreign_keys=[friend_id])
 
     def to_dict(self):
+        # Return the friend info that is NOT the current user
+        if self.user_id == current_user.id:
+            other_user = self.friend
+        else:
+            other_user = self.user
+
         return {
             'id': self.id,
-            'requester_id': self.requester_id,
-            'receiver_id': self.receiver_id,
-            'status': self.status.value if self.status else None,
-            'pending': self.pending,
+            'status': self.status,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat(),
-            'requester': self.requester.to_dict() if self.requester else None,
-            'receiver': self.receiver.to_dict() if self.receiver else None
+            'friend': {
+                'id': other_user.id,
+                'firstname': other_user.firstname,
+                'lastname': other_user.lastname,
+                'username': other_user.username,
+                'email': other_user.email,
+                'profile_img': other_user.profile_img,
+                'isOnline': other_user.isOnline if hasattr(other_user, 'isOnline') else False
+            }
         }

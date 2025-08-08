@@ -8,6 +8,7 @@
   font-family: 'Arial', sans-serif;
 }
 
+/* Header Styles */
 .welcome-header h1 {
   font-size: 26px;
   margin-bottom: 20px;
@@ -15,6 +16,7 @@
   text-shadow: 0 0 12px #32ff32;
 }
 
+/* Filter Bar */
 .filter-bar {
   margin-bottom: 20px;
   font-size: 16px;
@@ -26,6 +28,7 @@
   accent-color: #32ff32;
 }
 
+/* Post Form */
 .post-form {
   background: #1a1a1d;
   border-radius: 12px;
@@ -34,15 +37,8 @@
   box-shadow: 0 0 10px rgba(50, 255, 50, 0.3);
 }
 
-.post-form h3 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  font-size: 18px;
-  color: #ff8c00;
-}
-
 .post-textarea {
-  width: 90%;
+  width: 100%;
   height: 80px;
   border: 1px solid #ff8c00;
   background: #0e0e10;
@@ -65,7 +61,7 @@
   border-radius: 6px;
   font-weight: bold;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  transition: all 0.2s;
 }
 
 .add-photo-btn {
@@ -83,64 +79,164 @@
   box-shadow: 0 0 10px #32ff32;
 }
 
+/* Posts Feed */
 .posts-container {
   margin-top: 30px;
 }
 
-.posts-container h1 {
-  color: #ce8124ff;
-  text-shadow: 0 0 10px #32ff32;
-  margin-bottom: 15px;
-}
-
-.posts-list {
+.posts-column {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 25px;
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
 }
 
-.post-item {
+.instagram-post {
   background: #1a1a1d;
   border-radius: 12px;
-  padding: 15px;
-  box-shadow: 0 0 10px rgba(255, 140, 0, 0.4);
+  padding-bottom: 15px;
+  box-shadow: 0 0 15px rgba(255, 140, 0, 0.3);
+  border: 1px solid #2a2a2e;
 }
 
 .post-header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 10px;
-  font-size: 14px;
-  color: #ccc;
+  align-items: center;
+  padding: 15px;
 }
 
-.post-author {
+.post-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.post-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #2a2a2e;
+  border: 2px solid #32ff32;
+  box-shadow: 0 0 8px rgba(50, 255, 50, 0.5);
+}
+
+.post-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ff8c00;
+  font-weight: bold;
+  font-size: 18px;
+  text-shadow: 0 0 8px rgba(255, 140, 0, 0.5);
+}
+
+.post-username {
   font-weight: bold;
   color: #32ff32;
-  text-shadow: 0 0 6px #32ff32;
+  text-shadow: 0 0 6px rgba(50, 255, 50, 0.5);
 }
 
-.post-location {
+.post-time {
   color: #888;
+  font-size: 12px;
   font-style: italic;
 }
 
-.post-content {
-  margin: 10px 0;
-  line-height: 1.5;
-  color: #f0f0f0;
+.post-image-container {
+  width: 100%;
+  background: #121214;
 }
 
-.post-footer {
+.post-image {
+  width: 100%;
+  max-height: 600px;
+  object-fit: cover;
+  border-top: 1px solid #2a2a2e;
+  border-bottom: 1px solid #2a2a2e;
+}
+
+.post-actions {
   display: flex;
-  justify-content: flex-end;
+  gap: 20px;
+  padding: 5px 15px 10px;
+  border-bottom: 1px solid #2a2a2e;
+  margin-bottom: 10px;
+}
+
+.post-action-btn {
+  background: none;
+  border: none;
+  color: #f8f8f8;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.post-action-btn:hover {
+  color: #ff8c00;
+  text-shadow: 0 0 8px rgba(255, 140, 0, 0.5);
 }
 
 .post-likes {
+  font-weight: bold;
+  padding: 10px 15px 5px;
   color: #ff8c00;
-  font-size: 14px;
+  text-shadow: 0 0 5px rgba(255, 140, 0, 0.3);
 }
 
+.post-caption {
+  padding: 10px 15px 5px;
+  line-height: 1.4;
+}
+
+.caption-username {
+  font-weight: bold;
+  margin-right: 8px;
+  color: #32ff32;
+  text-shadow: 0 0 5px rgba(50, 255, 50, 0.3);
+}
+
+.post-comments {
+  color: #888;
+  padding: 0 15px 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.post-comments:hover {
+  color: #32ff32;
+}
+
+.post-time-full {
+  color: #777;
+  font-size: 11px;
+  padding: 0 15px;
+  font-style: italic;
+}
+
+.no-posts {
+  text-align: center;
+  padding: 40px;
+  color: #ff8c00;
+  background: #1a1a1d;
+  border-radius: 12px;
+  border: 1px dashed #ff8c00;
+  box-shadow: 0 0 15px rgba(255, 140, 0, 0.3);
+}
+
+/* Navigation */
 .bottom-nav {
   position: fixed;
   bottom: 0;
@@ -161,7 +257,7 @@
   font-size: 15px;
   color: #ff8c00;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
 }
 
 .nav-btn:hover {
@@ -175,59 +271,46 @@
   text-shadow: 0 0 10px #32ff32;
 }
 
-.post-image {
-  width: 100%;
-  max-height: 300px;
-  object-fit: cover;
-  border-radius: 10px;
-  margin-top: 10px;
-  border: 2px solid #32ff32;
-}
-
-.top-nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 60px; /* or your nav height */
-  background: #0e0e10;
-  display: flex;
-  align-items: center;
-  padding: 0 20px;
-  z-index: 1100; /* higher than sidebar */
-  box-shadow: 0 2px 6px rgba(50, 255, 50, 0.4);
-  color: #ff8c00;
-}
-
-/* Make your existing nav-container fixed at top and overlap sidebar */
-.top-nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  min-height: 60px;
-  z-index: 1100; /* higher than sidebar */
-  box-shadow: 0 2px 6px rgba(50, 255, 50, 0.4);
-}
-
-/* Fix FriendsSidebar position, start below top nav */
+/* Sidebar */
 .friends-sidebar {
   position: fixed;
-  top: 96px; /* height of top nav */
+  top: 96px;
   right: 0;
   width: 190px;
-  margin-right:23px; 
-  height: calc(100vh - 60px); /* full height minus top nav */
-  background-color: #323235ff; /* keep your existing background */
+  margin-right: 23px;
+  height: calc(100vh - 60px);
+  background-color: #323235;
   box-shadow: -4px 0 12px rgba(241, 234, 234, 0.2);
-  z-index: 1000; /* below top nav */
+  z-index: 1000;
   overflow-y: auto;
+  border-radius: 12px 0 0 12px;
 }
 
-/* Add right padding to dashboard content so it doesn't go under sidebar */
+/* Layout Adjustments */
 .dashboard-content {
-  padding-top: 60px; /* space for fixed top nav */
-  padding-right: 240px; /* space for sidebar */
+  padding-top: 60px;
+  padding-right: 240px;
   overflow-y: auto;
   height: calc(100vh - 60px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-content {
+    padding-right: 20px;
+  }
+  
+  .friends-sidebar {
+    display: none;
+  }
+  
+  .posts-column {
+    max-width: 100%;
+  }
+  
+  .instagram-post {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
 }

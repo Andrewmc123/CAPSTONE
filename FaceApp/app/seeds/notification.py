@@ -1,36 +1,66 @@
 from app.models import db, Notification, environment, SCHEMA
 from sqlalchemy.sql import text
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def seed_notifications():
-    notif1 = Notification(
-        sender_id=2,
-        recipient_id=1,
-        type="comment",
-        message="Jay commented on your post 👀",
-        is_read=False,
-        created_at=datetime(2025, 7, 31, 14, 15)
-    )
-
-    notif2 = Notification(
-        sender_id=3,
-        recipient_id=1,
-        type="like",
-        message="Alex liked your post 💯",
-        is_read=False,
-        created_at=datetime(2025, 7, 31, 14, 16)
-    )
-
-    notif3 = Notification(
-        sender_id=4,
-        recipient_id=1,
-        type="friend_request",
-        message="Luna sent you a friend request ",
-        is_read=False,
-        created_at=datetime(2025, 7, 30, 20, 45)
-    )
-
-    db.session.add_all([notif1, notif2, notif3])
+    # Clear existing notifications
+    undo_notifications()
+    
+    notifications = [
+        # Post likes
+        Notification(
+            sender_id=2,
+            recipient_id=1,
+            notification_type="post_like",
+            post_id=1,
+            created_at=datetime.utcnow() - timedelta(minutes=15)
+        ),
+        Notification(
+            sender_id=3,
+            recipient_id=1,
+            notification_type="post_like",
+            post_id=1,
+            created_at=datetime.utcnow() - timedelta(hours=2)
+        ),
+        
+        # Comments
+        Notification(
+            sender_id=4,
+            recipient_id=1,
+            notification_type="post_comment",
+            post_id=2,
+            comment_id=1,
+            created_at=datetime.utcnow() - timedelta(hours=1)
+        ),
+        
+        # Comment replies
+        Notification(
+            sender_id=5,
+            recipient_id=1,
+            notification_type="comment_reply",
+            post_id=3,
+            comment_id=2,
+            created_at=datetime.utcnow() - timedelta(minutes=30)
+        ),
+        
+        # Friend requests
+        Notification(
+            sender_id=6,
+            recipient_id=1,
+            notification_type="friend_request",
+            created_at=datetime.utcnow() - timedelta(days=1)
+        ),
+        
+        # Accepted requests
+        Notification(
+            sender_id=7,
+            recipient_id=1,
+            notification_type="friend_request_accepted",
+            created_at=datetime.utcnow() - timedelta(days=2)
+        )
+    ]
+    
+    db.session.add_all(notifications)
     db.session.commit()
 
 def undo_notifications():

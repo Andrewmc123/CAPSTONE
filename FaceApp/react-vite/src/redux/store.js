@@ -1,3 +1,4 @@
+// store.js
 import {
   legacy_createStore as createStore,
   applyMiddleware,
@@ -6,14 +7,15 @@ import {
 } from "redux";
 import thunk from "redux-thunk";
 import sessionReducer from "./session";
-
 import postReducer from "./posts";
 import FriendsReducer from "./friends";
+import notificationsReducer from "./notification";
 
 const rootReducer = combineReducers({
   session: sessionReducer,
   posts: postReducer,
   friends: FriendsReducer,
+  notifications: notificationsReducer,
 });
 
 let enhancer;

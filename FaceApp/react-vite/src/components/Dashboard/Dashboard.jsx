@@ -1,22 +1,28 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { useEffect, useState } from 'react';
-import { Navigate, NavLink } from 'react-router-dom';
-import { getAllPosts, getFriendsPosts } from '../../redux/posts';
+import { Navigate } from 'react-router-dom'; // Added this import
+import { getAllPosts, getFriendsPosts, thunkLikePost, thunkAddComment, thunkCreatePost, thunkDeletePost } from '../../redux/posts';
 import { getFriends } from '../../redux/friends';
 import FriendsSidebar from '../FriendsSidebar/FriendsSidebar';
+import UserLink from '../UserLink/UserLink';
 import './Dashboard.css';
 
 function Dashboard() {
   const sessionUser = useSelector(state => state.session.user);
   const dispatch = useDispatch();
-  const allPostsObj = useSelector(state => state.posts);
+  const allPostsObj = useSelector(state => state.posts.posts);
+  const friendsState = useSelector(state => state.friends);
   const allPosts = Object.values(allPostsObj);
-  const friends = useSelector(state => state.friends || {});
+  const friends = Object.values(friendsState.friends || {});
   const [filterFriendsOnly, setFilterFriendsOnly] = useState(false);
+  const [commentTexts, setCommentTexts] = useState({});
+  const [showComments, setShowComments] = useState({});
+  const [postContent, setPostContent] = useState('');
+  const [postImage, setPostImage] = useState(null);
 
   useEffect(() => {
     if (sessionUser) {
-      dispatch(getFriends(sessionUser.id));
+      dispatch(getFriends());
     }
   }, [dispatch, sessionUser]);
 
@@ -28,29 +34,163 @@ function Dashboard() {
     }
   }, [dispatch, filterFriendsOnly]);
 
+  const handleLike = (postId) => {
+    dispatch(thunkLikePost(postId));
+  };
+
+  const handleCommentSubmit = (postId) => {
+    if (commentTexts[postId]?.trim()) {
+      dispatch(thunkAddComment(postId, commentTexts[postId]));
+      setCommentTexts(prev => ({ ...prev, [postId]: '' }));
+    }
+  };
+
+  const toggleComments = (postId) => {
+    setShowComments(prev => ({
+      ...prev,
+      [postId]: !prev[postId]
+    }));
+  };
+
+  const handlePostSubmit = async () => {
+    if (!postContent.trim()) return;
+    
+    try {
+      const postData = { body: postContent };
+      if (postImage) {
+        postData.image_url = postImage;
+      }
+      
+      await dispatch(thunkCreatePost(postData));
+      setPostContent('');
+      setPostImage(null);
+      
+      dispatch(filterFriendsOnly ? getFriendsPosts() : getAllPosts());
+    } catch (error) {
+      console.error('Error creating post:', error);
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    if (window.confirm('Are you sure you want to delete this post?')) {
+      try {
+        await dispatch(thunkDeletePost(postId));
+        dispatch(filterFriendsOnly ? getFriendsPosts() : getAllPosts());
+      } catch (error) {
+        console.error('Error deleting post:', error);
+      }
+    }
+  };
+
   const PostList = () => {
     if (!allPosts || allPosts.length === 0) {
       return <div className="no-posts">No posts to display</div>;
     }
 
     return (
-      <ul className="posts-list">
+      <div className="posts-column">
         {allPosts.map((post) => (
-          <li key={post.id} className="post-item">
+          <div key={post.id} className="instagram-post">
             <div className="post-header">
-              <span className="post-author">{post.user?.username || 'Unknown'}</span>
-              <span className="post-location">Downtown • 10 minutes ago</span>
+              <div className="post-user">
+                <div className="post-avatar">
+                  {post.user?.profile_img ? (
+                    <img src={post.user.profile_img} alt={post.user.username} />
+                  ) : (
+                    <div className="avatar-fallback">
+                      {post.user?.username?.[0] || 'U'}
+                    </div>
+                  )}
+                </div>
+                <UserLink user={post.user}>
+                  <span className="post-username">{post.user?.username || 'Unknown'}</span>
+                </UserLink>
+              </div>
+              <div>
+                <span className="post-time">10m ago</span>
+                {post.user?.id === sessionUser.id && (
+                  <button 
+                    className="delete-post-btn"
+                    onClick={() => handleDeletePost(post.id)}
+                  >
+                    🗑️
+                  </button>
+                )}
+              </div>
             </div>
-            <p className="post-content">{post.body}</p>
+            
             {post.image_url && (
-              <img src={post.image_url} alt="Post content" className="post-image" />
+              <div className="post-image-container">
+                <img src={post.image_url} alt="Post content" className="post-image" />
+              </div>
             )}
-            <div className="post-footer">
-              <span className="post-likes">{post.like_count || 0}</span>
+            
+            <div className="post-likes">{post.like_count || 0} likes</div>
+            
+            <div className="post-actions">
+              <button 
+                className={`post-action-btn ${post.liked_by_user ? 'liked' : ''}`}
+                onClick={() => handleLike(post.id)}
+              >
+                <i className="icon-heart">
+                  {post.liked_by_user ? '❤️' : '♡'}
+                </i>
+              </button>
+              <button 
+                className="post-action-btn"
+                onClick={() => toggleComments(post.id)}
+              >
+                <i className="icon-comment">🗨</i>
+              </button>
+              <button className="post-action-btn">
+                <i className="icon-share">↗</i>
+              </button>
             </div>
-          </li>
+            
+            <div className="post-caption">
+              <span className="caption-username">{post.user?.username || ''}</span>
+              <span className="caption-text">{post.body}</span>
+            </div>
+
+            {showComments[post.id] && (
+              <div className="comments-section">
+                {post.comments?.map((comment, index) => (
+                  <div key={index} className="comment">
+                    <span className="comment-username">{comment.user.username}</span>
+                    <span className="comment-text">{comment.text}</span>
+                  </div>
+                ))}
+                <div className="add-comment">
+                  <input
+                    type="text"
+                    placeholder="Add a comment..."
+                    value={commentTexts[post.id] || ''}
+                    onChange={(e) => setCommentTexts(prev => ({
+                      ...prev,
+                      [post.id]: e.target.value
+                    }))}
+                    onKeyPress={(e) => e.key === 'Enter' && handleCommentSubmit(post.id)}
+                  />
+                  <button 
+                    className="comment-submit-btn"
+                    onClick={() => handleCommentSubmit(post.id)}
+                  >
+                    Post
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div 
+              className="post-comments" 
+              onClick={() => toggleComments(post.id)}
+            >
+              {post.comments?.length ? `View all ${post.comments.length} comments` : 'View comments'}
+            </div>
+            <div className="post-time-full">Posted 10 minutes ago</div>
+          </div>
         ))}
-      </ul>
+      </div>
     );
   };
 
@@ -59,26 +199,60 @@ function Dashboard() {
   return (
     <div className="dashboard-container">
       <div className="dashboard-content">
-        <div className="welcome-header">
-          <h1>Welcome, {sessionUser.firstname}</h1>
-        </div>
-
-        <div className="filter-bar">
-          <label>
-            <input
-              type="checkbox"
-              checked={filterFriendsOnly}
-              onChange={(e) => setFilterFriendsOnly(e.target.checked)}
-            />
-            Show only me & my friends posts
-          </label>
+        <div className="dashboard-header-container">
+          <div className="dashboard-header">
+            <h1>Welcome back, <span className="username-glow">{sessionUser.firstname}</span></h1>
+            <div className="header-divider"></div>
+            <div className="filter-bar-container">
+              <div className="filter-bar">
+                <label className="filter-toggle">
+                  <input
+                    type="checkbox"
+                    checked={filterFriendsOnly}
+                    onChange={(e) => setFilterFriendsOnly(e.target.checked)}
+                  />
+                  <span className="toggle-slider"></span>
+                  <span className="filter-text">Friends Only</span>
+                </label>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="post-form">
-          <textarea placeholder="What's happening in your area?" className="post-textarea"></textarea>
+          <textarea 
+            placeholder="What's happening in your area?" 
+            className="post-textarea"
+            rows="3"
+            value={postContent}
+            onChange={(e) => setPostContent(e.target.value)}
+          />
+          {postImage && (
+            <div className="post-image-preview">
+              <img src={postImage} alt="Preview" />
+              <button onClick={() => setPostImage(null)}>Remove</button>
+            </div>
+          )}
           <div className="post-actions">
-            <button className="add-photo-btn">Add Photo</button>
-            <button className="post-update-btn">Post</button>
+            <label className="add-photo-btn">
+              <i className="icon-camera">📷</i> Photo
+              <input 
+                type="file" 
+                style={{ display: 'none' }}
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) setPostImage(URL.createObjectURL(file));
+                }}
+              />
+            </label>
+            <button 
+              className="post-update-btn"
+              onClick={handlePostSubmit}
+              disabled={!postContent.trim()}
+            >
+              Post Update
+            </button>
           </div>
         </div>
 
@@ -88,26 +262,9 @@ function Dashboard() {
       </div>
 
       <FriendsSidebar 
-        friends={Object.values(friends).filter(f => 
-          f.requester_id === sessionUser.id || f.receiver_id === sessionUser.id
-        )} 
+        friends={friends} 
         sessionUser={sessionUser} 
       />
-
-      <div className="bottom-nav">
-        <NavLink to="/dashboard" className="nav-btn" activeClassName="active">
-          Home
-        </NavLink>
-        <NavLink to="/camera" className="nav-btn" activeClassName="active">
-          Camera
-        </NavLink>
-        <NavLink to="/notifications" className="nav-btn" activeClassName="active">
-          Notifications
-        </NavLink>
-        <NavLink to={`/users/${sessionUser.id}`} className="nav-btn" activeClassName="active">
-          Profile
-        </NavLink>
-      </div>
     </div>
   );
 }

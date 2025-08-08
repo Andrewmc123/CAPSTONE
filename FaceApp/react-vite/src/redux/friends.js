@@ -1,50 +1,122 @@
 // frontend/src/redux/friends.js
 
-const LOAD_FRIENDS = 'friends/loadFriends';
+const GET_FRIENDS = 'friends/GET_FRIENDS';
+const GET_PENDING_FRIENDS = 'friends/GET_PENDING_FRIENDS';
 
-// This is doing: creating the action to store friends in Redux
-const loadFriends = (friends, currentUserId) => ({
-  type: LOAD_FRIENDS,
-  friends,
-  currentUserId
+const loadFriends = (friends) => ({ 
+    type: GET_FRIENDS, 
+    friends 
 });
 
-// This is doing: fetching friends from backend and dispatching the action
-// redux/friends.js
+const loadPending = (pending) => ({ 
+    type: GET_PENDING_FRIENDS, 
+    pending 
+});
+
+// Get All Friends
 export const getFriends = () => async (dispatch) => {
-  const res = await fetch('/api/friends/', {
-    method: 'GET',
-    credentials: 'include' // ✅ this ensures cookie/session is sent
+  const res = await fetch('/api/friends/');
+  if (res.ok) {
+    const data = await res.json();
+    dispatch(loadFriends(data.friends));
+  }
+};
+
+// Get All Pending Friends
+export const getPendingFriends = () => async (dispatch) => {
+  const res = await fetch('/api/friends/pending');
+  if (res.ok) {
+    const data = await res.json();
+    dispatch(loadPending(data.pending));
+  }
+};
+
+// Accept a Pending Friend Request
+export const acceptFriendRequest = (friendId) => async (dispatch) => {
+  const res = await fetch(`/api/friends/accept/${friendId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' }
   });
 
   if (res.ok) {
+    dispatch(getPendingFriends());
+    dispatch(getFriends());
+    return true;
+  }
+  return false;
+};
+
+// Decline a Pending Friend Request
+export const declineFriendRequest = (friendId) => async (dispatch) => {
+  const res = await fetch(`/api/friends/decline/${friendId}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' }
+  });
+
+  if (res.ok) {
+    dispatch(getPendingFriends());
+    return true;
+  }
+  return false;
+};
+
+// Add a Friend
+export const sendFriendRequest = (friendId) => async (dispatch) => {
+  const res = await fetch(`/api/friends/add`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ friendId }),
+  });
+
+  if (res.ok) {
+    dispatch(getPendingFriends());
+    return true;
+  } else {
     const data = await res.json();
-    dispatch(loadFriends(data.accepted));
+    return data.message || "Could not send request";
   }
 };
 
+// Remove a Friend
+export const removeFriend = (friendId) => async (dispatch) => {
+  const res = await fetch(`/api/friends/delete/${friendId}`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+  });
 
-const initialState = {};
+  if (res.ok) {
+    dispatch(getFriends());
+    return true;
+  } else {
+    const data = await res.json();
+    return data.message || "Could not remove friend";
+  }
+};
 
-// This is doing: reducer logic to process the loaded friends and store them by user ID
-const friendsReducer = (state = initialState, action) => {
+const initialState = {
+  friends: {},
+  pending: {}
+};
+
+export default function friendsReducer(state = initialState, action) {
   switch (action.type) {
-    case LOAD_FRIENDS: {
-      const newState = {};
-      action.friends.forEach(friend => {
-        // Store both requester and receiver with proper structure
-        newState[friend.id] = {
-          ...friend,
-          requester: friend.requester,
-          receiver: friend.receiver,
-          status: friend.status
-        };
+    case GET_FRIENDS: {
+      const newFriends = {};
+      action.friends.forEach((friend) => {
+        newFriends[friend.id] = friend;
       });
-      return newState;
+      return { ...state, friends: newFriends };
     }
+
+    case GET_PENDING_FRIENDS: {
+      const newPending = {};
+      action.pending.forEach((friend) => {
+        newPending[friend.id] = friend;
+      });
+      return { ...state, pending: newPending };
+    }
+
     default:
       return state;
   }
-};
-
-export default friendsReducer;
+}

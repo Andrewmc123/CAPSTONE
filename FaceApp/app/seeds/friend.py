@@ -4,96 +4,96 @@ from datetime import datetime
 
 def seed_friends():
     friend1 = Friend(
-        requester_id=1,
-        receiver_id=2,
+        user_id=1,
+        friend_id=2,
         status='accepted',
         created_at=datetime(2025, 7, 10, 14, 30),
         updated_at=datetime(2025, 7, 10, 14, 30)
     )
 
     friend2 = Friend(
-        requester_id=4,
-        receiver_id=5,
+        user_id=4,
+        friend_id=5,
         status='accepted',
         created_at=datetime(2025, 7, 11, 9, 15),
         updated_at=datetime(2025, 7, 11, 9, 15)
     )
 
     friend3 = Friend(
-        requester_id=3,
-        receiver_id=1,
+        user_id=3,
+        friend_id=1,
         status='accepted',
         created_at=datetime(2025, 7, 12, 18, 45),
         updated_at=datetime(2025, 7, 12, 18, 45)
     )
 
     friend4 = Friend(
-        requester_id=4,
-        receiver_id=6,
+        user_id=4,
+        friend_id=6,
         status='accepted',
         created_at=datetime(2025, 7, 13, 20, 0),
         updated_at=datetime(2025, 7, 13, 20, 0)
     )
 
     friend5 = Friend(
-        requester_id=2,
-        receiver_id=3,
+        user_id=2,
+        friend_id=3,
         status='accepted',
         created_at=datetime(2025, 7, 13, 20, 0),
         updated_at=datetime(2025, 7, 13, 20, 0)
     )
 
     friend6 = Friend(
-        requester_id=5,
-        receiver_id=6,
+        user_id=5,
+        friend_id=6,
         status='accepted',
         created_at=datetime(2025, 7, 13, 20, 0),
         updated_at=datetime(2025, 7, 13, 20, 0)
     )
 
     friend7 = Friend(
-        requester_id=1,
-        receiver_id=4,
+        user_id=1,
+        friend_id=4,
         status='accepted',
         created_at=datetime(2025, 7, 10, 20, 0),
         updated_at=datetime(2025, 7, 10, 20, 0)
     )
 
     friend8 = Friend(
-        requester_id=1,
-        receiver_id=5,
+        user_id=1,
+        friend_id=5,
         status='accepted',
         created_at=datetime(2025, 7, 11, 20, 0),
         updated_at=datetime(2025, 7, 11, 20, 0)
     )
 
     friend9 = Friend(
-        requester_id=6,
-        receiver_id=1,
+        user_id=6,
+        friend_id=1,
         status='accepted',
         created_at=datetime(2025, 7, 12, 20, 0),
         updated_at=datetime(2025, 7, 12, 20, 0)
     )
 
     friend10 = Friend(
-        requester_id=7,
-        receiver_id=1,
+        user_id=7,
+        friend_id=1,
         status='pending',
         created_at=datetime(2025, 7, 12, 20, 0),
         updated_at=datetime(2025, 7, 12, 20, 0)
     )
 
     friend11 = Friend(
-        requester_id=8,
-        receiver_id=1,
+        user_id=8,
+        friend_id=1,
         status='pending',
         created_at=datetime(2025, 7, 12, 20, 0),
         updated_at=datetime(2025, 7, 12, 20, 0)
     )
 
     friend12 = Friend(
-        requester_id=9,
-        receiver_id=1,
+        user_id=9,
+        friend_id=1,
         status='pending',
         created_at=datetime(2025, 7, 12, 20, 0),
         updated_at=datetime(2025, 7, 12, 20, 0)

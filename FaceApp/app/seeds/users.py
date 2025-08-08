@@ -6,9 +6,9 @@ from sqlalchemy.sql import text
 def seed_users():
     users = [
         User(username="demo", email="demo@aa.io", password="password", firstname="Demo", lastname="User"),
-        User(username="skyqueen99", email="sky@aa.io", password="password", firstname="Sky", lastname="Queen"),
+        User(username="queenShoy99", email="sho@aa.io", password="password", firstname="Shoy", lastname="Queen"),
         User(username="astro_boi", email="astro@aa.io", password="password", firstname="Astro", lastname="Boi"),
-        User(username="munchygirl", email="munchy@aa.io", password="password", firstname="Munchy", lastname="Girl"),
+        User(username="John_Rangers21", email="jr21@aa.io", password="password", firstname="John", lastname="Rangers"),
         User(username="nightcrawler", email="crawl@aa.io", password="password", firstname="Night", lastname="Crawler"),
         User(username="pixiepop", email="pixie@aa.io", password="password", firstname="Pixie", lastname="Pop"),
         User(username="fitking", email="fit@aa.io", password="password", firstname="Fit", lastname="King"),

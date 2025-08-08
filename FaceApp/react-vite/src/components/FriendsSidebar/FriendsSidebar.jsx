@@ -1,78 +1,64 @@
-import { useState } from 'react';
-import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { FaChevronDown, FaUserFriends } from 'react-icons/fa';
 import './FriendsSidebar.css';
-import Friend from '../Friend/Friend'; 
 
-export default function FriendsSidebar({ friends, sessionUser }) {
-  const [showOnline, setShowOnline] = useState(true);
-  const [showOffline, setShowOffline] = useState(true);
+export default function FriendsSidebar() {
+  const [isExpanded, setIsExpanded] = useState(true);
+  
+  const friendsState = useSelector(state => state.friends);
+  const friends = Object.values(friendsState.friends || {});
 
-  const allFriends = Object.values(friends);
+  // Auto-collapse on mobile
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setIsExpanded(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Call once initially
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
-  // Simulate online status for all friends if no real user logged in or demo user
-  const isDemoOrLoggedOut = !sessionUser || sessionUser.username === 'demo';
+  return (
+    <div className={`friends-sidebar ${isExpanded ? 'expanded' : ''}`}>
+      <div 
+        className="friends-header-toggle" 
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <div className="friends-toggle-content">
+          <FaUserFriends className="friends-icon" />
+          <span>Friends ({friends.length})</span>
+        </div>
+        <FaChevronDown className={`toggle-icon ${isExpanded ? 'rotated' : ''}`} />
+      </div>
 
-  const onlineFriends = isDemoOrLoggedOut
-    ? allFriends.filter(() => Math.random() > 0.5)
-    : allFriends.filter(f => f.isOnline);
-
-  const offlineFriends = isDemoOrLoggedOut
-    ? allFriends.filter(() => Math.random() <= 0.5)
-    : allFriends.filter(f => !f.isOnline);
-
-  if (isDemoOrLoggedOut) {
-    // Show all friends together, no toggles
-    return (
-      <div className="friends-sidebar">
-        <div className="friends-section">
-          <h3>👥 Friends</h3>
-          {allFriends.length === 0 && <p>No friends to show</p>}
-          <ul>
-            {allFriends.map(friend => (
-              <li key={friend.id}>{friend.username}</li>
-            ))}
+      {isExpanded && (
+        <div className="friends-content">
+          <ul className="friends-list">
+            {friends.length > 0 ? (
+              friends.map(friend => (
+                <li key={friend.id} className="friend-item">
+                  <div className="friend-avatar">
+                    <img 
+                      src={friend.profile_img || '/images/default-avatar.jpg'} 
+                      alt={friend.username} 
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = '/images/default-avatar.jpg';
+                      }}
+                    />
+                  </div>
+                  <span className="friend-username">{friend.username}</span>
+                </li>
+              ))
+            ) : (
+              <p className="no-friends">No friends yet</p>
+            )}
           </ul>
         </div>
-      </div>
-    );
-  }
-
-  // Otherwise show online/offline toggles
-  return (
-    <div className="friends-sidebar">
-      <div className="friends-section">
-        <div className="friends-header" onClick={() => setShowOnline(!showOnline)}>
-          <h3>🟢 Online</h3>
-          {showOnline ? <FaChevronUp /> : <FaChevronDown />}
-        </div>
-        {showOnline && (
-          <>
-            {onlineFriends.length === 0 && <p>No friends online</p>}
-            <ul>
-            {onlineFriends.map(friend => (
-            <Friend key={friend.id} friend={friend} />
-         ))}
-      </ul>
-          </>
-        )}
-      </div>
-
-      <div className="friends-section">
-        <div className="friends-header" onClick={() => setShowOffline(!showOffline)}>
-          <h3>⚫ Offline</h3>
-          {showOffline ? <FaChevronUp /> : <FaChevronDown />}
-        </div>
-        {showOffline && (
-          <>
-            {offlineFriends.length === 0 && <p>No friends offline</p>}
-            <ul>
-              {offlineFriends.map(friend => (
-                <li key={friend.id}>{friend.username}</li>
-              ))}
-            </ul>
-          </>
-        )}
-      </div>
+      )}
     </div>
   );
 }
