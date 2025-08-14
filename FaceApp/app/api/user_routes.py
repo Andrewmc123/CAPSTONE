@@ -14,16 +14,6 @@ def users():
     users = User.query.all()
     return {'users': [user.to_dict() for user in users]}
 
-
-@user_routes.route('/<int:id>')
-@login_required
-def user(id):
-    """
-    Query for a user by id and returns that user in a dictionary
-    """
-    user = User.query.get(id)
-    return user.to_dict()
-
 @user_routes.route('/search')
 @login_required
 def search_user_by_username():
@@ -34,3 +24,12 @@ def search_user_by_username():
         return {"message": "User not found."}, 404
 
     return {"user": user.to_dict()}, 200
+
+@user_routes.route('/<int:id>')
+@login_required
+def user(id):
+    """
+    Query for a user by id and returns that user in a dictionary
+    """
+    user = User.query.get(id)
+    return user.to_dict()

@@ -52,15 +52,21 @@ class User(db.Model, UserMixin):
 
     def to_dict(self):
         return {
-            'id': self.id,
-            'username': self.username,
-            'email': self.email,
-            'firstname': self.firstname,
-            'lastname': self.lastname,
-            'profile_img': self.profile_img,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at,
-            # Optional: include friend counts if needed
-            'friends_count': len([f for f in self.friends_sent + self.friends_received 
-                                if f.status == 'accepted'])
-        }
+        'id': self.id,
+        'username': self.username,
+        'email': self.email,
+        'firstname': self.firstname,
+        'lastname': self.lastname,
+        'profile_img': self.profile_img,
+        'created_at': self.created_at.isoformat() if self.created_at else None,
+        'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        'friends_count': len([f for f in self.friends_sent + self.friends_received
+                              if f.status == 'accepted'])
+    }
+
+    def to_dict_basic(self):
+        return {
+        'id': self.id,
+        'username': self.username,
+        'profile_img': self.profile_img
+    }

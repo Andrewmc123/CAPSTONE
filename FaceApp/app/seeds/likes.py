@@ -4,68 +4,63 @@ from datetime import datetime, timedelta
 import random
 
 def seed_likes():
-    # Clear existing likes
+    # I believe this is clearing existing likes first
     undo_likes()
     
-    # Get all user IDs (assuming you have 9 users from your users seed)
+    # Get all user IDs (assuming 9 users)
     user_ids = list(range(1, 10))  # IDs 1 through 9
-    
-    # Create a dictionary to track likes per user
+
+    # Track how many likes each user has
     user_likes_count = {user_id: 0 for user_id in user_ids}
-    
-    # Create likes ensuring each user has 1-10 likes
+
+    # Fetch the max post ID to ensure we only like existing posts
+    max_post_id = db.session.execute(text("SELECT MAX(id) FROM posts")).scalar() or 1
+
     likes = []
-    post_id = 1  # Starting post ID
-    
-    while True:
-        # Select a random user who has less than 10 likes
-        available_users = [uid for uid in user_ids if user_likes_count[uid] < 10]
-        if not available_users:
-            break  # All users have at least 10 likes
-            
-        user_id = random.choice(available_users)
-        
-        # Generate random timestamp within past month
+
+    # First, ensure each user has at least 1 like
+    for user_id in user_ids:
+        post_id = random.randint(1, max_post_id)
         time_offset = timedelta(
             days=random.randint(0, 30),
             hours=random.randint(0, 23),
             minutes=random.randint(0, 59)
         )
         created_at = datetime.utcnow() - time_offset
-        
+
         likes.append(Like(
             user_id=user_id,
             post_id=post_id,
             created_at=created_at
         ))
-        
         user_likes_count[user_id] += 1
-        post_id += 1  # Move to next post
-        
-        # Ensure each user has at least 1 like
-        if all(count >= 1 for count in user_likes_count.values()):
-            break  # Minimum requirement met
-    
-    # Now add additional random likes up to 10 per user
+
+    # Now add additional likes up to 10 per user
     for user_id in user_ids:
-        remaining_likes = random.randint(0, 9 - user_likes_count[user_id])
-        
-        for _ in range(remaining_likes):
-            time_offset = timedelta(
-                days=random.randint(0, 30),
-                hours=random.randint(0, 23),
-                minutes=random.randint(0, 59)
-            )
-            created_at = datetime.utcnow() - time_offset
-            
-            likes.append(Like(
-                user_id=user_id,
-                post_id=random.randint(1, post_id-1),  # Like existing posts
-                created_at=created_at
-            ))
-    
+        max_additional = 10 - user_likes_count[user_id]
+        # Only add if there's room for more likes
+        if max_additional > 0:
+            additional_likes = random.randint(0, max_additional)
+            for _ in range(additional_likes):
+                post_id = random.randint(1, max_post_id)
+                time_offset = timedelta(
+                    days=random.randint(0, 30),
+                    hours=random.randint(0, 23),
+                    minutes=random.randint(0, 59)
+                )
+                created_at = datetime.utcnow() - time_offset
+
+                likes.append(Like(
+                    user_id=user_id,
+                    post_id=post_id,
+                    created_at=created_at
+                ))
+                user_likes_count[user_id] += 1
+
+    # Commit all likes
     db.session.add_all(likes)
     db.session.commit()
+
 
 def undo_likes():
     if environment == "production":

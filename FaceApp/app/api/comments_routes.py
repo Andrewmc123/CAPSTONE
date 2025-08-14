@@ -12,6 +12,7 @@ def get_all_comments():
     comments = Comment.query.order_by(Comment.created_at.desc()).all()
     return [comment.to_dict() for comment in comments], 200
 
+
 # Add a comment to a post
 @comments_routes.route('/<int:post_id>', methods=['POST'])
 @login_required
@@ -19,34 +20,45 @@ def create_comment(post_id):
     data = request.get_json()
     content = data.get('content')
 
-    if not content:
+    if not content or content.strip() == "":
         return {'errors': {'content': 'Comment content is required'}}, 400
 
+    # Create the comment
     comment = Comment(
         user_id=current_user.id,
         post_id=post_id,
-        body=content,
+        body=content.strip(),
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow()
     )
-
     db.session.add(comment)
     db.session.commit()
 
-    # Create notification if commenter is not the post owner
+    # Prepare notification if commenter is not the post owner
+    notification_data = None
     post = Post.query.get(post_id)
     if post and post.user_id != current_user.id:
         notification = Notification(
             recipient_id=post.user_id,
             sender_id=current_user.id,
-            message=f"{current_user.username} commented on your post.",
-            link=f"/posts/{post_id}",
-            is_read=False
+            notification_type="post_comment",
+            post_id=post_id,
+            comment_id=comment.id,
+            message=None,  # Will auto-generate in Notification.to_dict()
+            link=None,     # Will auto-generate in Notification.to_dict()
+            is_read=False,
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow()
         )
         db.session.add(notification)
         db.session.commit()
+        notification_data = notification.to_dict()
 
-    return comment.to_dict(), 201
+    return {
+        "comment": comment.to_dict(),
+        "notification": notification_data
+    }, 201
+
 
 # Update a comment
 @comments_routes.route('/<int:comment_id>', methods=['PUT'])
@@ -66,12 +78,13 @@ def update_comment(comment_id):
     if not comment or comment.user_id != current_user.id:
         return {"message": "Comment couldn't be found or does not belong to the current user"}, 404
 
-    comment.body = comment_text
+    comment.body = comment_text.strip()
     comment.updated_at = datetime.utcnow()
 
     db.session.commit()
 
     return comment.to_dict(), 200
+
 
 # Delete a comment
 @comments_routes.route('/<int:comment_id>', methods=['DELETE'])

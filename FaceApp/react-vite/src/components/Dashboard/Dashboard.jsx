@@ -1,52 +1,85 @@
 import { useSelector, useDispatch } from 'react-redux';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Navigate } from 'react-router-dom';
-import { getAllPosts, getFriendsPosts, thunkLikePost, thunkAddComment, thunkCreatePost, thunkDeletePost } from '../../redux/posts';
+import { 
+  getAllPosts, 
+  getFriendsPosts, 
+  thunkLikePost, 
+  thunkAddComment, 
+  thunkCreatePost, 
+  thunkDeletePost 
+} from '../../redux/posts';
 import { getFriends } from '../../redux/friends';
 import FriendsSidebar from '../FriendsSidebar/FriendsSidebar';
 import UserLink from '../UserLink/UserLink';
 import './Dashboard.css';
 
 function Dashboard() {
-  const sessionUser = useSelector(state => state.session.user);
-  const dispatch = useDispatch();
-  const allPostsObj = useSelector(state => state.posts.posts);
-  const friendsState = useSelector(state => state.friends);
-  // Sort posts by creation date (newest first)
-  const allPosts = Object.values(allPostsObj).sort((a, b) => 
-    new Date(b.created_at) - new Date(a.created_at)
-  );
-  const friends = Object.values(friendsState.friends || {});
+  // Initialize all state first
   const [filterFriendsOnly, setFilterFriendsOnly] = useState(false);
   const [commentTexts, setCommentTexts] = useState({});
   const [showComments, setShowComments] = useState({});
   const [postContent, setPostContent] = useState('');
   const [postImage, setPostImage] = useState(null);
-  const [newPostAdded, setNewPostAdded] = useState(false);
+  const [isCommenting, setIsCommenting] = useState({});
 
+  // Redux state
+  const sessionUser = useSelector(state => state.session.user);
+  const dispatch = useDispatch();
+  const friendsState = useSelector(state => state.friends);
+  const { loading, error } = useSelector(state => state.posts);
+  const commentInputRefs = useRef({});
+  
+  // Post selection logic
+  const allPosts = useSelector(state => {
+    const posts = filterFriendsOnly 
+      ? Object.values(state.posts.friendsPosts || {})
+      : Object.values(state.posts.posts || {});
+    
+    return posts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  });
+  
+  const friends = Object.values(friendsState.friends || {});
+
+  // Load initial data
   useEffect(() => {
     if (sessionUser) {
       dispatch(getFriends());
+      loadPosts();
     }
   }, [dispatch, sessionUser]);
 
-  useEffect(() => {
+  const loadPosts = () => {
     if (filterFriendsOnly) {
       dispatch(getFriendsPosts());
     } else {
       dispatch(getAllPosts());
     }
-    setNewPostAdded(false);
-  }, [dispatch, filterFriendsOnly, newPostAdded]);
-
-  const handleLike = (postId) => {
-    dispatch(thunkLikePost(postId));
   };
 
-  const handleCommentSubmit = (postId) => {
-    if (commentTexts[postId]?.trim()) {
-      dispatch(thunkAddComment(postId, commentTexts[postId]));
+  const handleLike = async (postId) => {
+    try {
+      await dispatch(thunkLikePost(postId));
+      loadPosts(); // Refresh the posts after like
+    } catch (error) {
+      console.error('Error liking post:', error);
+    }
+  };
+
+  const handleCommentSubmit = async (postId) => {
+    if (!commentTexts[postId]?.trim()) return;
+    
+    setIsCommenting(prev => ({ ...prev, [postId]: true }));
+    try {
+      const scrollPosition = window.scrollY;
+      await dispatch(thunkAddComment(postId, { content: commentTexts[postId] }));
       setCommentTexts(prev => ({ ...prev, [postId]: '' }));
+      loadPosts(); // Refresh posts to show new comment
+      window.scrollTo(0, scrollPosition);
+    } catch (error) {
+      console.error('Error adding comment:', error);
+    } finally {
+      setIsCommenting(prev => ({ ...prev, [postId]: false }));
     }
   };
 
@@ -61,15 +94,16 @@ function Dashboard() {
     if (!postContent.trim()) return;
     
     try {
-      const postData = { body: postContent };
-      if (postImage) {
-        postData.image_url = postImage;
-      }
+      const postData = { 
+        body: postContent,
+        image_url: postImage,
+        friendsOnly: filterFriendsOnly // Pass this to determine where to add the post
+      };
       
       await dispatch(thunkCreatePost(postData));
       setPostContent('');
       setPostImage(null);
-      setNewPostAdded(true); // Trigger refresh of posts
+      loadPosts(); // Refresh posts after creation
     } catch (error) {
       console.error('Error creating post:', error);
     }
@@ -79,7 +113,7 @@ function Dashboard() {
     if (window.confirm('Are you sure you want to delete this post?')) {
       try {
         await dispatch(thunkDeletePost(postId));
-        dispatch(filterFriendsOnly ? getFriendsPosts() : getAllPosts());
+        loadPosts(); // Refresh posts after deletion
       } catch (error) {
         console.error('Error deleting post:', error);
       }
@@ -87,6 +121,14 @@ function Dashboard() {
   };
 
   const PostList = () => {
+    if (loading && allPosts.length === 0) {
+      return <div className="loading-spinner">Loading posts...</div>;
+    }
+
+    if (error) {
+      return <div className="error-message">{error}</div>;
+    }
+
     if (!allPosts || allPosts.length === 0) {
       return <div className="no-posts">No posts to display</div>;
     }
@@ -118,8 +160,9 @@ function Dashboard() {
                   <button 
                     className="delete-post-btn"
                     onClick={() => handleDeletePost(post.id)}
+                    disabled={loading}
                   >
-                    🗑️
+                    {loading ? '...' : '🗑️'}
                   </button>
                 )}
               </div>
@@ -137,6 +180,7 @@ function Dashboard() {
               <button 
                 className={`post-action-btn ${post.liked_by_user ? 'liked' : ''}`}
                 onClick={() => handleLike(post.id)}
+                disabled={loading}
               >
                 <i className="icon-heart">
                   {post.liked_by_user ? '❤️' : '♡'}
@@ -145,10 +189,11 @@ function Dashboard() {
               <button 
                 className="post-action-btn"
                 onClick={() => toggleComments(post.id)}
+                disabled={loading}
               >
                 <i className="icon-comment">🗨</i>
               </button>
-              <button className="post-action-btn">
+              <button className="post-action-btn" disabled={loading}>
                 <i className="icon-share">↗</i>
               </button>
             </div>
@@ -160,14 +205,15 @@ function Dashboard() {
 
             {showComments[post.id] && (
               <div className="comments-section">
-                {post.comments?.map((comment, index) => (
-                  <div key={index} className="comment">
-                    <span className="comment-username">{comment.user.username}</span>
-                    <span className="comment-text">{comment.text}</span>
+                {post.comments?.map((comment) => (
+                  <div key={comment.id} className="comment">
+                    <span className="comment-username">{comment.user?.username}</span>
+                    <span className="comment-text">{comment.body}</span>
                   </div>
                 ))}
                 <div className="add-comment">
                   <input
+                    ref={el => commentInputRefs.current[post.id] = el}
                     type="text"
                     placeholder="Add a comment..."
                     value={commentTexts[post.id] || ''}
@@ -176,12 +222,15 @@ function Dashboard() {
                       [post.id]: e.target.value
                     }))}
                     onKeyPress={(e) => e.key === 'Enter' && handleCommentSubmit(post.id)}
+                    maxLength={250}
+                    disabled={loading}
                   />
                   <button 
                     className="comment-submit-btn"
                     onClick={() => handleCommentSubmit(post.id)}
+                    disabled={loading || isCommenting[post.id] || !commentTexts[post.id]?.trim()}
                   >
-                    Post
+                    {isCommenting[post.id] ? 'Posting...' : 'Post'}
                   </button>
                 </div>
               </div>
@@ -202,7 +251,6 @@ function Dashboard() {
     );
   };
 
-  // Helper function to format post time
   const formatPostTime = (dateString) => {
     if (!dateString) return 'recently';
     
@@ -231,7 +279,11 @@ function Dashboard() {
                   <input
                     type="checkbox"
                     checked={filterFriendsOnly}
-                    onChange={(e) => setFilterFriendsOnly(e.target.checked)}
+                    onChange={(e) => {
+                      setFilterFriendsOnly(e.target.checked);
+                      loadPosts();
+                    }}
+                    disabled={loading}
                   />
                   <span className="toggle-slider"></span>
                   <span className="filter-text">Friends Only</span>
@@ -248,34 +300,40 @@ function Dashboard() {
             rows="3"
             value={postContent}
             onChange={(e) => setPostContent(e.target.value)}
+            disabled={loading}
           />
           {postImage && (
             <div className="post-image-preview">
               <img src={postImage} alt="Preview" />
-              <button onClick={() => setPostImage(null)}>Remove</button>
+              <button onClick={() => setPostImage(null)} disabled={loading}>
+                Remove
+              </button>
             </div>
           )}
           <div className="post-actions">
-            <label className="add-photo-btn">
+            <label className="add-photo-btn" style={loading ? { opacity: 0.5 } : {}}>
               <i className="icon-camera">📷</i> Photo
               <input 
                 type="file" 
                 style={{ display: 'none' }}
                 accept="image/*"
                 onChange={(e) => {
+                  if (loading) return;
                   const file = e.target.files[0];
                   if (file) setPostImage(URL.createObjectURL(file));
                 }}
+                disabled={loading}
               />
             </label>
             <button 
               className="post-update-btn"
               onClick={handlePostSubmit}
-              disabled={!postContent.trim()}
+              disabled={loading || !postContent.trim()}
             >
-              Post Update
+              {loading ? 'Posting...' : 'Post Update'}
             </button>
           </div>
+          {error && <div className="form-error">{error}</div>}
         </div>
 
         <div className="posts-container">
@@ -286,6 +344,7 @@ function Dashboard() {
       <FriendsSidebar 
         friends={friends} 
         sessionUser={sessionUser} 
+        loading={loading}
       />
     </div>
   );

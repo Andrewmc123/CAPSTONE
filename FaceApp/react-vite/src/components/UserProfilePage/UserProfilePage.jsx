@@ -15,31 +15,16 @@ export default function UserProfilePage() {
   const { userId } = useParams();
   const dispatch = useDispatch();
   const sessionUser = useSelector((state) => state.session.user);
-  const postsState = useSelector(state => state.posts);
   const friendsState = useSelector(state => state.friends);
-  
+
   const [user, setUser] = useState(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [friendStatus, setFriendStatus] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Get user's posts from Redux store
-  const userPosts = postsState.userPosts[userId] 
-    ? Object.values(postsState.userPosts[userId]).sort((a, b) => 
-        new Date(b.created_at) - new Date(a.created_at)
-      )
-    : [];
-  
-  // Calculate stats that will be displayed
-  const postCount = userPosts.length;
-  const likeCount = userPosts.reduce((total, post) => total + (post.like_count || 0), 0);
-  const friendCount = Object.values(friendsState.friends || {}).filter(friend => 
-  friend.status === 'friends'
-).length;
-
-  // Memoized function to check friend status
-  const checkFriendStatus = useCallback(() => {
+  // Check and update friend status whenever relevant data changes
+  const updateFriendStatus = useCallback(() => {
     if (!sessionUser || !user || !friendsState) return;
 
     const isFriend = Object.values(friendsState.friends || {}).some(f => 
@@ -55,54 +40,105 @@ export default function UserProfilePage() {
       p.user?.id === sessionUser.id && p.friend?.id === user.id
     );
 
-    if (isFriend) {
-      setFriendStatus('friends');
-    } else if (hasPendingIncoming) {
-      setFriendStatus('pending_incoming');
-    } else if (hasPendingOutgoing) {
-      setFriendStatus('pending_outgoing');
-    } else {
-      setFriendStatus('none');
-    }
+    if (isFriend) setFriendStatus('friends');
+    else if (hasPendingIncoming) setFriendStatus('pending_incoming');
+    else if (hasPendingOutgoing) setFriendStatus('pending_outgoing');
+    else setFriendStatus('none');
   }, [sessionUser, user, friendsState]);
 
-  // Format member since date
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Fetch user data
+        const userResponse = await fetch(`/api/users/${userId}`, {
+          credentials: 'include',
+          headers: { 'Accept': 'application/json' }
+        });
+        
+        if (!userResponse.ok) {
+          throw new Error('Failed to fetch user');
+        }
+        
+        const userData = await userResponse.json();
+        setUser(userData);
+
+        // Fetch user posts
+        await dispatch(getUserPosts(userId));
+        
+        // Fetch friends data
+        await Promise.all([
+          dispatch(getFriends()),
+          dispatch(getPendingFriends())
+        ]);
+
+        // Update friend status after all data is loaded
+        updateFriendStatus();
+      } catch (err) {
+        console.error('Error fetching profile data:', err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [userId, dispatch, updateFriendStatus]);
+
+  // Update friend status when friendsState changes
+  useEffect(() => {
+    updateFriendStatus();
+  }, [friendsState, updateFriendStatus]);
+
+  // Access posts correctly from Redux state
+  const userPosts = useSelector(state => 
+    state.posts.userPosts[userId] 
+      ? Object.values(state.posts.userPosts[userId]).sort((a, b) => 
+          new Date(b.created_at) - new Date(a.created_at)
+        )
+      : []
+  );
+
+  const postCount = userPosts.length;
+  const likeCount = userPosts.reduce((total, post) => total + (post.like_count || 0), 0);
+  const friendCount = Object.values(friendsState.friends || {}).filter(friend => friend.status === 'accepted').length;
+
   const formatMemberSince = (dateString) => {
     if (!dateString) return 'N/A';
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  // Handle friend actions
   const handleFriendAction = async () => {
     if (!sessionUser) return;
-    
+
     try {
       if (friendStatus === 'none') {
         await dispatch(sendFriendRequest(user.id));
         setShowConfirmation(true);
         setTimeout(() => setShowConfirmation(false), 3000);
-        setFriendStatus('pending_outgoing');
       } else if (friendStatus === 'friends') {
         await dispatch(removeFriend(user.id));
-        setFriendStatus('none');
       } else if (friendStatus === 'pending_incoming') {
         await dispatch(acceptFriendRequest(user.id));
-        setFriendStatus('friends');
       }
+      
       // Refresh friends data
-      await dispatch(getFriends());
-      await dispatch(getPendingFriends());
-    } catch (error) {
-      console.error('Error handling friend action:', error);
+      await Promise.all([
+        dispatch(getFriends()),
+        dispatch(getPendingFriends())
+      ]);
+    } catch (err) {
+      console.error('Error handling friend action:', err);
       setError('Failed to update friend status');
     }
   };
 
-  // Get friend button text based on status
   const getFriendButtonText = () => {
     if (!sessionUser || sessionUser.id === user?.id) return null;
-    
+
     switch (friendStatus) {
       case 'friends': return 'Remove Friend';
       case 'pending_outgoing': return 'Request Sent';
@@ -110,41 +146,6 @@ export default function UserProfilePage() {
       default: return 'Add Friend';
     }
   };
-
-  // Fetch all necessary data
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        
-        // Fetch user data
-        const userResponse = await fetch(`/api/users/${userId}`);
-        if (!userResponse.ok) throw new Error("Failed to fetch user");
-        const userData = await userResponse.json();
-        setUser(userData);
-
-        // Fetch user's posts and friends data in parallel
-        await Promise.all([
-          dispatch(getUserPosts(userId)),
-          dispatch(getFriends()),
-          dispatch(getPendingFriends())
-        ]);
-      } catch (error) {
-        console.error('Error fetching profile data:', error);
-        setError('Failed to load profile data');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [userId, dispatch]);
-
-  // Update friend status when user or friends data changes
-  useEffect(() => {
-    checkFriendStatus();
-  }, [checkFriendStatus]);
 
   if (isLoading) return <div className="loading">Loading profile...</div>;
   if (error) return <div className="error">{error}</div>;
@@ -155,11 +156,7 @@ export default function UserProfilePage() {
       {showConfirmation && (
         <div className="confirmation-dropdown">
           <p>Friend request sent to {user.firstname}!</p>
-          <button 
-            className="close-btn" 
-            onClick={() => setShowConfirmation(false)}
-            aria-label="Close notification"
-          >
+          <button className="close-btn" onClick={() => setShowConfirmation(false)} aria-label="Close notification">
             &times;
           </button>
         </div>
@@ -168,14 +165,7 @@ export default function UserProfilePage() {
       <div className="profile-header">
         <div className="profile-avatar">
           {user.profile_img ? (
-            <img 
-              src={user.profile_img} 
-              alt={`${user.firstname} ${user.lastname}`} 
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.style.display = 'none';
-              }}
-            />
+            <img src={user.profile_img} alt={`${user.firstname} ${user.lastname}`} onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }} />
           ) : null}
           <div className="avatar-fallback">
             {user.firstname?.[0]}{user.lastname?.[0]}
@@ -239,19 +229,9 @@ export default function UserProfilePage() {
         {userPosts.length > 0 ? (
           <div className="posts-grid">
             {userPosts.map((post) => (
-              <NavLink 
-                key={post.id} 
-                to={`/posts/${post.id}`} 
-                className="post-tile"
-                aria-label={`View post by ${user.firstname}`}
-              >
+              <NavLink key={post.id} to={`/posts/${post.id}`} className="post-tile" aria-label={`View post by ${user.firstname}`}>
                 {post.image_url ? (
-                  <img 
-                    src={post.image_url} 
-                    alt="Post content" 
-                    className="post-image" 
-                    loading="lazy"
-                  />
+                  <img src={post.image_url} alt="Post content" className="post-image" loading="lazy" />
                 ) : (
                   <div className="post-text">{post.body}</div>
                 )}

@@ -2,271 +2,410 @@
 // Action Types
 const CREATE_POST = "posts/createPost";
 const LOAD_POSTS = "posts/loadPosts";
-const LOAD_FRIENDS_POSTS = "posts/LOAD_FRIENDS_POSTS";
-const LOAD_USER_POSTS = "posts/LOAD_USER_POSTS";
+const LOAD_FRIENDS_POSTS = "posts/loadFriendsPosts";
+const LOAD_USER_POSTS = "posts/loadUserPosts";
 const DELETE_POST = "posts/deletePost";
 const UPDATE_POST = "posts/updatePost";
 const GET_COMMENTS = "posts/getComments";
 const ADD_COMMENT = "posts/addComment";
 const LIKE_POST = "posts/likePost";
+const SET_LOADING = "posts/setLoading";
+const SET_ERROR = "posts/setError";
 
 // Action Creators
-export const createPost = (post) => ({
-    type: CREATE_POST,
-    post
+const setLoading = (loading) => ({
+  type: SET_LOADING,
+  loading
 });
 
-export const updatePost = (post) => ({
-    type: UPDATE_POST,
-    post
+const setError = (error) => ({
+  type: SET_ERROR,
+  error
+});
+
+export const createPost = (post) => ({
+  type: CREATE_POST,
+  post
+});
+
+const updatePost = (post) => ({
+  type: UPDATE_POST,
+  post
 });
 
 const loadPosts = (posts) => ({
-    type: LOAD_POSTS,
-    posts
+  type: LOAD_POSTS,
+  posts
 });
 
 const loadFriendsPosts = (posts) => ({
-    type: LOAD_FRIENDS_POSTS,
-    posts
+  type: LOAD_FRIENDS_POSTS,
+  posts
 });
 
 const loadUserPosts = (userId, posts) => ({
-    type: LOAD_USER_POSTS,
-    userId,
-    posts
+  type: LOAD_USER_POSTS,
+  userId,
+  posts
 });
 
-export const deletePost = (postId) => ({
-    type: DELETE_POST,
-    postId
+const deletePost = (postId) => ({
+  type: DELETE_POST,
+  postId
 });
 
-export const getComments = (postId, comments) => ({
-    type: GET_COMMENTS,
-    postId,
-    comments
+const getComments = (postId, comments) => ({
+  type: GET_COMMENTS,
+  postId,
+  comments
 });
 
-export const addComment = (postId, comment) => ({
-    type: ADD_COMMENT,
-    postId,
-    comment
+const addComment = (postId, comment) => ({
+  type: ADD_COMMENT,
+  postId,
+  comment
 });
 
-export const likePost = (post) => ({
-    type: LIKE_POST,
-    post
+const likePost = (post) => ({
+  type: LIKE_POST,
+  post
 });
+
+// Helper function for normalizing posts
+const normalizePosts = (postsArray) => {
+  return postsArray.reduce((acc, post) => {
+    acc[post.id] = post;
+    return acc;
+  }, {});
+};
 
 // Thunks
 export const getAllPosts = () => async (dispatch) => {
-    const res = await fetch('/api/posts/');
-    if (res.ok) {
-        const data = await res.json();
-        const normalized = Object.fromEntries(data.posts.map(post => [post.id, post]));
-        dispatch(loadPosts(normalized));
+  dispatch(setLoading(true));
+  try {
+    const res = await fetch('/api/posts/', {
+      credentials: 'include'
+    });
+    
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || 'Failed to fetch posts');
     }
+
+    const { posts } = await res.json();
+    const normalized = normalizePosts(posts);
+    dispatch(loadPosts(normalized));
+    return normalized;
+  } catch (err) {
+    dispatch(setError(err.message));
+    throw err;
+  } finally {
+    dispatch(setLoading(false));
+  }
 };
 
 export const getFriendsPosts = () => async (dispatch) => {
-    const response = await fetch('/api/posts/friends');
-    if (response.ok) {
-        const data = await response.json();
-        const normalized = Object.fromEntries(data.friends_posts.map(post => [post.id, post]));
-        dispatch(loadFriendsPosts(normalized));
+  dispatch(setLoading(true));
+  try {
+    const res = await fetch('/api/posts/friends', {
+      credentials: 'include'
+    });
+    
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || 'Failed to fetch friends posts');
     }
+
+    const { posts } = await res.json();
+    const normalized = normalizePosts(posts);
+    dispatch(loadFriendsPosts(normalized));
+    return normalized;
+  } catch (err) {
+    dispatch(setError(err.message));
+    throw err;
+  } finally {
+    dispatch(setLoading(false));
+  }
 };
 
 export const getUserPosts = (userId) => async (dispatch) => {
-    const response = await fetch(`/api/posts/user/${userId}`);
-    if (response.ok) {
-        const data = await response.json();
-        const normalized = Object.fromEntries(data.posts.map(post => [post.id, post]));
-        dispatch(loadUserPosts(userId, normalized));
+  dispatch(setLoading(true));
+  try {
+    const res = await fetch(`/api/posts/user/${userId}`, {
+      credentials: 'include'
+    });
+    
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || `Failed to fetch user ${userId} posts`);
     }
+
+    const { posts } = await res.json();
+    const normalized = normalizePosts(posts);
+    dispatch(loadUserPosts(userId, normalized));
+    return normalized;
+  } catch (err) {
+    dispatch(setError(err.message));
+    throw err;
+  } finally {
+    dispatch(setLoading(false));
+  }
 };
 
-export const thunkCreatePost = (formData) => async (dispatch) => {
-    try {
-        const res = await fetch('/api/posts/', {
-            method: 'POST',
-            body: JSON.stringify(formData),
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' }
-        });
-        if (!res.ok) throw new Error('Failed to create post');
-        const data = await res.json();
-        dispatch(createPost(data));
-        return data;
-    } catch (err) {
-        console.error('Error creating post:', err);
-        return { error: err.message };
+export const thunkCreatePost = (postData) => async (dispatch) => {
+  dispatch(setLoading(true));
+  try {
+    const res = await fetch('/api/posts/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(postData),
+      credentials: 'include'
+    });
+    
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || 'Failed to create post');
     }
+
+    const post = await res.json();
+    dispatch(createPost(post));
+    
+    // Refresh the appropriate post list
+    if (postData.friendsOnly) {
+      await dispatch(getFriendsPosts());
+    } else {
+      await dispatch(getAllPosts());
+    }
+    
+    return post;
+  } catch (err) {
+    dispatch(setError(err.message));
+    throw err;
+  } finally {
+    dispatch(setLoading(false));
+  }
 };
 
-export const thunkUpdatePost = (postId, formData) => async (dispatch) => {
-    try {
-        const res = await fetch(`/api/posts/${postId}`, {
-            method: 'PUT',
-            body: JSON.stringify(formData),
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' }
-        });
-        if (!res.ok) throw new Error('Failed to update post');
-        const data = await res.json();
-        dispatch(updatePost(data));
-        return data;
-    } catch (err) {
-        console.error('Error updating post:', err);
-        return { error: err.message };
+export const thunkUpdatePost = (postId, postData) => async (dispatch) => {
+  dispatch(setLoading(true));
+  try {
+    const res = await fetch(`/api/posts/${postId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(postData),
+      credentials: 'include'
+    });
+    
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || 'Failed to update post');
     }
+
+    const post = await res.json();
+    dispatch(updatePost(post));
+    return post;
+  } catch (err) {
+    dispatch(setError(err.message));
+    throw err;
+  } finally {
+    dispatch(setLoading(false));
+  }
 };
 
 export const thunkDeletePost = (postId) => async (dispatch) => {
-    try {
-        const res = await fetch(`/api/posts/${postId}`, {
-            method: 'DELETE',
-            credentials: 'include',
-        });
-        if (!res.ok) throw new Error('Failed to delete post');
-        dispatch(deletePost(postId));
-        return { success: true };
-    } catch (err) {
-        console.error('Error deleting post:', err);
-        return { error: err.message };
+  dispatch(setLoading(true));
+  try {
+    const res = await fetch(`/api/posts/${postId}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    });
+    
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || 'Failed to delete post');
     }
+
+    dispatch(deletePost(postId));
+    return { success: true };
+  } catch (err) {
+    dispatch(setError(err.message));
+    throw err;
+  } finally {
+    dispatch(setLoading(false));
+  }
 };
 
 export const getPostComments = (postId) => async (dispatch) => {
-    const response = await fetch(`/api/posts/${postId}/comments`);
-    if (response.ok) {
-        const comments = await response.json();
-        dispatch(getComments(postId, comments));
-        return comments;
+  dispatch(setLoading(true));
+  try {
+    const res = await fetch(`/api/posts/${postId}/comments`, {
+      credentials: 'include'
+    });
+    
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || 'Failed to fetch comments');
     }
-    return null;
+
+    const { comments } = await res.json();
+    dispatch(getComments(postId, comments));
+    return comments;
+  } catch (err) {
+    dispatch(setError(err.message));
+    throw err;
+  } finally {
+    dispatch(setLoading(false));
+  }
 };
 
-export const thunkAddComment = (postId, text) => async (dispatch) => {
-    const response = await fetch(`/api/posts/${postId}/comments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text })
+export const thunkAddComment = (postId, commentData) => async (dispatch) => {
+  dispatch(setLoading(true));
+  try {
+    const res = await fetch(`/api/posts/${postId}/comments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(commentData),
+      credentials: 'include'
     });
-    if (response.ok) {
-        const comment = await response.json();
-        dispatch(addComment(postId, comment));
-        return comment;
+    
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || 'Failed to add comment');
     }
-    return null;
+
+    const comment = await res.json();
+    dispatch(addComment(postId, comment));
+    return comment;
+  } catch (err) {
+    dispatch(setError(err.message));
+    throw err;
+  } finally {
+    dispatch(setLoading(false));
+  }
 };
 
 export const thunkLikePost = (postId) => async (dispatch) => {
-    const response = await fetch(`/api/posts/${postId}/like`, {
-        method: 'POST'
+  dispatch(setLoading(true));
+  try {
+    const res = await fetch(`/api/posts/${postId}/like`, {
+      method: 'POST',
+      credentials: 'include'
     });
-    if (response.ok) {
-        const post = await response.json();
-        dispatch(likePost(post));
-        return post;
+    
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || 'Failed to like post');
     }
-    return null;
+
+    const post = await res.json();
+    dispatch(likePost(post));
+    return post;
+  } catch (err) {
+    dispatch(setError(err.message));
+    throw err;
+  } finally {
+    dispatch(setLoading(false));
+  }
 };
 
 // Initial State
 const initialState = {
-    posts: {},
-    friendsPosts: {},
-    userPosts: {},
-    comments: {}
+  posts: {},
+  friendsPosts: {},
+  userPosts: {},
+  comments: {},
+  loading: false,
+  error: null
 };
 
 // Reducer
 export default function postsReducer(state = initialState, action) {
-    switch (action.type) {
-        case LOAD_POSTS:
-            return { ...state, posts: action.posts };
-        case LOAD_FRIENDS_POSTS:
-            return { ...state, friendsPosts: action.posts };
-        case LOAD_USER_POSTS:
-            return {
-                ...state,
-                userPosts: {
-                    ...state.userPosts,
-                    [action.userId]: action.posts
-                }
-            };
-        case CREATE_POST:
-            return { 
-                ...state, 
-                posts: { ...state.posts, [action.post.id]: action.post } 
-            };
-        case UPDATE_POST: {
-            const newState = { ...state };
-            newState.posts = { ...state.posts, [action.post.id]: action.post };
-            Object.keys(state.userPosts).forEach(userId => {
-                if (state.userPosts[userId][action.post.id]) {
-                    newState.userPosts = {
-                        ...state.userPosts,
-                        [userId]: {
-                            ...state.userPosts[userId],
-                            [action.post.id]: action.post
-                        }
-                    };
-                }
-            });
-            return newState;
-        }
-        case DELETE_POST: {
-            const newState = { ...state };
-            delete newState.posts[action.postId];
-            Object.keys(state.userPosts).forEach(userId => {
-                if (state.userPosts[userId][action.postId]) {
-                    newState.userPosts = {
-                        ...state.userPosts,
-                        [userId]: { ...state.userPosts[userId] }
-                    };
-                    delete newState.userPosts[userId][action.postId];
-                }
-            });
-            return newState;
-        }
-        case GET_COMMENTS: {
-            return {
-                ...state,
-                comments: {
-                    ...state.comments,
-                    [action.postId]: action.comments
-                }
-            };
-        }
-        case ADD_COMMENT: {
-            return {
-                ...state,
-                comments: {
-                    ...state.comments,
-                    [action.postId]: [...(state.comments[action.postId] || []), action.comment]
-                }
-            };
-        }
-        case LIKE_POST: {
-            const newState = { ...state };
-            newState.posts = { ...state.posts, [action.post.id]: action.post };
-            Object.keys(state.userPosts).forEach(userId => {
-                if (state.userPosts[userId][action.post.id]) {
-                    newState.userPosts = {
-                        ...state.userPosts,
-                        [userId]: {
-                            ...state.userPosts[userId],
-                            [action.post.id]: action.post
-                        }
-                    };
-                }
-            });
-            return newState;
-        }
-        default:
-            return state;
-    }
+  switch (action.type) {
+    case SET_LOADING:
+      return { ...state, loading: action.loading };
+    case SET_ERROR:
+      return { ...state, error: action.error };
+    case LOAD_POSTS:
+      return { ...state, posts: action.posts, error: null };
+    case LOAD_FRIENDS_POSTS:
+      return { ...state, friendsPosts: action.posts, error: null };
+    case LOAD_USER_POSTS:
+      return {
+        ...state,
+        userPosts: {
+          ...state.userPosts,
+          [action.userId]: action.posts
+        },
+        error: null
+      };
+    case CREATE_POST:
+      return {
+        ...state,
+        posts: { ...state.posts, [action.post.id]: action.post },
+        error: null
+      };
+    case UPDATE_POST:
+      return {
+        ...state,
+        posts: { ...state.posts, [action.post.id]: action.post },
+        userPosts: {
+          ...state.userPosts,
+          [action.post.user_id]: {
+            ...state.userPosts[action.post.user_id],
+            [action.post.id]: action.post
+          }
+        },
+        error: null
+      };
+     case DELETE_POST: {
+      const newState = { ...state, error: null };
+        newState.posts = Object.fromEntries(
+        Object.entries(newState.posts).filter(([id]) => id !== action.postId)
+      );
+      
+    newState.userPosts = Object.fromEntries(
+    Object.entries(newState.userPosts).map(([userId, posts]) => [
+      userId,
+      Object.fromEntries(
+        Object.entries(posts).filter(([id]) => id !== action.postId)
+      )
+    ])
+  );
+  
+  return newState;
+}
+    case GET_COMMENTS:
+      return {
+        ...state,
+        comments: {
+          ...state.comments,
+          [action.postId]: action.comments
+        },
+        error: null
+      };
+    case ADD_COMMENT:
+      return {
+        ...state,
+        comments: {
+          ...state.comments,
+          [action.postId]: [...(state.comments[action.postId] || []), action.comment]
+        },
+        error: null
+      };
+    case LIKE_POST:
+      return {
+        ...state,
+        posts: { ...state.posts, [action.post.id]: action.post },
+        userPosts: {
+          ...state.userPosts,
+          [action.post.user_id]: {
+            ...state.userPosts[action.post.user_id],
+            [action.post.id]: action.post
+          }
+        },
+        error: null
+      };
+    default:
+      return state;
+  }
 }

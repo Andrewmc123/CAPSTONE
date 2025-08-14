@@ -44,22 +44,39 @@ export const thunkMarkAllAsRead = () => async (dispatch) => {
 
 // Reducer
 const initialState = { 
-  notifications: [], 
-  unreadCount: 0 
+  all: {},       // Normalized notifications by id
+  unreadCount: 0,
+  loaded: false 
 };
 
 export default function notificationsReducer(state = initialState, action) {
   switch (action.type) {
-   case SET_NOTIFICATIONS:
-  return {
-    notifications: action.payload.notifications,
-    unreadCount: action.payload.unreadCount || 0  // Added fallback
-  };
+    case SET_NOTIFICATIONS:
+      return {
+        ...state,
+        all: action.payload.notifications.reduce((acc, notif) => {
+          acc[notif.id] = {
+            ...notif,
+            // Ensure consistent field names
+            is_read: notif.is_read || false,
+            type: notif.type || notif.notification_type,
+            created_at: notif.created_at || notif.createdAt
+          };
+          return acc;
+        }, {}),
+        unreadCount: action.payload.unread_count || action.payload.unreadCount || 0,
+        loaded: true
+      };
     case MARK_ALL_READ:
       return {
         ...state,
         unreadCount: 0,
-        notifications: state.notifications.map(n => ({ ...n, is_read: true }))
+        all: Object.fromEntries(
+          Object.entries(state.all).map(([id, notif]) => [
+            id, 
+            { ...notif, is_read: true }
+          ])
+        )
       };
     default:
       return state;

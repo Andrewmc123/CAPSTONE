@@ -1,131 +1,75 @@
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { 
-  thunkGetUserNotifications, 
-  thunkMarkAllAsRead 
-} from "../../redux/notification";
-import { 
-  acceptFriendRequest, 
-  declineFriendRequest 
-} from "../../redux/friends";
-import { Link } from 'react-router-dom';
-import './NotificationsPage.css';
+// NotificationsPage.jsx
+import { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { NavLink } from 'react-router-dom';
+import { thunkGetUserNotifications, thunkMarkAllAsRead } from '../../redux/notification';
+import './NotificationsPage.css';  // Create this CSS file
 
-function NotificationsPage() {
+export default function NotificationsPage() {
   const dispatch = useDispatch();
-  const notifications = useSelector(state => state.notifications.notifications);
+  const notifications = useSelector(state => 
+    Object.values(state.notifications.all || {}).sort(
+      (a, b) => new Date(b.created_at) - new Date(a.created_at)
+    )
+  );
   const unreadCount = useSelector(state => state.notifications.unreadCount);
-  const [loadingActions, setLoadingActions] = useState({});
+  const loaded = useSelector(state => state.notifications.loaded);
 
   useEffect(() => {
     dispatch(thunkGetUserNotifications());
   }, [dispatch]);
 
-  const handleMarkAllAsRead = () => {
+  const handleMarkAllRead = () => {
     dispatch(thunkMarkAllAsRead());
   };
 
-  const handleAcceptRequest = async (senderId) => {
-    try {
-      setLoadingActions(prev => ({ ...prev, [senderId]: 'accepting' }));
-      const success = await dispatch(acceptFriendRequest(senderId));
-      if (success) {
-        await dispatch(thunkGetUserNotifications());
-      }
-    } catch (error) {
-      console.error('Error accepting friend request:', error);
-    } finally {
-      setLoadingActions(prev => ({ ...prev, [senderId]: null }));
-    }
-  };
-
-  const handleDeclineRequest = async (senderId) => {
-    try {
-      setLoadingActions(prev => ({ ...prev, [senderId]: 'declining' }));
-      const success = await dispatch(declineFriendRequest(senderId));
-      if (success) {
-        await dispatch(thunkGetUserNotifications());
-      }
-    } catch (error) {
-      console.error('Error declining friend request:', error);
-    } finally {
-      setLoadingActions(prev => ({ ...prev, [senderId]: null }));
-    }
-  };
+  if (!loaded) return <div className="loading">Loading notifications...</div>;
 
   return (
-    <div className="notifications-container">
+    <div className="notifications-page">
       <div className="notifications-header">
-        <h2>Notifications {unreadCount > 0 && `(${unreadCount})`}</h2>
+        <h1>Notifications</h1>
         {unreadCount > 0 && (
           <button 
-            className="mark-all-read-btn"
-            onClick={handleMarkAllAsRead}
-            disabled={loadingActions.markAll}
+            onClick={handleMarkAllRead}
+            className="mark-read-btn"
           >
-            {loadingActions.markAll ? 'Processing...' : 'Mark all as read'}
+            Mark All as Read ({unreadCount})
           </button>
         )}
       </div>
-      
-      {notifications.length > 0 ? (
-        <ul className="notifications-list">
-          {notifications.map(notification => (
-            <li 
-              key={notification.id} 
-              className={`notification-item ${!notification.is_read ? 'unread' : ''}`}
+
+      <div className="notifications-list">
+        {notifications.length === 0 ? (
+          <div className="empty-notifications">
+            No notifications yet
+          </div>
+        ) : (
+          notifications.map(notification => (
+            <NavLink
+              key={notification.id}
+              to={notification.link || "#"}
+              className={`notification ${notification.is_read ? 'read' : 'unread'}`}
             >
-              <div className="notification-content-wrapper">
-                <Link to={`/users/${notification.sender.id}`} className="notification-link">
-                  <div className="notification-avatar">
-                    <img 
-                      src={notification.sender.profile_img || '/default-avatar.png'} 
-                      alt={notification.sender.username} 
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = '/default-avatar.png';
-                      }}
-                    />
-                  </div>
-                  <div className="notification-content">
-                    <p className="notification-message">{notification.message}</p>
-                    <p className="notification-time">
-                      {new Date(notification.created_at).toLocaleString()}
-                    </p>
-                  </div>
-                </Link>
-                
-                {notification.notification_type === 'friend_request' && (
-                  <div className="friend-request-actions">
-                    <button 
-                      className="accept-btn"
-                      onClick={() => handleAcceptRequest(notification.sender.id)}
-                      disabled={loadingActions[notification.sender.id] === 'accepting'}
-                    >
-                      {loadingActions[notification.sender.id] === 'accepting' 
-                        ? 'Accepting...' 
-                        : 'Accept'}
-                    </button>
-                    <button 
-                      className="decline-btn"
-                      onClick={() => handleDeclineRequest(notification.sender.id)}
-                      disabled={loadingActions[notification.sender.id] === 'declining'}
-                    >
-                      {loadingActions[notification.sender.id] === 'declining' 
-                        ? 'Declining...' 
-                        : 'Decline'}
-                    </button>
-                  </div>
-                )}
+              <div className="notification-avatar">
+                <img 
+                  src={notification.sender?.profile_img || '/default-user.png'} 
+                  alt={notification.sender?.username}
+                />
               </div>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="no-notifications">No notifications yet</p>
-      )}
+              <div className="notification-content">
+                <p>{notification.message}</p>
+                <small>
+                  {new Date(notification.created_at).toLocaleString()}
+                </small>
+              </div>
+              {!notification.is_read && (
+                <div className="unread-dot"></div>
+              )}
+            </NavLink>
+          ))
+        )}
+      </div>
     </div>
   );
 }
-
-export default NotificationsPage;
