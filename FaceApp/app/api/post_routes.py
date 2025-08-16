@@ -2,37 +2,50 @@ from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 from app.models import db, Post, Like, Comment, Friend, User
 from sqlalchemy import or_, and_
+from datetime import datetime
 
 post_routes = Blueprint('posts', __name__)
+
+def serialize_comment(comment):
+    return {
+        "id": comment.id,
+        "user_id": comment.user_id,
+        "post_id": comment.post_id,
+        "body": comment.body,
+        "created_at": comment.created_at.isoformat() if comment.created_at else None,
+        "updated_at": comment.updated_at.isoformat() if comment.updated_at else None,
+        "user": {
+            "id": comment.user.id,
+            "username": comment.user.username,
+            "profile_img": comment.user.profile_img
+        }
+    }
 
 def serialize_post(post):
     liked_by_current_user = any(like.user_id == current_user.id for like in post.likes)
     return {
-        **post.to_dict(),
-        "user_firstname": post.user.firstname,
-        "user_lastname": post.user.lastname,
-        "user_profile_img": post.user.profile_img,
-        "comment_count": len(post.comments),
-        "likes_count": len(post.likes),
-        "liked_by_current_user": liked_by_current_user
+        "id": post.id,
+        "user_id": post.user_id,
+        "body": post.body,
+        "image_url": post.image_url,
+        "created_at": post.created_at.isoformat() if post.created_at else None,
+        "updated_at": post.updated_at.isoformat() if post.updated_at else None,
+        "user": {
+            "id": post.user.id,
+            "username": post.user.username,
+            "profile_img": post.user.profile_img
+        },
+        "comments": [serialize_comment(c) for c in post.comments],
+        "like_count": len(post.likes),
+        "liked_by_user": liked_by_current_user
     }
 
-def serialize_comment(comment):
-    return {
-        **comment.to_dict(),
-        "user_firstname": comment.user.firstname,
-        "user_lastname": comment.user.lastname,
-        "user_profile_img": comment.user.profile_img
-    }
-
-# ✅ GET ALL POSTS
 @post_routes.route('/')
 @login_required
 def get_all_posts():
     posts = Post.query.order_by(Post.created_at.desc()).all()
     return {'posts': [serialize_post(post) for post in posts]}
 
-# ✅ GET USER'S POSTS BY USER_ID
 @post_routes.route('/user/<int:user_id>')
 @login_required
 def get_user_posts(user_id):
@@ -40,7 +53,6 @@ def get_user_posts(user_id):
     posts = Post.query.filter_by(user_id=user.id).order_by(Post.created_at.desc()).all()
     return {'posts': [serialize_post(post) for post in posts]}
 
-# ✅ CREATE POST
 @post_routes.route('/', methods=['POST'])
 @login_required
 def create_post():
@@ -54,7 +66,6 @@ def create_post():
     db.session.commit()
     return serialize_post(post), 201
 
-# ✅ UPDATE POST
 @post_routes.route('/<int:post_id>', methods=['PUT'])
 @login_required
 def update_post(post_id):
@@ -68,7 +79,6 @@ def update_post(post_id):
     db.session.commit()
     return serialize_post(post), 200
 
-# ✅ DELETE POST
 @post_routes.route('/<int:post_id>', methods=['DELETE'])
 @login_required
 def delete_post(post_id):
@@ -80,7 +90,6 @@ def delete_post(post_id):
     db.session.commit()
     return {'message': 'Post deleted successfully'}, 200
 
-# ✅ TOGGLE LIKE
 @post_routes.route('/<int:post_id>/like', methods=['POST'])
 @login_required
 def toggle_like(post_id):
@@ -96,26 +105,25 @@ def toggle_like(post_id):
         action = 'liked'
     
     db.session.commit()
-    
-    # Return updated post data
-    updated_post = Post.query.get_or_404(post_id)
-    return serialize_post(updated_post), 200
+    return serialize_post(post), 200
 
-# ✅ ADD COMMENT
 @post_routes.route('/<int:post_id>/comments', methods=['POST'])
 @login_required
 def add_comment(post_id):
     data = request.get_json()
+    if not data.get('body'):
+        return {'error': 'Comment text is required'}, 400
+
+    post = Post.query.get_or_404(post_id)
     comment = Comment(
         user_id=current_user.id,
         post_id=post_id,
-        content=data.get('content')
+        body=data['body'].strip()
     )
     db.session.add(comment)
     db.session.commit()
     return serialize_comment(comment), 201
 
-# ✅ GET COMMENTS
 @post_routes.route('/<int:post_id>/comments', methods=['GET'])
 @login_required
 def get_comments(post_id):
@@ -124,11 +132,9 @@ def get_comments(post_id):
                            .all()
     return {'comments': [serialize_comment(comment) for comment in comments]}, 200
 
-# ✅ GET FRIENDS POSTS
 @post_routes.route('/friends', methods=['GET'])
 @login_required
 def get_friends_posts():
-    # Get friends posts
     friends = Friend.query.filter(
         or_(
             and_(Friend.user_id == current_user.id, Friend.status == 'accepted'),
@@ -147,12 +153,10 @@ def get_friends_posts():
                      .order_by(Post.created_at.desc())\
                      .all()
 
-    # Get current user's posts
     user_posts = Post.query.filter_by(user_id=current_user.id)\
                    .order_by(Post.created_at.desc())\
                    .all()
 
     return {
-        'friends_posts': [serialize_post(post) for post in friends_posts],
-        'user_posts': [serialize_post(post) for post in user_posts]
+        'posts': [serialize_post(post) for post in [*friends_posts, *user_posts]]
     }, 200

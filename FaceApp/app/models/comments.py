@@ -10,7 +10,7 @@ class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey(add_prefix_for_prod('users.id')), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey(add_prefix_for_prod('posts.id')), nullable=False)
-    body = db.Column(db.Text, nullable=False)  # Key field (matches frontend/backend)
+    body = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
 
@@ -22,8 +22,12 @@ class Comment(db.Model):
             "id": self.id,
             "user_id": self.user_id,
             "post_id": self.post_id,
-            "body": self.body,  # Ensure this matches API responses
+            "body": self.body,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
-            "user": self.user.to_dict_basic() if self.user else None
+            "user": {
+                "id": self.user.id,
+                "username": self.user.username,
+                "profile_img": self.user.profile_img
+            }
         }

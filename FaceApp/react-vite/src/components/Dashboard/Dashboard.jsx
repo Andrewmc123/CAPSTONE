@@ -7,7 +7,7 @@ import {
   thunkLikePost, 
   thunkAddComment, 
   thunkCreatePost, 
-  thunkDeletePost 
+  thunkDeletePost
 } from '../../redux/posts';
 import { getFriends } from '../../redux/friends';
 import FriendsSidebar from '../FriendsSidebar/FriendsSidebar';
@@ -15,7 +15,6 @@ import UserLink from '../UserLink/UserLink';
 import './Dashboard.css';
 
 function Dashboard() {
-  // Initialize all state first
   const [filterFriendsOnly, setFilterFriendsOnly] = useState(false);
   const [commentTexts, setCommentTexts] = useState({});
   const [showComments, setShowComments] = useState({});
@@ -23,14 +22,12 @@ function Dashboard() {
   const [postImage, setPostImage] = useState(null);
   const [isCommenting, setIsCommenting] = useState({});
 
-  // Redux state
   const sessionUser = useSelector(state => state.session.user);
   const dispatch = useDispatch();
   const friendsState = useSelector(state => state.friends);
   const { loading, error } = useSelector(state => state.posts);
   const commentInputRefs = useRef({});
   
-  // Post selection logic
   const allPosts = useSelector(state => {
     const posts = filterFriendsOnly 
       ? Object.values(state.posts.friendsPosts || {})
@@ -41,7 +38,6 @@ function Dashboard() {
   
   const friends = Object.values(friendsState.friends || {});
 
-  // Load initial data
   useEffect(() => {
     if (sessionUser) {
       dispatch(getFriends());
@@ -60,7 +56,7 @@ function Dashboard() {
   const handleLike = async (postId) => {
     try {
       await dispatch(thunkLikePost(postId));
-      loadPosts(); // Refresh the posts after like
+      loadPosts();
     } catch (error) {
       console.error('Error liking post:', error);
     }
@@ -72,9 +68,9 @@ function Dashboard() {
     setIsCommenting(prev => ({ ...prev, [postId]: true }));
     try {
       const scrollPosition = window.scrollY;
-      await dispatch(thunkAddComment(postId, { content: commentTexts[postId] }));
+      await dispatch(thunkAddComment(postId, { body: commentTexts[postId] }));
       setCommentTexts(prev => ({ ...prev, [postId]: '' }));
-      loadPosts(); // Refresh posts to show new comment
+      loadPosts();
       window.scrollTo(0, scrollPosition);
     } catch (error) {
       console.error('Error adding comment:', error);
@@ -97,13 +93,13 @@ function Dashboard() {
       const postData = { 
         body: postContent,
         image_url: postImage,
-        friendsOnly: filterFriendsOnly // Pass this to determine where to add the post
+        friendsOnly: filterFriendsOnly
       };
       
       await dispatch(thunkCreatePost(postData));
       setPostContent('');
       setPostImage(null);
-      loadPosts(); // Refresh posts after creation
+      loadPosts();
     } catch (error) {
       console.error('Error creating post:', error);
     }
@@ -113,7 +109,7 @@ function Dashboard() {
     if (window.confirm('Are you sure you want to delete this post?')) {
       try {
         await dispatch(thunkDeletePost(postId));
-        loadPosts(); // Refresh posts after deletion
+        loadPosts();
       } catch (error) {
         console.error('Error deleting post:', error);
       }

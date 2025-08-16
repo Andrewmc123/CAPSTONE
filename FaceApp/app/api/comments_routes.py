@@ -9,93 +9,118 @@ comments_routes = Blueprint('comments', __name__)
 @comments_routes.route('/', methods=['GET'])
 @login_required
 def get_all_comments():
-    comments = Comment.query.order_by(Comment.created_at.desc()).all()
-    return [comment.to_dict() for comment in comments], 200
+    try:
+        comments = Comment.query.order_by(Comment.created_at.desc()).all()
+        return [comment.to_dict() for comment in comments], 200
+    except Exception as e:
+        return {'errors': {'message': str(e)}}, 500
 
 
 # Add a comment to a post
 @comments_routes.route('/<int:post_id>', methods=['POST'])
 @login_required
 def create_comment(post_id):
-    data = request.get_json()
-    content = data.get('content')
+    try:
+        data = request.get_json()
+        # Handle both 'content' (frontend) and 'body' (backward compatibility)
+        body = data.get('content') or data.get('body')
+        
+        if not body or body.strip() == "":
+            return {'errors': {'message': 'Comment text is required'}}, 400
 
-    if not content or content.strip() == "":
-        return {'errors': {'content': 'Comment content is required'}}, 400
+        post = Post.query.get(post_id)
+        if not post:
+            return {'errors': {'message': 'Post not found'}}, 404
 
-    # Create the comment
-    comment = Comment(
-        user_id=current_user.id,
-        post_id=post_id,
-        body=content.strip(),
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow()
-    )
-    db.session.add(comment)
-    db.session.commit()
-
-    # Prepare notification if commenter is not the post owner
-    notification_data = None
-    post = Post.query.get(post_id)
-    if post and post.user_id != current_user.id:
-        notification = Notification(
-            recipient_id=post.user_id,
-            sender_id=current_user.id,
-            notification_type="post_comment",
+        comment = Comment(
+            user_id=current_user.id,
             post_id=post_id,
-            comment_id=comment.id,
-            message=None,  # Will auto-generate in Notification.to_dict()
-            link=None,     # Will auto-generate in Notification.to_dict()
-            is_read=False,
+            body=body.strip(),
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow()
         )
-        db.session.add(notification)
+        db.session.add(comment)
         db.session.commit()
-        notification_data = notification.to_dict()
 
-    return {
-        "comment": comment.to_dict(),
-        "notification": notification_data
-    }, 201
+        # Prepare notification if commenter is not the post owner
+        notification_data = None
+        if post.user_id != current_user.id:
+            notification = Notification(
+                recipient_id=post.user_id,
+                sender_id=current_user.id,
+                notification_type="post_comment",
+                post_id=post_id,
+                comment_id=comment.id,
+                is_read=False,
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+            db.session.add(notification)
+            db.session.commit()
+            notification_data = notification.to_dict()
+
+        return {
+            "comment": {
+                **comment.to_dict(),
+                "user": current_user.to_dict_basic()
+            },
+            "notification": notification_data
+        }, 201
+
+    except Exception as e:
+        db.session.rollback()
+        return {'errors': {'message': str(e)}}, 500
 
 
 # Update a comment
 @comments_routes.route('/<int:comment_id>', methods=['PUT'])
 @login_required
 def update_comment(comment_id):
-    data = request.get_json()
-    comment_text = data.get('content')
+    try:
+        data = request.get_json()
+        body = data.get('content') or data.get('body')
 
-    if not comment_text or comment_text.strip() == "":
+        if not body or body.strip() == "":
+            return {
+                "message": "Validation error",
+                "errors": {"content": "Comment text is required"}
+            }, 400
+
+        comment = Comment.query.get(comment_id)
+        if not comment:
+            return {"message": "Comment not found"}, 404
+        if comment.user_id != current_user.id:
+            return {"message": "Unauthorized"}, 403
+
+        comment.body = body.strip()
+        comment.updated_at = datetime.utcnow()
+        db.session.commit()
+
         return {
-            "message": "Validation error",
-            "errors": {"content": "Comment text is required"}
-        }, 400
+            **comment.to_dict(),
+            "user": current_user.to_dict_basic()
+        }, 200
 
-    comment = Comment.query.get(comment_id)
-
-    if not comment or comment.user_id != current_user.id:
-        return {"message": "Comment couldn't be found or does not belong to the current user"}, 404
-
-    comment.body = comment_text.strip()
-    comment.updated_at = datetime.utcnow()
-
-    db.session.commit()
-
-    return comment.to_dict(), 200
+    except Exception as e:
+        db.session.rollback()
+        return {'errors': {'message': str(e)}}, 500
 
 
 # Delete a comment
 @comments_routes.route('/<int:comment_id>', methods=['DELETE'])
 @login_required
 def delete_comment(comment_id):
-    comment = Comment.query.get(comment_id)
+    try:
+        comment = Comment.query.get(comment_id)
+        if not comment:
+            return {"message": "Comment not found"}, 404
+        if comment.user_id != current_user.id:
+            return {"message": "Unauthorized"}, 403
 
-    if not comment or comment.user_id != current_user.id:
-        return {"message": "Comment couldn't be found or does not belong to the current user"}, 404
+        db.session.delete(comment)
+        db.session.commit()
+        return {"message": "Successfully deleted"}, 200
 
-    db.session.delete(comment)
-    db.session.commit()
-
-    return {"message": "Successfully deleted"}, 200
+    except Exception as e:
+        db.session.rollback()
+        return {'errors': {'message': str(e)}}, 500
