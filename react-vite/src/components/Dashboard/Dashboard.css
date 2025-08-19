@@ -535,3 +535,27 @@
     align-self: flex-end;
   }
 }
+
+.clickable-username {
+  cursor: pointer;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.clickable-username:hover {
+  color: #0095f6;
+  text-decoration: underline;
+}
+
+.post-username.clickable-username {
+  margin-left: 12px;
+}
+
+.caption-username.clickable-username {
+  margin-right: 5px;
+}
+
+.comment-username.clickable-username {
+  margin-right: 5px;
+  font-weight: 600;
+}

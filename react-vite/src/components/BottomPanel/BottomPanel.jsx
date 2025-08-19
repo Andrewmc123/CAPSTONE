@@ -23,6 +23,13 @@ const BottomPanel = () => {
           <span>Camera</span>
         </NavLink>
         <NavLink 
+          to='/Vault' 
+          className={({ isActive }) => isActive ? "panel-link active" : "panel-link"}
+        >
+          <i className="icon-vault">🔒</i>
+          <span>Vault</span>
+        </NavLink>
+        <NavLink 
           to='/notifications' 
           className={({ isActive }) => isActive ? "panel-link active" : "panel-link"}
         >

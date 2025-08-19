@@ -1,6 +1,6 @@
 import { useSelector, useDispatch } from 'react-redux';
-import { useEffect, useState, useRef } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { 
   getAllPosts, 
   getFriendsPosts, 
@@ -11,7 +11,6 @@ import {
 } from '../../redux/posts';
 import { getFriends } from '../../redux/friends';
 import FriendsSidebar from '../FriendsSidebar/FriendsSidebar';
-import UserLink from '../UserLink/UserLink';
 import './Dashboard.css';
 
 function Dashboard() {
@@ -30,43 +29,49 @@ function Dashboard() {
   const { loading, error } = useSelector(state => state.posts);
   const commentInputRefs = useRef({});
   const location = useLocation();
+  const navigate = useNavigate();
   
   const allPosts = useSelector(state => {
     const posts = filterFriendsOnly 
       ? Object.values(state.posts.friendsPosts || {})
       : Object.values(state.posts.posts || {});
-    
     return posts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   });
   
   const friends = Object.values(friendsState.friends || {});
+
+  // Fix: useCallback to memoize loadPosts function
+  const loadPosts = useCallback(() => {
+    if (filterFriendsOnly) {
+      dispatch(getFriendsPosts());
+    } else {
+      dispatch(getAllPosts());
+    }
+  }, [dispatch, filterFriendsOnly]);
 
   useEffect(() => {
     if (sessionUser) {
       dispatch(getFriends());
       loadPosts();
     }
-  }, [dispatch, sessionUser]);
+  }, [dispatch, sessionUser, loadPosts]);
 
-  const loadPosts = () => {
-    if (filterFriendsOnly) {
-      dispatch(getFriendsPosts());
-    } else {
-      dispatch(getAllPosts());
-    }
+  // Add function to handle profile navigation
+  const handleProfileClick = (userId) => {
+    navigate(`/profile/${userId}`);
   };
 
+  // Auto-resize comment textareas
   useEffect(() => {
     const resizeTextarea = (textarea) => {
       textarea.style.height = 'auto';
       textarea.style.height = `${textarea.scrollHeight}px`;
     };
 
-    const handleTextareaInput = (e) => {
-      resizeTextarea(e.target);
-    };
+    const handleTextareaInput = (e) => resizeTextarea(e.target);
 
-    Object.values(commentInputRefs.current).forEach(textarea => {
+    const currentRefs = commentInputRefs.current;
+    Object.values(currentRefs).forEach(textarea => {
       if (textarea) {
         textarea.addEventListener('input', handleTextareaInput);
         resizeTextarea(textarea);
@@ -74,21 +79,18 @@ function Dashboard() {
     });
 
     return () => {
-      Object.values(commentInputRefs.current).forEach(textarea => {
-        if (textarea) {
-          textarea.removeEventListener('input', handleTextareaInput);
-        }
+      Object.values(currentRefs).forEach(textarea => {
+        if (textarea) textarea.removeEventListener('input', handleTextareaInput);
       });
     };
   }, [commentTexts]);
 
+  // Scroll to specific comments if requested
   useEffect(() => {
     if (location?.state?.scrollToComments) {
       setTimeout(() => {
         const commentsSection = document.querySelector('.comments-section');
-        if (commentsSection) {
-          commentsSection.scrollIntoView({ behavior: 'smooth' });
-        }
+        if (commentsSection) commentsSection.scrollIntoView({ behavior: 'smooth' });
       }, 500);
     } else if (location?.state?.scrollToComment) {
       setTimeout(() => {
@@ -96,9 +98,7 @@ function Dashboard() {
         if (commentElement) {
           commentElement.scrollIntoView({ behavior: 'smooth' });
           commentElement.classList.add('highlight-comment');
-          setTimeout(() => {
-            commentElement.classList.remove('highlight-comment');
-          }, 2000);
+          setTimeout(() => commentElement.classList.remove('highlight-comment'), 2000);
         }
       }, 500);
     }
@@ -116,9 +116,9 @@ function Dashboard() {
   const handleCommentSubmit = async (postId) => {
     const commentText = commentTexts[postId]?.trim();
     if (!commentText) return;
-    
+
     setIsCommenting(prev => ({ ...prev, [postId]: true }));
-    
+
     const tempComment = {
       id: `temp-${Date.now()}`,
       body: commentText,
@@ -140,7 +140,7 @@ function Dashboard() {
       const scrollPosition = window.scrollY;
       await dispatch(thunkAddComment(postId, { body: commentText }));
       setCommentTexts(prev => ({ ...prev, [postId]: '' }));
-      
+
       setOptimisticComments(prev => {
         const newState = { ...prev };
         if (newState[postId]) {
@@ -168,22 +168,16 @@ function Dashboard() {
   };
 
   const handleDeleteComment = async (postId, commentId) => {
-    const confirmMessage = 'Are you sure you want to delete this comment?';
-    
-    if (!window.confirm(confirmMessage)) return;
+    if (!window.confirm('Are you sure you want to delete this comment?')) return;
 
     try {
       const response = await fetch(`/api/posts/${postId}/comments/${commentId}`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include'
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to delete comment');
-      }
+      if (!response.ok) throw new Error('Failed to delete comment');
 
       setOptimisticComments(prev => {
         const newState = { ...prev };
@@ -201,30 +195,21 @@ function Dashboard() {
   };
 
   const toggleComments = (postId) => {
-    setShowComments(prev => ({
-      ...prev,
-      [postId]: !prev[postId]
-    }));
-    
-    // Focus the textarea after a small delay to ensure it's rendered
+    setShowComments(prev => ({ ...prev, [postId]: !prev[postId] }));
     setTimeout(() => {
-      if (commentInputRefs.current[postId]) {
-        commentInputRefs.current[postId].focus();
-      }
+      if (commentInputRefs.current[postId]) commentInputRefs.current[postId].focus();
     }, 50);
   };
 
   const handlePostSubmit = async () => {
     if (!postContent.trim()) return;
-    
+
     try {
       const formData = new FormData();
       formData.append('body', postContent);
       formData.append('friendsOnly', filterFriendsOnly);
-      if (postImageFile) {
-        formData.append('image', postImageFile);
-      }
-      
+      if (postImageFile) formData.append('image', postImageFile);
+
       await dispatch(thunkCreatePost(formData));
       setPostContent('');
       setPostImage(null);
@@ -236,9 +221,7 @@ function Dashboard() {
   };
 
   const handleDeletePost = async (postId) => {
-    const confirmMessage = 'Are you sure you want to delete this post?';
-    
-    if (!window.confirm(confirmMessage)) return;
+    if (!window.confirm('Are you sure you want to delete this post?')) return;
 
     try {
       await dispatch(thunkDeletePost(postId));
@@ -251,18 +234,14 @@ function Dashboard() {
   const getCombinedComments = (post) => {
     const realComments = Array.isArray(post.comments) ? post.comments : [];
     const optimistic = optimisticComments[post.id] || [];
-    return [...optimistic, ...realComments].sort((a, b) => 
-      new Date(a.created_at) - new Date(b.created_at)
-    );
+    return [...optimistic, ...realComments].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
   };
 
   const formatPostTime = (dateString) => {
     if (!dateString) return 'recently';
-    
     const now = new Date();
     const postDate = new Date(dateString);
     const diffInSeconds = Math.floor((now - postDate) / 1000);
-    
     if (diffInSeconds < 60) return 'just now';
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
@@ -270,19 +249,11 @@ function Dashboard() {
   };
 
   const PostList = () => {
-    if (loading && allPosts.length === 0) {
-      return <div className="loading-spinner">Loading posts...</div>;
-    }
-
-    if (error) {
-      return <div className="error-message">{error}</div>;
-    }
-
+    if (loading && allPosts.length === 0) return <div className="loading-spinner">Loading posts...</div>;
+    if (error) return <div className="error-message">{error}</div>;
     if (!allPosts || allPosts.length === 0) {
       return <div className="no-posts">
-        {filterFriendsOnly 
-          ? "Your friends haven't posted anything yet" 
-          : "No posts to display. Be the first to post!"}
+        {filterFriendsOnly ? "Your friends haven't posted anything yet" : "No posts to display. Be the first to post!"}
       </div>;
     }
 
@@ -294,65 +265,70 @@ function Dashboard() {
               <div className="post-user">
                 <div className="post-avatar">
                   {post.user?.profile_img ? (
-                    <img src={post.user.profile_img} alt={post.user.username} />
-                  ) : (
-                    <div className="avatar-fallback">
-                      {post.user?.username?.[0]?.toUpperCase() || 'U'}
-                    </div>
-                  )}
+                    <img 
+                      src={post.user.profile_img} 
+                      alt={post.user.username}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        // Show fallback
+                        const fallback = e.target.nextElementSibling;
+                        if (fallback) fallback.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div 
+                    className="avatar-fallback"
+                    style={{display: post.user?.profile_img ? 'none' : 'flex'}}
+                  >
+                    {post.user?.username?.[0]?.toUpperCase() || 'U'}
+                  </div>
                 </div>
-                <UserLink user={post.user}>
-                  <span className="post-username">{post.user?.username || 'Unknown'}</span>
-                </UserLink>
+                {/* Make the username clickable */}
+                <span 
+                  className="post-username clickable-username"
+                  onClick={() => handleProfileClick(post.user.id)}
+                >
+                  {post.user?.username || 'Unknown'}
+                </span>
               </div>
               <div>
-                <span className="post-time">
-                  {formatPostTime(post.created_at)}
-                </span>
+                <span className="post-time">{formatPostTime(post.created_at)}</span>
                 {post.user?.id === sessionUser.id && (
-                  <button 
-                    className="delete-post-btn"
-                    onClick={() => handleDeletePost(post.id)}
-                    disabled={loading}
-                  >
+                  <button className="delete-post-btn" onClick={() => handleDeletePost(post.id)} disabled={loading}>
                     {loading ? '...' : '🗑️'}
                   </button>
                 )}
               </div>
             </div>
-            
+
             {post.image_url && (
               <div className="post-image-container">
                 <img src={post.image_url} alt="Post content" className="post-image" />
               </div>
             )}
-            
+
             <div className="post-likes">{post.like_count || 0} likes</div>
-            
+
             <div className="post-actions">
-              <button 
-                className={`post-action-btn ${post.liked_by_user ? 'liked' : ''}`}
-                onClick={() => handleLike(post.id)}
-                disabled={loading}
-              >
-                <i className="icon-heart">
-                  {post.liked_by_user ? '❤️' : '♡'}
-                </i>
+              <button className={`post-action-btn ${post.liked_by_user ? 'liked' : ''}`} onClick={() => handleLike(post.id)} disabled={loading}>
+                <i className="icon-heart">{post.liked_by_user ? '❤️' : '♡'}</i>
               </button>
-              <button 
-                className="post-action-btn"
-                onClick={() => toggleComments(post.id)}
-                disabled={loading}
-              >
+              <button className="post-action-btn" onClick={() => toggleComments(post.id)} disabled={loading}>
                 <i className="icon-comment">🗨</i>
               </button>
               <button className="post-action-btn" disabled={loading}>
                 <i className="icon-share">↗</i>
               </button>
             </div>
-            
+
             <div className="post-caption">
-              <span className="caption-username">{post.user?.username || ''}</span>
+              {/* Make caption username clickable too */}
+              <span 
+                className="caption-username clickable-username"
+                onClick={() => handleProfileClick(post.user.id)}
+              >
+                {post.user?.username || ''}
+              </span>
               <span className="caption-text">{post.body}</span>
             </div>
 
@@ -360,19 +336,17 @@ function Dashboard() {
               <div className="comments-section">
                 {getCombinedComments(post).map((comment) => (
                   comment && (
-                    <div 
-                      key={comment.id || `temp-${Math.random()}`} 
-                      id={`comment-${comment.id}`} 
-                      className={`comment ${comment.isOptimistic ? 'optimistic-comment' : ''}`}
-                    >
-                      <span className="comment-username">{comment.user?.username || sessionUser.username}</span>
+                    <div key={comment.id || `temp-${Math.random()}`} id={`comment-${comment.id}`} className={`comment ${comment.isOptimistic ? 'optimistic-comment' : ''}`}>
+                      {/* Make comment username clickable */}
+                      <span 
+                        className="comment-username clickable-username"
+                        onClick={() => handleProfileClick(comment.user.id)}
+                      >
+                        {comment.user?.username || sessionUser.username}
+                      </span>
                       <span className="comment-text">{comment.body}</span>
                       {comment.user?.id === sessionUser.id && (
-                        <button 
-                          className="delete-comment-btn"
-                          onClick={() => handleDeleteComment(post.id, comment.id)}
-                          disabled={loading}
-                        >
+                        <button className="delete-comment-btn" onClick={() => handleDeleteComment(post.id, comment.id)} disabled={loading}>
                           {loading ? '...' : '✕'}
                         </button>
                       )}
@@ -384,10 +358,7 @@ function Dashboard() {
                     ref={el => commentInputRefs.current[post.id] = el}
                     placeholder="Add a comment..."
                     value={commentTexts[post.id] || ''}
-                    onChange={(e) => setCommentTexts(prev => ({
-                      ...prev,
-                      [post.id]: e.target.value
-                    }))}
+                    onChange={(e) => setCommentTexts(prev => ({ ...prev, [post.id]: e.target.value }))}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
@@ -399,26 +370,17 @@ function Dashboard() {
                     rows={1}
                     className="comment-textarea"
                   />
-                  <button 
-                    className="comment-submit-btn"
-                    onClick={() => handleCommentSubmit(post.id)}
-                    disabled={loading || isCommenting[post.id] || !commentTexts[post.id]?.trim()}
-                  >
+                  <button className="comment-submit-btn" onClick={() => handleCommentSubmit(post.id)} disabled={loading || isCommenting[post.id] || !commentTexts[post.id]?.trim()}>
                     {isCommenting[post.id] ? 'Posting...' : 'Post'}
                   </button>
                 </div>
               </div>
             )}
 
-            <div 
-              className="post-comments" 
-              onClick={() => toggleComments(post.id)}
-            >
+            <div className="post-comments" onClick={() => toggleComments(post.id)}>
               {post.comments?.length ? `View all ${post.comments.length} comments` : 'View comments'}
             </div>
-            <div className="post-time-full">
-              Posted {formatPostTime(post.created_at)}
-            </div>
+            <div className="post-time-full">Posted {formatPostTime(post.created_at)}</div>
           </div>
         ))}
       </div>
@@ -437,15 +399,7 @@ function Dashboard() {
             <div className="filter-bar-container">
               <div className="filter-bar">
                 <label className="filter-toggle">
-                  <input
-                    type="checkbox"
-                    checked={filterFriendsOnly}
-                    onChange={(e) => {
-                      setFilterFriendsOnly(e.target.checked);
-                      loadPosts();
-                    }}
-                    disabled={loading}
-                  />
+                  <input type="checkbox" checked={filterFriendsOnly} onChange={(e) => { setFilterFriendsOnly(e.target.checked); loadPosts(); }} disabled={loading} />
                   <span className="toggle-slider"></span>
                   <span className="filter-text">Friends Only</span>
                 </label>
@@ -455,48 +409,26 @@ function Dashboard() {
         </div>
 
         <div className="post-form">
-          <textarea 
-            placeholder="What's happening in your area?" 
-            className="post-textarea"
-            rows="3"
-            value={postContent}
-            onChange={(e) => setPostContent(e.target.value)}
-            disabled={loading}
-          />
+          <textarea placeholder="What's happening in your area?" className="post-textarea" rows="3" value={postContent} onChange={(e) => setPostContent(e.target.value)} disabled={loading} />
           {postImage && (
             <div className="post-image-preview">
               <img src={postImage} alt="Preview" />
-              <button onClick={() => {
-                setPostImage(null);
-                setPostImageFile(null);
-              }} disabled={loading}>
-                Remove
-              </button>
+              <button onClick={() => { setPostImage(null); setPostImageFile(null); }} disabled={loading}>Remove</button>
             </div>
           )}
           <div className="post-actions">
             <label className="add-photo-btn" style={loading ? { opacity: 0.5 } : {}}>
               <i className="icon-camera">📷</i> Photo
-              <input 
-                type="file" 
-                style={{ display: 'none' }}
-                accept="image/*"
-                onChange={(e) => {
-                  if (loading) return;
-                  const file = e.target.files[0];
-                  if (file) {
-                    setPostImageFile(file);
-                    setPostImage(URL.createObjectURL(file));
-                  }
-                }}
-                disabled={loading}
-              />
+              <input type="file" style={{ display: 'none' }} accept="image/*" onChange={(e) => {
+                if (loading) return;
+                const file = e.target.files[0];
+                if (file) {
+                  setPostImageFile(file);
+                  setPostImage(URL.createObjectURL(file));
+                }
+              }} disabled={loading} />
             </label>
-            <button 
-              className="post-update-btn"
-              onClick={handlePostSubmit}
-              disabled={loading || !postContent.trim()}
-            >
+            <button className="post-update-btn" onClick={handlePostSubmit} disabled={loading || !postContent.trim()}>
               {loading ? 'Posting...' : 'Post Update'}
             </button>
           </div>
@@ -508,11 +440,7 @@ function Dashboard() {
         </div>
       </div>
 
-      <FriendsSidebar 
-        friends={friends} 
-        sessionUser={sessionUser} 
-        loading={loading}
-      />
+      <FriendsSidebar friends={friends} sessionUser={sessionUser} loading={loading} />
     </div>
   );
 }

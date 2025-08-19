@@ -9,6 +9,9 @@ import Layout from './Layout';
 import UserProfilePage from '../components/UserProfilePage'; 
 import Friends from '../components/Friend/Friend';
 import NotificationsPage from '../components/NotificationPage/NotificationsPage';
+import Camera from '../components/Camera/Camera';
+import Vault from '../components/Vault/Vault';
+
 
 const createAppRouter = () => {
   const AuthRedirect = ({ children }) => {
@@ -33,6 +36,10 @@ const createAppRouter = () => {
         { path: "/signup", element: <AuthRedirect><SignupFormPage /></AuthRedirect> },
         { path: "/users/:userId", element: <AuthCheck><UserProfilePage /></AuthCheck> },
         { path: "/notifications", element: <AuthCheck><NotificationsPage /></AuthCheck> },
+        { path: "/camera", element: <AuthCheck><Camera /></AuthCheck> },
+        { path: "/vault", element: <AuthCheck><Vault /></AuthCheck> },
+        { path: "/login", element: <AuthCheck><LoginFormPage /></AuthCheck> },
+        { path: "/signup", element: <AuthCheck><SignupFormPage /></AuthCheck> },
       ],
     },
   ]);

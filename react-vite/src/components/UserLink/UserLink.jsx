@@ -1,11 +1,15 @@
-import { NavLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
-const UserLink = ({ user, children }) => {
+export default function UserLink({ user, children }) {
+  if (!user) return <span>{children}</span>;
+  
   return (
-    <NavLink to={`/users/${user.id}`} className="user-link">
-      {children || user.username}
-    </NavLink>
+    <Link 
+      to={`/users/${user.id}`}
+      className="user-link"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {children}
+    </Link>
   );
-};
-
-export default UserLink;
+}

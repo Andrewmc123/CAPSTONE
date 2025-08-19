@@ -1,108 +1,303 @@
-/* Fullscreen background image party vibe */
-.home-box-container {
+/* Home.css - Matching Login Page Style */
+.home-container {
+  position: relative;
   min-height: 100vh;
+  width: 100%;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: url('/images/aboutlastnight.png') no-repeat center center/cover;
+  background-color: #000;
+  background-image: url('https://images.unsplash.com/photo-1541532713592-79a0317b6b77?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1738&q=80');
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
   padding: 20px;
-  backdrop-filter: brightness(0.9);
 }
 
-/* Central content box */
-.home-box {
-  background: rgba(10, 10, 10, 0.85); /* semi-transparent black */
-  padding: 40px 50px;
-  border-radius: 16px;
-  box-shadow: 0 0 35px rgba(128, 0, 128, 0.5);
+.home-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  max-width: 420px;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 1;
+}
+
+/* Color orbs (same as login) */
+.color-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+  z-index: 2;
+}
+
+.orb1 {
+  width: 250px;
+  height: 250px;
+  background: #ff00cc;
+  top: -50px;
+  left: -50px;
+  animation: float1 15s infinite ease-in-out;
+}
+
+.orb2 {
+  width: 200px;
+  height: 200px;
+  background: #3300ff;
+  bottom: -30px;
+  right: -30px;
+  animation: float2 18s infinite ease-in-out;
+}
+
+.orb3 {
+  width: 180px;
+  height: 180px;
+  background: #00ffcc;
+  bottom: 30%;
+  left: 10%;
+  animation: float3 20s infinite ease-in-out;
+}
+
+.orb4 {
+  width: 150px;
+  height: 150px;
+  background: #ff3300;
+  top: 20%;
+  right: 15%;
+  animation: float4 12s infinite ease-in-out;
+}
+
+@keyframes float1 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(50px, 50px); }
+}
+
+@keyframes float2 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-50px, -30px); }
+}
+
+@keyframes float3 {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(30px, -30px); }
+  66% { transform: translate(-30px, 30px); }
+}
+
+@keyframes float4 {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(40px, 0); }
+  50% { transform: translate(0, 40px); }
+  75% { transform: translate(-40px, 0); }
+}
+
+.home-content {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 450px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 40px 30px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   text-align: center;
-  color: #f0f0f0;
-  font-family: 'Orbitron', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  border: 2px solid #00ffab; /* emerald green neon border */
 }
 
-/* Title styling */
-.home-box h1 {
-  font-size: 3rem;
-  margin-bottom: 0.5rem;
-  background: linear-gradient(90deg, #a020f0, #00ffab);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-transform: uppercase;
-  letter-spacing: 4px;
-}
-
-/* Tagline */
-.tagline {
-  font-size: 1.125rem;
+.home-header {
+  text-align: center;
   margin-bottom: 30px;
-  color: #ffd700; /* bright party yellow */
+}
+
+.app-name {
+  font-size: 4rem;
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(90deg, #ff00cc, #3300ff, #00ffcc, #ff3300);
+  background-size: 300% 300%;
+  animation: gradient 8s ease infinite;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 15px rgba(255, 0, 204, 0.6);
+}
+
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.app-tagline {
+  color: #ffffff;
+  font-size: 1.4rem;
+  margin-top: 10px;
+  margin-bottom: 5px;
+  opacity: 0.9;
   font-weight: 500;
 }
 
-/* Shared button styles */
-.sign-up-button, .login-button {
-  display: inline-block;
-  margin: 10px auto;
-  padding: 14px 32px;
+.app-quote {
+  color: rgba(255, 255, 255, 0.7);
   font-size: 1rem;
-  font-weight: bold;
+  margin-top: 15px;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.home-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.home-button {
+  width: 100%;
+  padding: 16px;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
   cursor: pointer;
-  background: linear-gradient(135deg, #00ffab, #a020f0);
-  color: #0a0a0a;
-  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  transition: all 0.3s ease;
   text-transform: uppercase;
   letter-spacing: 1px;
-  width: 100%;
-  max-width: 260px;
 }
 
-.sign-up-button:hover, .login-button:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 0 20px rgba(255, 255, 0, 0.8);
+.sign-up-button {
+  background: linear-gradient(90deg, #ff00cc, #3300ff);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(255, 0, 204, 0.4);
 }
 
-/* Video section for extra vibe */
-.video-box {
-  margin-top: 30px;
-  border-radius: 12px;
+.sign-up-button:hover {
+  background: linear-gradient(90deg, #ff00cc, #3300ff);
+  background-size: 200% 200%;
+  animation: gradient-btn 3s ease infinite;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(255, 0, 204, 0.6);
+}
+
+.login-button {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.login-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #ff00cc;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(255, 0, 204, 0.4);
+}
+
+.demo-button {
+  background: linear-gradient(90deg, #00ffcc, #ff3300);
+  color: #000000;
+  font-weight: 700;
+  box-shadow: 0 4px 15px rgba(0, 255, 204, 0.4);
+  position: relative;
   overflow: hidden;
-  box-shadow: 0 0 25px rgba(160, 32, 240, 0.6);
 }
 
-.party-video {
-  width: 100%;
-  height: 220px;
-  object-fit: cover;
-  filter: brightness(0.65) contrast(1.2) saturate(1.5) hue-rotate(15deg);
+.demo-button::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(90deg, #00ffcc, #ff3300, #00ffcc);
+  background-size: 200% 200%;
+  z-index: -1;
   border-radius: 12px;
-  user-select: none;
+  animation: demo-glow 2s infinite linear;
 }
 
-/* Text inside the modal area (bottom note) */
-.home-box p.text-sm {
-  font-size: 0.875rem;
-  color: #ccc;
-  margin-top: 10px;
+@keyframes demo-glow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
-/* Optional glowing ring */
-@keyframes pulse-glow {
-  0% {
-    box-shadow: 0 0 10px #00ffab;
+.demo-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 255, 204, 0.6), 0 6px 25px rgba(255, 51, 0, 0.6);
+  animation: demo-pulse 0.5s ease-in-out;
+}
+
+@keyframes demo-pulse {
+  0% { transform: translateY(-3px) scale(1); }
+  50% { transform: translateY(-3px) scale(1.05); }
+  100% { transform: translateY(-3px) scale(1); }
+}
+
+@keyframes gradient-btn {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.demo-note {
+  text-align: center;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.demo-note p {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Loading state for demo button */
+.demo-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+  animation: none;
+}
+
+.demo-button:disabled::before {
+  animation: none;
+  opacity: 0.5;
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+  .home-content {
+    padding: 30px 20px;
+    margin: 0 15px;
   }
-  50% {
-    box-shadow: 0 0 20px #a020f0, 0 0 30px #00ffab;
+  
+  .app-name {
+    font-size: 3.2rem;
   }
-  100% {
-    box-shadow: 0 0 10px #00ffab;
+  
+  .app-tagline {
+    font-size: 1.2rem;
+  }
+  
+  .home-button {
+    padding: 14px;
+    font-size: 1rem;
   }
 }
 
-.home-box {
-  animation: pulse-glow 6s infinite ease-in-out;
+/* Modal button override */
+.home-button .modal-trigger {
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
 }

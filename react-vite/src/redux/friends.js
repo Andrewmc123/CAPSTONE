@@ -10,14 +10,25 @@ const loadPending = (pending) => ({ type: GET_PENDING_FRIENDS, pending });
 const setLoading = (loading) => ({ type: SET_FRIENDS_LOADING, loading });
 const setError = (error) => ({ type: SET_FRIENDS_ERROR, error });
 
+// Helper function to handle fetch errors safely
+const handleResponse = async (res, errorMessage) => {
+  let data;
+  try {
+    data = await res.json();
+  } catch {
+    data = {};
+  }
+  if (!res.ok) throw new Error(data.message || errorMessage);
+  return data;
+};
+
 // Thunks
 export const getFriends = () => async (dispatch) => {
   dispatch(setLoading(true));
   try {
     const res = await fetch('/api/friends/');
-    if (!res.ok) throw new Error('Failed to fetch friends');
-    const data = await res.json();
-    dispatch(loadFriends(data.friends));
+    const data = await handleResponse(res, 'Failed to fetch friends');
+    dispatch(loadFriends(data.friends || []));
   } catch (err) {
     dispatch(setError(err.message));
   } finally {
@@ -29,9 +40,8 @@ export const getPendingFriends = () => async (dispatch) => {
   dispatch(setLoading(true));
   try {
     const res = await fetch('/api/friends/pending');
-    if (!res.ok) throw new Error('Failed to fetch pending requests');
-    const data = await res.json();
-    dispatch(loadPending(data.pending));
+    const data = await handleResponse(res, 'Failed to fetch pending requests');
+    dispatch(loadPending(data.pending || []));
   } catch (err) {
     dispatch(setError(err.message));
   } finally {
@@ -46,7 +56,7 @@ export const acceptFriendRequest = (friendId) => async (dispatch) => {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' }
     });
-    if (!res.ok) throw new Error('Failed to accept friend request');
+    await handleResponse(res, 'Failed to accept friend request');
     await Promise.all([dispatch(getFriends()), dispatch(getPendingFriends())]);
     return true;
   } catch (err) {
@@ -64,7 +74,7 @@ export const declineFriendRequest = (friendId) => async (dispatch) => {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' }
     });
-    if (!res.ok) throw new Error('Failed to decline friend request');
+    await handleResponse(res, 'Failed to decline friend request');
     dispatch(getPendingFriends());
     return true;
   } catch (err) {
@@ -83,7 +93,7 @@ export const sendFriendRequest = (friendId) => async (dispatch) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ friendId }),
     });
-    if (!res.ok) throw new Error(res.message || "Could not send request");
+    await handleResponse(res, "Could not send friend request");
     dispatch(getPendingFriends());
     return true;
   } catch (err) {
@@ -101,7 +111,7 @@ export const removeFriend = (friendId) => async (dispatch) => {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
     });
-    if (!res.ok) throw new Error(res.message || "Could not remove friend");
+    await handleResponse(res, "Could not remove friend");
     dispatch(getFriends());
     return true;
   } catch (err) {
@@ -122,15 +132,23 @@ const initialState = {
 export default function friendsReducer(state = initialState, action) {
   switch (action.type) {
     case GET_FRIENDS:
-      return { ...state, friends: action.friends.reduce((acc, friend) => {
-        acc[friend.id] = friend;
-        return acc;
-      }, {}), error: null };
+      return {
+        ...state,
+        friends: action.friends.reduce((acc, friend) => {
+          acc[friend.id] = friend;
+          return acc;
+        }, {}),
+        error: null
+      };
     case GET_PENDING_FRIENDS:
-      return { ...state, pending: action.pending.reduce((acc, pending) => {
-        acc[pending.id] = pending;
-        return acc;
-      }, {}), error: null };
+      return {
+        ...state,
+        pending: action.pending.reduce((acc, pending) => {
+          acc[pending.id] = pending;
+          return acc;
+        }, {}),
+        error: null
+      };
     case SET_FRIENDS_LOADING:
       return { ...state, loading: action.loading };
     case SET_FRIENDS_ERROR:

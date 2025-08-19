@@ -23,7 +23,13 @@ export default function UserProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Check and update friend status whenever relevant data changes
+  // ✅ Helper: build proper image path
+  const getProfileImage = (img) => {
+    if (!img) return '/images/default.png';
+    return img.startsWith('http') || img.startsWith('/') ? img : `/images/${img}`;
+  };
+
+  // Check and update friend status
   const updateFriendStatus = useCallback(() => {
     if (!sessionUser || !user || !friendsState) return;
 
@@ -46,6 +52,7 @@ export default function UserProfilePage() {
     else setFriendStatus('none');
   }, [sessionUser, user, friendsState]);
 
+  // Fetch user + posts + friends only once
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -57,25 +64,18 @@ export default function UserProfilePage() {
           credentials: 'include',
           headers: { 'Accept': 'application/json' }
         });
-        
-        if (!userResponse.ok) {
-          throw new Error('Failed to fetch user');
-        }
-        
+        if (!userResponse.ok) throw new Error('Failed to fetch user');
         const userData = await userResponse.json();
+        userData.profile_img = getProfileImage(userData.profile_img);
         setUser(userData);
 
-        // Fetch user posts
-        await dispatch(getUserPosts(userId));
-        
-        // Fetch friends data
+        // Fetch posts and friends once
         await Promise.all([
+          dispatch(getUserPosts(userId)),
           dispatch(getFriends()),
           dispatch(getPendingFriends())
         ]);
 
-        // Update friend status after all data is loaded
-        updateFriendStatus();
       } catch (err) {
         console.error('Error fetching profile data:', err);
         setError(err.message);
@@ -85,14 +85,15 @@ export default function UserProfilePage() {
     };
 
     fetchData();
-  }, [userId, dispatch, updateFriendStatus]);
+  }, [userId, dispatch]);
 
-  // Update friend status when friendsState changes
+  // Update friend status whenever user or friendsState changes
   useEffect(() => {
-    updateFriendStatus();
-  }, [friendsState, updateFriendStatus]);
+    if (user && friendsState) {
+      updateFriendStatus();
+    }
+  }, [friendsState, user, updateFriendStatus]);
 
-  // Access posts correctly from Redux state
   const userPosts = useSelector(state => 
     state.posts.userPosts[userId] 
       ? Object.values(state.posts.userPosts[userId]).sort((a, b) => 
@@ -115,21 +116,19 @@ export default function UserProfilePage() {
     if (!sessionUser) return;
 
     try {
+      // Optimistically update friendStatus locally to avoid extra fetches
       if (friendStatus === 'none') {
         await dispatch(sendFriendRequest(user.id));
+        setFriendStatus('pending_outgoing');
         setShowConfirmation(true);
         setTimeout(() => setShowConfirmation(false), 3000);
       } else if (friendStatus === 'friends') {
         await dispatch(removeFriend(user.id));
+        setFriendStatus('none');
       } else if (friendStatus === 'pending_incoming') {
         await dispatch(acceptFriendRequest(user.id));
+        setFriendStatus('friends');
       }
-      
-      // Refresh friends data
-      await Promise.all([
-        dispatch(getFriends()),
-        dispatch(getPendingFriends())
-      ]);
     } catch (err) {
       console.error('Error handling friend action:', err);
       setError('Failed to update friend status');
@@ -164,20 +163,12 @@ export default function UserProfilePage() {
 
       <div className="profile-header">
         <div className="profile-avatar">
-          {user.profile_img ? (
-            <img 
-              src={user.profile_img} 
-              alt={`${user.firstname} ${user.lastname}`} 
-              className="avatar-image"
-              onError={(e) => { 
-                e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'flex';
-              }} 
-            />
-          ) : null}
-          <div className="avatar-fallback">
-            {user.firstname?.[0]}{user.lastname?.[0]}
-          </div>
+          <img 
+            src={user.profile_img} 
+            alt={`${user.firstname} ${user.lastname}`} 
+            className="avatar-image"
+            onError={(e) => { e.target.src = '/images/default.png'; }} 
+          />
         </div>
 
         <div className="profile-main-content">
@@ -203,32 +194,19 @@ export default function UserProfilePage() {
             </div>
           </div>
 
-          <div className="profile-details-wrapper">
-            <div className="profile-details">
-              <div className="detail-item">
-                <span className="detail-label">Email:</span>
-                <span>{user.email}</span>
-              </div>
-              <div className="detail-item">
-                <span className="detail-label">Member since:</span>
-                <span>{formatMemberSince(user.created_at)}</span>
-              </div>
-            </div>
-
-            {sessionUser?.id !== user.id && (
-              <button 
-                className={`friend-action-btn ${
-                  friendStatus === 'friends' ? 'remove' : 
-                  friendStatus === 'pending_outgoing' ? 'pending' : 
-                  friendStatus === 'pending_incoming' ? 'accept' : 'add'
-                }`}
-                onClick={handleFriendAction}
-                disabled={friendStatus === 'pending_outgoing'}
-              >
-                {getFriendButtonText()}
-              </button>
-            )}
-          </div>
+          {sessionUser?.id !== user.id && (
+            <button 
+              className={`friend-action-btn ${
+                friendStatus === 'friends' ? 'remove' : 
+                friendStatus === 'pending_outgoing' ? 'pending' : 
+                friendStatus === 'pending_incoming' ? 'accept' : 'add'
+              }`}
+              onClick={handleFriendAction}
+              disabled={friendStatus === 'pending_outgoing'}
+            >
+              {getFriendButtonText()}
+            </button>
+          )}
         </div>
       </div>
 
@@ -238,18 +216,15 @@ export default function UserProfilePage() {
           <div className="posts-grid">
             {userPosts.map((post) => (
               <NavLink key={post.id} to={`/posts/${post.id}`} className="post-tile" aria-label={`View post by ${user.firstname}`}>
-                {post.image_url ? (
+                {post.image_url && (
                   <img 
                     src={post.image_url} 
                     alt="Post content" 
                     className="post-image" 
                     loading="lazy" 
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.nextSibling.style.display = 'block';
-                    }}
+                    onError={(e) => { e.target.style.display = 'none'; }}
                   />
-                ) : null}
+                )}
                 <div className="post-text">{post.body}</div>
                 <div className="post-overlay">
                   <span className="post-likes">❤️ {post.like_count || 0}</span>
