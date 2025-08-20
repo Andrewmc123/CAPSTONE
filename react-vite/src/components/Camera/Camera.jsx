@@ -1,292 +1,154 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import './Camera.css';
+import { useState, useEffect, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { thunkCreatePost } from "../../redux/posts";
+import "./Camera.css";
 
 const Camera = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const user = useSelector((state) => state.session.user);
   const [stream, setStream] = useState(null);
-  const [facingMode, setFacingMode] = useState('user'); // 'user' for front, 'environment' for back
-  const [capturedImage, setCapturedImage] = useState(null);
-  const [isDetecting, setIsDetecting] = useState(false);
-  const [detectionResult, setDetectionResult] = useState(null);
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
-  const sessionUser = useSelector(state => state.session.user);
+  const [videoRef, setVideoRef] = useState(null);
+  const [photoRef, setPhotoRef] = useState(null);
+  const [hasPhoto, setHasPhoto] = useState(false);
+  const [photoData, setPhotoData] = useState(null);
+  const [caption, setCaption] = useState("");
+  const [location, setLocation] = useState("");
+  const [facingMode, setFacingMode] = useState("environment");
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Initialize camera
-  useEffect(() => {
-    startCamera();
-    return () => stopCamera();
-  }, [facingMode]);
-
-  const startCamera = async () => {
+  // Use useCallback to memoize the startCamera function
+  const startCamera = useCallback(async () => {
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { 
-          facingMode: facingMode,
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        },
-        audio: false
+        video: { facingMode },
+        audio: false,
       });
-      
       setStream(mediaStream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
+      if (videoRef) {
+        videoRef.srcObject = mediaStream;
       }
     } catch (error) {
-      console.error('Error accessing camera:', error);
-      alert('Could not access camera. Please check permissions.');
+      console.error("Error accessing camera:", error);
     }
-  };
+  }, [facingMode, videoRef]);
 
-  const stopCamera = () => {
+  // Use useCallback to memoize the stopCamera function
+  const stopCamera = useCallback(() => {
     if (stream) {
-      stream.getTracks().forEach(track => track.stop());
+      stream.getTracks().forEach((track) => track.stop());
       setStream(null);
     }
+  }, [stream]);
+
+  useEffect(() => {
+    startCamera();
+    return () => {
+      stopCamera();
+    };
+  }, [startCamera, stopCamera]); // Now including the memoized functions
+
+  const takePhoto = () => {
+    if (!videoRef || !photoRef) return;
+
+    const width = 414;
+    const height = width / (16 / 9);
+
+    photoRef.width = width;
+    photoRef.height = height;
+
+    const context = photoRef.getContext("2d");
+    context.drawImage(videoRef, 0, 0, width, height);
+
+    const imageData = photoRef.toDataURL("image/png");
+    setPhotoData(imageData);
+    setHasPhoto(true);
+  };
+
+  const clearPhoto = () => {
+    if (photoRef) {
+      const context = photoRef.getContext("2d");
+      context.clearRect(0, 0, photoRef.width, photoRef.height);
+    }
+    setHasPhoto(false);
+    setPhotoData(null);
   };
 
   const switchCamera = () => {
     stopCamera();
-    setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
+    setFacingMode(facingMode === "user" ? "environment" : "user");
   };
 
-  const captureImage = () => {
-    if (!videoRef.current) return;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!photoData) return;
 
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    const context = canvas.getContext('2d');
-
-    // Set canvas dimensions to match video
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    // Draw current video frame to canvas
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    // Get image data URL
-    const imageDataUrl = canvas.toDataURL('image/jpeg');
-    setCapturedImage(imageDataUrl);
-
-    return imageDataUrl;
-  };
-
-  const detectFaces = async () => {
-    if (!videoRef.current) return;
-
-    setIsDetecting(true);
-    setDetectionResult(null);
-
+    setIsLoading(true);
     try {
-      const imageDataUrl = captureImage();
-      
-      // Convert data URL to blob
-      const response = await fetch(imageDataUrl);
+      // Convert base64 to blob for file upload
+      const response = await fetch(photoData);
       const blob = await response.blob();
+      const file = new File([blob], "photo.png", { type: "image/png" });
 
-      // Create form data
       const formData = new FormData();
-      formData.append('image', blob);
+      formData.append("image", file);
+      formData.append("caption", caption);
+      formData.append("location", location);
+      formData.append("user_id", user.id);
 
-      // Send to backend for face detection
-      const result = await fetch('/api/camera/detect', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Authorization': `Bearer ${sessionUser?.accessToken || ''}`
-        }
-      });
-
-      if (result.ok) {
-        const data = await result.json();
-        setDetectionResult(data);
-        
-        // Draw face boxes on canvas if faces detected
-        if (data.face_count > 0 && canvasRef.current) {
-          drawFaceBoxes(data.locations);
-        }
-      } else {
-        throw new Error('Face detection failed');
-      }
+      await dispatch(thunkCreatePost(formData));
+      navigate("/dashboard");
     } catch (error) {
-      console.error('Error detecting faces:', error);
-      alert('Error detecting faces. Please try again.');
+      console.error("Error creating post:", error);
     } finally {
-      setIsDetecting(false);
+      setIsLoading(false);
     }
-  };
-
-  const drawFaceBoxes = (faceLocations) => {
-    const canvas = canvasRef.current;
-    const context = canvas.getContext('2d');
-    const video = videoRef.current;
-
-    // Clear previous drawings
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    // Draw face boxes
-    context.strokeStyle = '#00ff00';
-    context.lineWidth = 3;
-    context.font = '16px Arial';
-    context.fillStyle = '#00ff00';
-
-    faceLocations.forEach((location, index) => {
-      const [top, right, bottom, left] = location;
-      context.strokeRect(left, top, right - left, bottom - top);
-      context.fillText(`Face ${index + 1}`, left, top - 10);
-    });
-  };
-
-  const registerFace = async () => {
-    if (!detectionResult || detectionResult.face_count === 0) {
-      alert('No faces detected to register');
-      return;
-    }
-
-    try {
-      // Use the first face encoding for registration
-      const encoding = detectionResult.encodings[0];
-      
-      const response = await fetch('/api/camera/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionUser?.accessToken || ''}`
-        },
-        body: JSON.stringify({
-          encoding: encoding,
-          sample_image: capturedImage
-        })
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        alert('Face registered successfully!');
-        console.log('Registered face:', result);
-      } else {
-        throw new Error('Face registration failed');
-      }
-    } catch (error) {
-      console.error('Error registering face:', error);
-      alert('Error registering face. Please try again.');
-    }
-  };
-
-  const recognizeFace = async () => {
-    if (!detectionResult || detectionResult.face_count === 0) {
-      alert('No faces detected to recognize');
-      return;
-    }
-
-    try {
-      // Use the first face encoding for recognition
-      const encoding = detectionResult.encodings[0];
-      
-      const response = await fetch('/api/camera/recognize', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionUser?.accessToken || ''}`
-        },
-        body: JSON.stringify({ encoding: encoding })
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.recognized) {
-          alert(`Face recognized! Confidence: ${(1 - result.confidence).toFixed(2)}`);
-        } else {
-          alert('Face not recognized. Would you like to register it?');
-        }
-      } else {
-        throw new Error('Face recognition failed');
-      }
-    } catch (error) {
-      console.error('Error recognizing face:', error);
-      alert('Error recognizing face. Please try again.');
-    }
-  };
-
-  const retakePhoto = () => {
-    setCapturedImage(null);
-    setDetectionResult(null);
   };
 
   return (
     <div className="camera-container">
-      <div className="camera-header">
-        <h2>Face Recognition Camera</h2>
-        <p>Detect, recognize, and register faces</p>
+      <div className="camera">
+        <video
+          ref={(ref) => setVideoRef(ref)}
+          className="video-feed"
+          autoPlay
+          playsInline
+        ></video>
+        <button className="capture-btn" onClick={takePhoto}>
+          📸
+        </button>
+        <button className="switch-camera-btn" onClick={switchCamera}>
+          🔄
+        </button>
       </div>
 
-      <div className="camera-content">
-        <div className="camera-preview">
-          {!capturedImage ? (
-            <div className="video-container">
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                muted
-                className="camera-video"
+      <div className={`result ${hasPhoto ? "hasPhoto" : ""}`}>
+        <canvas ref={(ref) => setPhotoRef(ref)}></canvas>
+        {hasPhoto && (
+          <div className="photo-form">
+            <button className="clear-btn" onClick={clearPhoto}>
+              ❌
+            </button>
+            <form onSubmit={handleSubmit}>
+              <input
+                type="text"
+                placeholder="Add a caption..."
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                maxLength={150}
               />
-              <canvas ref={canvasRef} className="camera-canvas" style={{ display: 'none' }} />
-            </div>
-          ) : (
-            <div className="captured-image-container">
-              <img src={capturedImage} alt="Captured" className="captured-image" />
-              {detectionResult && (
-                <div className="detection-info">
-                  <p>Faces detected: {detectionResult.face_count}</p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="camera-controls">
-          {!capturedImage ? (
-            <>
-              <button onClick={captureImage} className="btn btn-primary">
-                Capture Photo
+              <input
+                type="text"
+                placeholder="Add location..."
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                maxLength={100}
+              />
+              <button type="submit" disabled={isLoading}>
+                {isLoading ? "Posting..." : "Share Photo"}
               </button>
-              <button onClick={switchCamera} className="btn btn-secondary">
-                Switch Camera
-              </button>
-            </>
-          ) : (
-            <>
-              <button onClick={detectFaces} disabled={isDetecting} className="btn btn-primary">
-                {isDetecting ? 'Detecting...' : 'Detect Faces'}
-              </button>
-              {detectionResult && detectionResult.face_count > 0 && (
-                <>
-                  <button onClick={recognizeFace} className="btn btn-success">
-                    Recognize Face
-                  </button>
-                  <button onClick={registerFace} className="btn btn-warning">
-                    Register Face
-                  </button>
-                </>
-              )}
-              <button onClick={retakePhoto} className="btn btn-secondary">
-                Retake Photo
-              </button>
-            </>
-          )}
-        </div>
-
-        {detectionResult && (
-          <div className="detection-results">
-            <h3>Detection Results</h3>
-            <p>Faces detected: {detectionResult.face_count}</p>
-            {detectionResult.face_count > 0 && (
-              <div className="face-details">
-                <p>Face locations: {JSON.stringify(detectionResult.locations)}</p>
-              </div>
-            )}
+            </form>
           </div>
         )}
       </div>

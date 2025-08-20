@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { ArrowLeft, X, Folder } from 'lucide-react';
 import './Vault.css';
@@ -149,7 +149,7 @@ const Vault = () => {
               <ArrowLeft size={24} />
             </button>
             <h1 className="vault-title">
-              {selectedFaceName}'s Vault
+              {selectedFaceName}&apos;s Vault
             </h1>
             <div className="header-spacer"></div>
           </>

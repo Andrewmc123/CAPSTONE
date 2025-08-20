@@ -106,12 +106,6 @@ export default function UserProfilePage() {
   const likeCount = userPosts.reduce((total, post) => total + (post.like_count || 0), 0);
   const friendCount = Object.values(friendsState.friends || {}).filter(friend => friend.status === 'accepted').length;
 
-  const formatMemberSince = (dateString) => {
-    if (!dateString) return 'N/A';
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
-
   const handleFriendAction = async () => {
     if (!sessionUser) return;
 

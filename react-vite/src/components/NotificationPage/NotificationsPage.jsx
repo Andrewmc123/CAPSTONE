@@ -1,7 +1,6 @@
 // NotificationsPage.jsx
 import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { NavLink } from 'react-router-dom';
 import { HeartIcon, MessageCircleIcon, UserPlusIcon, BellIcon } from 'lucide-react';
 import { thunkGetUserNotifications, thunkMarkAllAsRead } from '../../redux/notification';
 import { sendFriendRequest } from '../../redux/friends';

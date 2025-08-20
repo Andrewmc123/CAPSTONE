@@ -35,7 +35,7 @@ const Home = () => {
       <div className="home-content">
         <div className="home-header">
           <h1 className="app-name">ABLN</h1>
-        <p className="app-quote">"Where the nights you barely remember live on forever."</p>
+        <p className="app-quote">&quot;Where the nights you barely remember live on forever.&quot;</p>
         </div>
         
         <div className="home-buttons">
