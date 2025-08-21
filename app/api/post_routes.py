@@ -66,14 +66,23 @@ def get_user_posts(user_id):
 @login_required
 def create_post():
     data = request.get_json()
-    if not data.get('body') and not data.get('image_url'):
-        return {'error': 'Post content or image is required'}, 400
+    
+    if not data:
+        return {'error': 'Request body must be JSON'}, 400
         
+    body = data.get('body')
+    image_url = data.get('image_url')
+    
+    if not body and not image_url:
+        return {'error': 'Post content or image URL is required'}, 400
+
+    # Create the post
     post = Post(
         user_id=current_user.id,
-        body=data.get('body'),
-        image_url=data.get('image_url')
+        body=body,
+        image_url=image_url
     )
+    
     db.session.add(post)
     db.session.commit()
     
@@ -207,22 +216,18 @@ def get_friends_posts():
         else:
             friend_ids.add(friend.user_id)
 
-    friends_posts = Post.query.options(
-        joinedload(Post.user),
-        selectinload(Post.comments).joinedload(Comment.user),
-        selectinload(Post.likes)
-    ).filter(Post.user_id.in_(friend_ids))\
-     .order_by(Post.created_at.desc())\
-     .all()
+    # Include current user's ID to get both friend posts and user's own posts
+    friend_ids.add(current_user.id)
 
-    user_posts = Post.query.options(
+    # Get all posts from friends and current user in a single query with proper ordering
+    all_posts = Post.query.options(
         joinedload(Post.user),
         selectinload(Post.comments).joinedload(Comment.user),
         selectinload(Post.likes)
-    ).filter_by(user_id=current_user.id)\
-     .order_by(Post.created_at.desc())\
-     .all()
+    ).filter(
+        Post.user_id.in_(friend_ids)
+    ).order_by(Post.created_at.desc()).all()
 
     return {
-        'posts': [serialize_post(post) for post in [*friends_posts, *user_posts]]
+        'posts': [serialize_post(post) for post in all_posts]
     }, 200
