@@ -13,11 +13,14 @@ def seed_comments():
         "No way! I was there too! 😭",
         "Drop the location 👀",
         "This goes hard! 🚀",
-        "SLAYED. 💅",
+        "OKAYY PERIOD. 💅",
         "Main character energy ✨",
         "Filter game strong! 🤳",
         "I need this outfit! 👗",
-        "Vibes immaculate 🌈"
+        "Vibes immaculate "
+        " BRO 😭 "
+        "That party looks crazyyyyy!!"
+        "LOL WHERE WAS I !!"
     ]
     
     user_ids = list(range(1, 10))  # 9 users
@@ -60,9 +63,14 @@ def seed_comments():
     db.session.add_all(comments)
     db.session.commit()
 
+
 def undo_comments():
     if environment == "production":
+        # Postgres: truncate with cascade to remove dependent notifications
         db.session.execute(f"TRUNCATE table {SCHEMA}.comments RESTART IDENTITY CASCADE;")
     else:
+        # Dev (SQLite): delete dependent notifications first, then comments
+        db.session.execute(text("DELETE FROM notifications WHERE comment_id IS NOT NULL"))
         db.session.execute(text("DELETE FROM comments"))
+        
     db.session.commit()

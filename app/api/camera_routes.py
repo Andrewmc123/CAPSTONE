@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
-import face_recognition
-import numpy as np
+#import face_recognition
+#import numpy as np
 import os
 import pickle
 from app.models import db, FaceEncoding
