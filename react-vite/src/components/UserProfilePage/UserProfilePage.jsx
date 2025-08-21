@@ -23,10 +23,13 @@ export default function UserProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // ✅ Helper: build proper image path
-  const getProfileImage = (img) => {
-    if (!img) return '/images/default.png';
-    return img.startsWith('http') || img.startsWith('/') ? img : `/images/${img}`;
+  // ✅ Helper: build proper image path or generate initials avatar
+  const getProfileImage = (img, firstName, lastName) => {
+    if (img) return img.startsWith('http') || img.startsWith('/') ? img : `/images/${img}`;
+    
+    // No image -> generate initials avatar
+    const initials = `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase();
+    return `https://ui-avatars.com/api/?name=${initials}&background=0D8ABC&color=fff&rounded=true&size=128`;
   };
 
   // Check and update friend status
@@ -66,7 +69,9 @@ export default function UserProfilePage() {
         });
         if (!userResponse.ok) throw new Error('Failed to fetch user');
         const userData = await userResponse.json();
-        userData.profile_img = getProfileImage(userData.profile_img);
+
+        // Set profile image (real image or initials avatar)
+        userData.profile_img = getProfileImage(userData.profile_img, userData.firstname, userData.lastname);
         setUser(userData);
 
         // Fetch posts and friends once
@@ -110,7 +115,6 @@ export default function UserProfilePage() {
     if (!sessionUser) return;
 
     try {
-      // Optimistically update friendStatus locally to avoid extra fetches
       if (friendStatus === 'none') {
         await dispatch(sendFriendRequest(user.id));
         setFriendStatus('pending_outgoing');

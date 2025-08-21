@@ -32,7 +32,10 @@ const Home = () => {
       <div className="home-content">
         <div className="home-header">
           <h1 className="app-name">ABLN</h1>
-          <p className="app-quote">&quot;Where the nights you barely remember live on forever.&quot;</p>
+           <p className="app-slogan">ABLN — About Last Night</p>
+           <p className="app-tagline">Connect. Share. Remember.</p>
+         
+          <p className="app-quote">Because every night has a story worth telling.</p>
         </div>
         
         <div className="home-buttons">

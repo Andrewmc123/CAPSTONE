@@ -26,7 +26,7 @@
   z-index: 1;
 }
 
-/* Color orbs (same as login) */
+/* --- Floating Orbs --- */
 .color-orb {
   position: absolute;
   border-radius: 50%;
@@ -35,70 +35,22 @@
   z-index: 2;
 }
 
-.orb1 {
-  width: 250px;
-  height: 250px;
-  background: #ff00cc;
-  top: -50px;
-  left: -50px;
-  animation: float1 15s infinite ease-in-out;
-}
+.orb1 { width: 250px; height: 250px; background: #8e2de2; top: -50px; left: -50px; animation: float1 15s infinite ease-in-out; }
+.orb2 { width: 200px; height: 200px; background: #ff6a00; bottom: -30px; right: -30px; animation: float2 18s infinite ease-in-out; }
+.orb3 { width: 180px; height: 180px; background: #00c853; bottom: 30%; left: 10%; animation: float3 20s infinite ease-in-out; }
+.orb4 { width: 150px; height: 150px; background: #ff3d00; top: 20%; right: 15%; animation: float4 12s infinite ease-in-out; }
 
-.orb2 {
-  width: 200px;
-  height: 200px;
-  background: #3300ff;
-  bottom: -30px;
-  right: -30px;
-  animation: float2 18s infinite ease-in-out;
-}
-
-.orb3 {
-  width: 180px;
-  height: 180px;
-  background: #00ffcc;
-  bottom: 30%;
-  left: 10%;
-  animation: float3 20s infinite ease-in-out;
-}
-
-.orb4 {
-  width: 150px;
-  height: 150px;
-  background: #ff3300;
-  top: 20%;
-  right: 15%;
-  animation: float4 12s infinite ease-in-out;
-}
-
-@keyframes float1 {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(50px, 50px); }
-}
-
-@keyframes float2 {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(-50px, -30px); }
-}
-
-@keyframes float3 {
-  0%, 100% { transform: translate(0, 0); }
-  33% { transform: translate(30px, -30px); }
-  66% { transform: translate(-30px, 30px); }
-}
-
-@keyframes float4 {
-  0%, 100% { transform: translate(0, 0); }
-  25% { transform: translate(40px, 0); }
-  50% { transform: translate(0, 40px); }
-  75% { transform: translate(-40px, 0); }
-}
+/* --- Animations --- */
+@keyframes float1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(50px,50px)} }
+@keyframes float2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-50px,-30px)} }
+@keyframes float3 { 0%,100%{transform:translate(0,0)} 33%{transform:translate(30px,-30px)} 66%{transform:translate(-30px,30px)} }
+@keyframes float4 { 0%,100%{transform:translate(0,0)} 25%{transform:translate(40px,0)} 50%{transform:translate(0,40px)} 75%{transform:translate(-40px,0)} }
 
 .home-content {
   position: relative;
   z-index: 10;
   width: 40%;
-  max-width: 450px;
+  max-width: 500px;
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(10px);
   border-radius: 20px;
@@ -108,32 +60,29 @@
   text-align: center;
 }
 
-.home-header {
-  text-align: center;
-  margin-bottom: 30px;
-}
+.home-header { margin-bottom: 30px; }
 
 .app-name {
   font-size: 4rem;
   font-weight: 700;
   margin: 0;
-  background: linear-gradient(90deg, #ff00cc, #3300ff, #00ffcc, #ff3300);
+  background: linear-gradient(90deg, #8e2de2, #ff6a00, #00c853);
   background-size: 300% 300%;
   animation: gradient 8s ease infinite;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 15px rgba(255, 0, 204, 0.6);
+  text-shadow: 0 0 15px rgba(142, 45, 226, 0.6);
 }
 
 @keyframes gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% { background-position: 0% 50% }
+  50% { background-position: 100% 50% }
+  100% { background-position: 0% 50% }
 }
 
 .app-tagline {
-  color: #ffffff;
+  color: #fff;
   font-size: 1.4rem;
   margin-top: 10px;
   margin-bottom: 5px;
@@ -141,27 +90,41 @@
   font-weight: 500;
 }
 
+/* --- ABLN Meaning / Slogan --- */
+.app-slogan {
+  font-size: 1.2rem;
+  color: #ffcc80;
+  font-weight: 600;
+  margin-top: 12px;
+  margin-bottom: 18px;
+  text-shadow: 0 0 8px rgba(255, 106, 0, 0.6), 0 0 12px rgba(142, 45, 226, 0.5);
+  letter-spacing: 1px;
+}
+
 .app-quote {
   color: rgba(255, 255, 255, 0.7);
   font-size: 1rem;
-  margin-top: 15px;
+  margin-top: 10px;
   font-style: italic;
   line-height: 1.5;
 }
 
+/* --- BUTTONS FIXED ALIGNMENT --- */
 .home-buttons {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 15px;
   margin-bottom: 25px;
 }
 
 .home-button {
-  width: 100%;
-  padding: 16px;
+  flex: 1 1 calc(33% - 10px);
+  min-width: 120px;
+  padding: 14px;
   border: none;
   border-radius: 12px;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -169,135 +132,69 @@
   letter-spacing: 1px;
 }
 
+/* SIGN UP BUTTON */
 .sign-up-button {
-  background: linear-gradient(90deg, #ff7b00, #78a807);
+  background: linear-gradient(90deg, #8e2de2, #ff6a00);
   color: #ffffff;
-  box-shadow: 0 4px 15px rgba(3, 90, 22, 0.4);
+  box-shadow: 0 4px 15px rgba(142, 45, 226, 0.4);
 }
-
 .sign-up-button:hover {
-  background: linear-gradient(90deg, #d4690509, #09c513);
-  background-size: 200% 200%;
-  animation: gradient-btn 3s ease infinite;
   transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(123, 143, 11, 0.6);
+  box-shadow: 0 6px 20px rgba(255, 106, 0, 0.6);
 }
 
+/* LOGIN BUTTON */
 .login-button {
-  background: rgba(255, 255, 255, 0.1);
+  background: linear-gradient(90deg, #00c853, #8e2de2);
   color: #ffffff;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 200, 83, 0.4);
 }
-
 .login-button:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: #ff00cc;
   transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(255, 0, 204, 0.4);
+  box-shadow: 0 6px 20px rgba(142, 45, 226, 0.6);
 }
 
+/* DEMO BUTTON */
 .demo-button {
-  background: linear-gradient(90deg, #00ffcc, #ff3300);
+  background: linear-gradient(90deg, #ff6a00, #00c853);
   color: #000000;
   font-weight: 700;
-  box-shadow: 0 4px 15px rgba(0, 255, 204, 0.4);
+  box-shadow: 0 4px 15px rgba(255, 106, 0, 0.4);
   position: relative;
   overflow: hidden;
 }
-
-.demo-button::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  background: linear-gradient(90deg, #00ffcc, #ff3300, #00ffcc);
-  background-size: 200% 200%;
-  z-index: -1;
-  border-radius: 12px;
-  animation: demo-glow 2s infinite linear;
-}
-
-@keyframes demo-glow {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
 .demo-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0, 255, 204, 0.6), 0 6px 25px rgba(255, 51, 0, 0.6);
-  animation: demo-pulse 0.5s ease-in-out;
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 6px 25px rgba(0, 200, 83, 0.6), 0 6px 20px rgba(255, 106, 0, 0.6);
 }
 
-@keyframes demo-pulse {
-  0% { transform: translateY(-3px) scale(1); }
-  50% { transform: translateY(-3px) scale(1.05); }
-  100% { transform: translateY(-3px) scale(1); }
-}
-
-@keyframes gradient-btn {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
+/* Note under demo */
 .demo-note {
   text-align: center;
   margin-top: 20px;
   padding-top: 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
-
 .demo-note p {
   color: rgba(255, 255, 255, 0.6);
   font-size: 0.9rem;
   margin: 0;
 }
 
-/* Loading state for demo button */
-.demo-button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  transform: none;
-  animation: none;
-}
-
-.demo-button:disabled::before {
-  animation: none;
-  opacity: 0.5;
-}
-
-/* Responsive design */
+/* Responsive */
 @media (max-width: 480px) {
   .home-content {
     padding: 30px 20px;
     margin: 0 15px;
   }
-  
-  .app-name {
-    font-size: 3.2rem;
-  }
-  
-  .app-tagline {
-    font-size: 1.2rem;
-  }
-  
-  .home-button {
-    padding: 14px;
-    font-size: 1rem;
-  }
-}
 
-/* Modal button override */
-.home-button .modal-trigger {
-  background: none;
-  border: none;
-  color: inherit;
-  font: inherit;
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
+  .app-name { font-size: 3.2rem; }
+  .app-tagline { font-size: 1.2rem; }
+  .app-slogan { font-size: 1rem; }
+
+  .home-button {
+    padding: 12px;
+    font-size: 0.9rem;
+    flex: 1 1 100%;
+  }
 }
