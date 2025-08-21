@@ -244,3 +244,43 @@
 .border-blue-500 {
   border-color: #3b82f6;
 }
+/* Add to NotificationsPage.css */
+.friend-action-btn.accept {
+  background: #3b82f6; /* Blue */
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.friend-action-btn.accept:hover {
+  background: #2563eb;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
+}
+
+.friend-action-btn.add {
+  background: #22c55e; /* Green */
+  color: white;
+}
+
+.friend-action-btn.add:hover {
+  background: #16a34a;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+}
+
+/* Enhance the glow effect on all buttons */
+.friend-action-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+/* Make unread notifications more distinctive */
+.notification-item.unread {
+  background-color: #1a1a1a;
+  border-left: 3px solid #3b82f6;
+}

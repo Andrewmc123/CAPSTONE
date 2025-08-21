@@ -97,7 +97,7 @@
 .home-content {
   position: relative;
   z-index: 10;
-  width: 100%;
+  width: 40%;
   max-width: 450px;
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(10px);
@@ -170,17 +170,17 @@
 }
 
 .sign-up-button {
-  background: linear-gradient(90deg, #ff00cc, #3300ff);
+  background: linear-gradient(90deg, #ff7b00, #78a807);
   color: #ffffff;
-  box-shadow: 0 4px 15px rgba(255, 0, 204, 0.4);
+  box-shadow: 0 4px 15px rgba(3, 90, 22, 0.4);
 }
 
 .sign-up-button:hover {
-  background: linear-gradient(90deg, #ff00cc, #3300ff);
+  background: linear-gradient(90deg, #d4690509, #09c513);
   background-size: 200% 200%;
   animation: gradient-btn 3s ease infinite;
   transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(255, 0, 204, 0.6);
+  box-shadow: 0 6px 20px rgba(123, 143, 11, 0.6);
 }
 
 .login-button {

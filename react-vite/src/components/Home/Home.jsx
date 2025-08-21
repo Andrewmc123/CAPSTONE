@@ -1,10 +1,7 @@
 import { useSelector } from "react-redux";
-import { Navigate } from "react-router-dom";
+import { Navigate, Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { thunkLogin } from "../../redux/session";
-import OpenModalButton from '../OpenModalButton/OpenModalButton';
-import SignupFormModal from '../SignupFormModal/SignupFormModal';
-import LoginFormModal from "../LoginFormModal";
 import './Home.css';
 
 const Home = () => {
@@ -35,20 +32,17 @@ const Home = () => {
       <div className="home-content">
         <div className="home-header">
           <h1 className="app-name">ABLN</h1>
-        <p className="app-quote">&quot;Where the nights you barely remember live on forever.&quot;</p>
+          <p className="app-quote">&quot;Where the nights you barely remember live on forever.&quot;</p>
         </div>
         
         <div className="home-buttons">
-          <OpenModalButton
-            className="home-button sign-up-button"
-            buttonText="Sign Up!"
-            modalComponent={<SignupFormModal />}
-          />
-          <OpenModalButton
-            className="home-button login-button"
-            buttonText="Log In"
-            modalComponent={<LoginFormModal />}
-          />
+          <Link to="/signup" className="home-button sign-up-button">
+            Sign Up!
+          </Link>
+          
+          <Link to="/login" className="home-button login-button">
+            Log In
+          </Link>
           
           <button 
             className="home-button demo-button"

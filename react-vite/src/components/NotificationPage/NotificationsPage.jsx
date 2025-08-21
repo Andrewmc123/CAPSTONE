@@ -1,19 +1,19 @@
 // NotificationsPage.jsx
 import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { HeartIcon, MessageCircleIcon, UserPlusIcon, BellIcon } from 'lucide-react';
+import { HeartIcon, MessageCircleIcon, UserPlusIcon, BellIcon, CheckIcon, UserCheckIcon } from 'lucide-react';
 import { thunkGetUserNotifications, thunkMarkAllAsRead } from '../../redux/notification';
-import { sendFriendRequest } from '../../redux/friends';
+import { sendFriendRequest, acceptFriendRequest } from '../../redux/friends';
 import './NotificationsPage.css';
 
-const NotificationItem = ({ notification, onAddFriend }) => {
+const NotificationItem = ({ notification, onAddFriend, onAcceptRequest }) => {
   const getIcon = () => {
     switch (notification.notification_type) {
       case 'post_like': return <HeartIcon size={16} className="text-pink-500" />;
       case 'post_comment':
       case 'comment_reply': return <MessageCircleIcon size={16} className="text-blue-500" />;
-      case 'friend_request':
-      case 'friend_request_accepted': return <UserPlusIcon size={16} className="text-green-500" />;
+      case 'friend_request': return <UserPlusIcon size={16} className="text-green-500" />;
+      case 'friend_request_accepted': return <UserCheckIcon size={16} className="text-green-500" />;
       default: return <BellIcon size={16} className="text-yellow-500" />;
     }
   };
@@ -40,7 +40,7 @@ const NotificationItem = ({ notification, onAddFriend }) => {
   };
 
   return (
-    <div className="notification-item">
+    <div className={`notification-item ${notification.read ? '' : 'unread'}`}>
       <div className="flex items-center">
         <div className="avatar-container">
           {notification.sender?.profile_img ? (
@@ -59,17 +59,28 @@ const NotificationItem = ({ notification, onAddFriend }) => {
         <div>
           <span className="font-semibold mr-1">{notification.sender?.username || 'Someone'}</span>
           <span>{getContent()}</span>
+          <div className="text-xs text-gray-400 mt-1">
+            {new Date(notification.created_at).toLocaleString()}
+          </div>
         </div>
       </div>
 
-      {/* Show Add Friend button for friend requests */}
+      {/* Show action buttons for friend requests */}
       {notification.notification_type === 'friend_request' && (
-        <button 
-          className="friend-action-btn add"
-          onClick={() => onAddFriend(notification.sender?.id)}
-        >
-          Add Friend
-        </button>
+        <div className="flex gap-2">
+          <button 
+            className="friend-action-btn accept"
+            onClick={() => onAcceptRequest(notification.sender?.id)}
+          >
+            <CheckIcon size={14} /> Accept
+          </button>
+          <button 
+            className="friend-action-btn add"
+            onClick={() => onAddFriend(notification.sender?.id)}
+          >
+            Add Back
+          </button>
+        </div>
       )}
 
       <div className="ml-3">
@@ -94,6 +105,9 @@ export default function NotificationsPage() {
   const unreadCount = useSelector(state => state.notifications.unreadCount);
   const loaded = useSelector(state => state.notifications.loaded);
   const loading = useSelector(state => state.notifications.loading);
+  
+  // Get the current user to access friends count
+  const currentUser = useSelector(state => state.session.user);
 
   useEffect(() => {
     dispatch(thunkGetUserNotifications());
@@ -104,8 +118,39 @@ export default function NotificationsPage() {
   };
 
   const handleAddFriend = async (friendId) => {
-    await dispatch(sendFriendRequest(friendId));
-    setConfirmationText('Friend request sent!');
+    try {
+      const result = await dispatch(sendFriendRequest(friendId));
+      
+      if (result && result.success) {
+        setConfirmationText('Friend request sent!');
+      } else {
+        setConfirmationText(result.error || 'Failed to send friend request');
+      }
+    } catch (error) {
+      setConfirmationText('Failed to send friend request. Please try again.');
+      console.error('Friend request error:', error);
+    }
+    
+    setShowConfirmation(true);
+    setTimeout(() => setShowConfirmation(false), 3000);
+  };
+
+  const handleAcceptRequest = async (friendId) => {
+    try {
+      const result = await dispatch(acceptFriendRequest(friendId));
+      
+      if (result && result.success) {
+        setConfirmationText('Friend request accepted!');
+        // Refresh notifications to remove the accepted request
+        setTimeout(() => dispatch(thunkGetUserNotifications()), 500);
+      } else {
+        setConfirmationText(result.error || 'Failed to accept friend request');
+      }
+    } catch (error) {
+      setConfirmationText('Failed to accept friend request. Please try again.');
+      console.error('Accept friend request error:', error);
+    }
+    
     setShowConfirmation(true);
     setTimeout(() => setShowConfirmation(false), 3000);
   };
@@ -127,18 +172,32 @@ export default function NotificationsPage() {
         </div>
       )}
 
-      {/* Header */}
+      {/* Header with friends count */}
       <div className="p-4 flex justify-between items-center border-b border-zinc-800 sticky top-0 bg-black z-10">
-        <h1 className="text-xl font-bold">Notifications</h1>
-        {unreadCount > 0 && (
-          <button 
-            onClick={handleMarkAllRead}
-            className="text-sm text-blue-500 hover:text-blue-400 transition-colors"
-            disabled={loading}
-          >
-            Mark all as read
-          </button>
-        )}
+        <div>
+          <h1 className="text-xl font-bold">Notifications</h1>
+          {currentUser && (
+            <p className="text-sm text-gray-400">
+              {currentUser.friends_count || 0} friends
+            </p>
+          )}
+        </div>
+        <div className="flex items-center gap-4">
+          {unreadCount > 0 && (
+            <span className="text-sm text-blue-500">
+              {unreadCount} unread
+            </span>
+          )}
+          {unreadCount > 0 && (
+            <button 
+              onClick={handleMarkAllRead}
+              className="text-sm text-blue-500 hover:text-blue-400 transition-colors"
+              disabled={loading}
+            >
+              Mark all as read
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Notifications */}
@@ -155,6 +214,7 @@ export default function NotificationsPage() {
               key={notification.id} 
               notification={notification} 
               onAddFriend={handleAddFriend}
+              onAcceptRequest={handleAcceptRequest}
             />
           ))
         )}
