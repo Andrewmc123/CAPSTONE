@@ -8,20 +8,20 @@ def seed_comments():
     
     # Sample trendy comments
     TRENDY_COMMENTS = [
-        "This is fire! 🔥",
-        "You snapped! 💯",
-        "No way! I was there too! 😭",
-        "Drop the location 👀",
-        "This goes hard! 🚀",
-        "OKAYY PERIOD. 💅",
-        "Main character energy ✨",
-        "Filter game strong! 🤳",
-        "I need this outfit! 👗",
-        "Vibes immaculate "
-        " BRO 😭 "
-        "That party looks crazyyyyy!!"
-        "LOL WHERE WAS I !!"
-    ]
+    "This is fire! 🔥",
+    "You snapped! 💯",
+    "No way! I was there too! 😭",
+    "Drop the location 👀",
+    "This goes hard! 🚀",
+    "OKAYY PERIOD. 💅",
+    "Main character energy ✨",
+    "Filter game strong! 🤳",
+    "I need this outfit! 👗",
+    "Vibes immaculate BRO 😭",
+    "That party looks crazyyyyy!!",
+    "LOL WHERE WAS I !!"
+]
+
     
     user_ids = list(range(1, 10))  # 9 users
     post_ids = list(range(1, 21))  # 20 posts
