@@ -8,13 +8,13 @@ def seed_notifications():
     undo_notifications()
     
     # Fetch all user IDs and posts
-    user_ids = [u.id for u in db.session.execute("SELECT id FROM users").scalars()]
+    user_ids = list(db.session.execute("SELECT id FROM users").scalars())
     posts = db.session.execute("SELECT id, user_id FROM posts").all()
     comments = Comment.query.all()  # Use actual seeded comments
 
     notifications = []
 
-    # 1️⃣ Post likes
+ 
     for post_id, post_owner in posts:
         likers = random.sample(user_ids, random.randint(1, min(5, len(user_ids))))
         for liker_id in likers:
@@ -31,7 +31,7 @@ def seed_notifications():
                     created_at=datetime.utcnow() - time_offset
                 ))
 
-    # 2️⃣ Comments and replies
+   
     for comment in comments:
         commenter_id = comment.user_id
         post_owner_id = comment.post.user_id if hasattr(comment, 'post') else random.choice(user_ids)
@@ -64,7 +64,7 @@ def seed_notifications():
                 created_at=datetime.utcnow() - time_offset
             ))
 
-    # 3️⃣ Friend requests
+    #  Friend requests
     for user_id in user_ids:
         for _ in range(random.randint(1, 3)):
             recipient_id = random.choice([u for u in user_ids if u != user_id])
