@@ -1,6 +1,6 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, NavLink } from 'react-router-dom';
 import {
   getAllPosts,
   getFriendsPosts,
@@ -29,7 +29,6 @@ function Dashboard() {
   const { loading, error } = useSelector((state) => state.posts);
   const commentInputRefs = useRef({});
   const location = useLocation();
-  const navigate = useNavigate();
 
   const allPosts = useSelector((state) => {
     const posts = filterFriendsOnly
@@ -55,11 +54,6 @@ function Dashboard() {
     }
   }, [dispatch, sessionUser, loadPosts]);
 
-  const handleProfileClick = (userId) => {
-    navigate(`/profile/${userId}`);
-  };
-
-  // Scroll to specific comments if requested
   useEffect(() => {
     if (location?.state?.scrollToComments) {
       setTimeout(() => {
@@ -189,7 +183,6 @@ function Dashboard() {
   const handlePostSubmit = async () => {
     if (!postContent.trim() && !imageUrl.trim()) return;
 
-    // optimistic post for snappy UI
     const optimisticPost = {
       id: `temp-${Date.now()}`,
       body: postContent.trim(),
@@ -222,7 +215,6 @@ function Dashboard() {
       loadPosts();
     } catch (err) {
       console.error('Error creating post:', err);
-      // just reload posts to rollback optimistic
       loadPosts();
       alert(`Failed to create post: ${err.message || 'Unknown error'}`);
     }
@@ -292,9 +284,9 @@ function Dashboard() {
                     {post.user?.username?.[0]?.toUpperCase() || 'U'}
                   </div>
                 </div>
-                <span className="post-username clickable-username" onClick={() => handleProfileClick(post.user.id)}>
+                <NavLink to={`/profile/${post.user.id}`} className="clickable-username">
                   {post.user?.username || 'Unknown'}
-                </span>
+                </NavLink>
               </div>
               <div>
                 <span className="post-time">{formatPostTime(post.created_at)}</span>
@@ -332,17 +324,14 @@ function Dashboard() {
             </div>
 
             <div className="post-caption">
-              <span className="caption-username clickable-username" onClick={() => handleProfileClick(post.user.id)}>
+              <NavLink to={`/profile/${post.user.id}`} className="caption-username clickable-username">
                 {post.user?.username || ''}
-              </span>
+              </NavLink>
               <span className="caption-text">{post.body}</span>
             </div>
 
             {showComments[post.id] && (
-              <div
-                className="comments-section"
-                style={{ overflowAnchor: 'none' }}
-              >
+              <div className="comments-section" style={{ overflowAnchor: 'none' }}>
                 {getCombinedComments(post).map(
                   (comment) =>
                     comment && (
@@ -351,12 +340,9 @@ function Dashboard() {
                         id={`comment-${comment.id}`}
                         className={`comment ${comment.isOptimistic ? 'optimistic-comment' : ''}`}
                       >
-                        <span
-                          className="comment-username clickable-username"
-                          onClick={() => handleProfileClick(comment.user.id)}
-                        >
+                        <NavLink to={`/profile/${comment.user.id}`} className="comment-username clickable-username">
                           {comment.user?.username || sessionUser.username}
-                        </span>
+                        </NavLink>
                         <span className="comment-text">{comment.body}</span>
                         {comment.user?.id === sessionUser.id && (
                           <button
@@ -387,11 +373,7 @@ function Dashboard() {
                     disabled={loading}
                     rows={1}
                     className="comment-textarea"
-                    style={{
-                      resize: 'none',
-                      overflowY: 'auto',
-                      lineHeight: '1.25rem'
-                    }}
+                    style={{ resize: 'none', overflowY: 'auto', lineHeight: '1.25rem' }}
                   />
                   <button
                     className="comment-submit-btn"
@@ -461,26 +443,20 @@ function Dashboard() {
             value={imageUrl}
             onChange={(e) => setImageUrl(e.target.value)}
             disabled={loading}
-            style={{ marginTop: '8px' }}
           />
-          <div className="post-actions" style={{ marginTop: '8px' }}>
-            <button
-              className="post-update-btn"
-              onClick={handlePostSubmit}
-              disabled={loading || (!postContent.trim() && !imageUrl.trim())}
-            >
-              {loading ? 'Posting...' : 'Post Update'}
-            </button>
-          </div>
-          {error && <div className="form-error">{error}</div>}
+          <button
+            className="post-submit-btn"
+            onClick={handlePostSubmit}
+            disabled={loading || (!postContent.trim() && !imageUrl.trim())}
+          >
+            {loading ? 'Posting...' : 'Post'}
+          </button>
         </div>
 
-        <div className="posts-container">
-          <PostList />
-        </div>
+        <PostList />
       </div>
 
-      <FriendsSidebar friends={friends} sessionUser={sessionUser} loading={loading} />
+      <FriendsSidebar friends={friends} />
     </div>
   );
 }
