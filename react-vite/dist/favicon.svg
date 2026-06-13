@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#0a0a0c"/>
+  <text x="33" y="40" font-family="Arial Black, Arial, sans-serif" font-size="26" font-weight="900" font-style="italic" text-anchor="middle" fill="#32ff32" opacity="0.9" dx="-2" dy="-2">A</text>
+  <text x="33" y="40" font-family="Arial Black, Arial, sans-serif" font-size="26" font-weight="900" font-style="italic" text-anchor="middle" fill="#ff8c00" opacity="0.9" dx="2" dy="2">A</text>
+  <text x="33" y="40" font-family="Arial Black, Arial, sans-serif" font-size="26" font-weight="900" font-style="italic" text-anchor="middle" fill="#f4f4f6">A</text>
+</svg>

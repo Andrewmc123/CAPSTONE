@@ -1,0 +1,65 @@
+.bottomnav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--bottomnav-h);
+  background: rgba(10, 10, 12, 0.92);
+  backdrop-filter: blur(14px);
+  border-top: 1px solid var(--line);
+  display: none;
+  align-items: center;
+  justify-content: space-around;
+  z-index: 80;
+  padding: 0 6px;
+}
+
+@media (max-width: 768px) {
+  .bottomnav { display: flex; }
+}
+
+.bn-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  color: var(--text-dim);
+  font-size: 10.5px;
+  font-weight: 700;
+  background: none;
+  border: none;
+  padding: 4px 10px;
+}
+.bn-item svg { font-size: 21px; }
+.bn-item.active { color: var(--text); }
+.bn-item.active svg { color: var(--neon); filter: drop-shadow(0 0 7px rgba(50, 255, 50, 0.55)); }
+
+.bn-create { padding: 0 6px; }
+.bn-create-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 32px;
+  border-radius: 9px;
+  background: var(--grad);
+  color: #0a0a0c;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 0 16px rgba(50, 255, 50, 0.35), 0 0 16px rgba(255, 140, 0, 0.25);
+}
+
+.bn-badge-wrap { position: relative; display: inline-flex; }
+.bn-badge-wrap em {
+  position: absolute;
+  top: -5px;
+  right: -8px;
+  background: var(--heart);
+  color: #fff;
+  font-style: normal;
+  font-size: 9px;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 1px 4px;
+}

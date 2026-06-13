@@ -1,0 +1,88 @@
+.feed-wrap {
+  position: relative;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* top tabs (For You / Following) */
+.feed-tabs {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 30;
+  background: rgba(10, 10, 12, 0.55);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  padding: 4px;
+}
+.feed-tab {
+  padding: 7px 18px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 14.5px;
+  color: var(--text-dim);
+  transition: all 0.15s ease;
+}
+.feed-tab:hover { color: var(--text); }
+.feed-tab.active {
+  color: #04140a;
+  background: var(--neon);
+  box-shadow: 0 0 14px rgba(50, 255, 50, 0.45);
+}
+
+.feed-scroller {
+  height: 100%;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+}
+.feed-scroller::-webkit-scrollbar { display: none; }
+
+.feed-slide {
+  height: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* when comments drawer is open, shift feed left on desktop */
+@media (min-width: 1000px) {
+  .feed-scroller.with-drawer { margin-right: 400px; }
+}
+
+.feed-loading-slide { height: 30%; }
+.feed-spinner {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 3px solid var(--line);
+  border-top-color: var(--neon);
+  animation: abln-spin 0.8s linear infinite;
+}
+
+/* gates & empty states */
+.feed-gate {
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.feed-gate-card {
+  text-align: center;
+  max-width: 380px;
+  padding: 38px 30px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+.feed-gate-logo { font-size: 40px; margin-bottom: 10px; }
+.feed-gate-card h2 { margin: 8px 0 6px; font-size: 21px; }
+.feed-gate-card p { color: var(--text-dim); margin: 0 0 18px; line-height: 1.5; }

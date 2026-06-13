@@ -12,6 +12,11 @@ from .api.notification_routes import notification_routes
 from .api.likes_routes import likes_routes
 from .api.comments_routes import comments_routes
 from .api.post_routes import post_routes
+from .api.follow_routes import follow_routes
+from .api.bookmark_routes import bookmark_routes
+from .api.gif_routes import gif_routes
+from .api.discover_routes import discover_routes
+from .api.upload_routes import upload_routes
 #from .api.camera_routes import camera_routes
 from .api.vault_routes import vault_routes
 from .seeds import seed_commands
@@ -27,6 +32,7 @@ def load_user(id):
 
 app.cli.add_command(seed_commands)
 app.config.from_object(Config)
+app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB uploads
 
 app.register_blueprint(user_routes, url_prefix='/api/users')
 app.register_blueprint(auth_routes, url_prefix='/api/auth')
@@ -35,6 +41,11 @@ app.register_blueprint(notification_routes, url_prefix='/api/notifications')
 app.register_blueprint(likes_routes, url_prefix='/api/likes')
 app.register_blueprint(comments_routes, url_prefix='/api/comments')
 app.register_blueprint(post_routes, url_prefix='/api/posts')
+app.register_blueprint(follow_routes, url_prefix='/api/follows')
+app.register_blueprint(bookmark_routes, url_prefix='/api/bookmarks')
+app.register_blueprint(gif_routes, url_prefix='/api/gifs')
+app.register_blueprint(discover_routes, url_prefix='/api/discover')
+app.register_blueprint(upload_routes, url_prefix='/api/uploads')
 #app.register_blueprint(camera_routes, url_prefix='/api/camera')
 app.register_blueprint(vault_routes, url_prefix='/api/vault')
 
@@ -62,6 +73,15 @@ def inject_csrf_token(response):
             'FLASK_ENV') == 'production' else None,
         httponly=True)
     return response
+
+
+@app.route('/uploads/<path:filename>')
+def serve_upload(filename):
+    """
+    Serves user-uploaded media (videos, covers, recorded audio).
+    """
+    uploads = os.path.join(app.root_path, 'uploads')
+    return send_from_directory(uploads, filename, conditional=True)
 
 
 @app.route("/api/docs")
@@ -92,4 +112,3 @@ def react_root(path):
 @app.errorhandler(404)
 def not_found(e):
     return app.send_static_file('index.html')
-

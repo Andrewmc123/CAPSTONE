@@ -1,62 +1,55 @@
-import { useSelector } from "react-redux";
-import { Navigate, Link } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useNavigate, Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { FaPlay, FaFire, FaWandMagicSparkles, FaCommentDots } from "react-icons/fa6";
 import { thunkLogin } from "../../redux/session";
-import './Home.css';
+import "./Home.css";
 
-const Home = () => {
-  const user = useSelector(state => state.session.user);
+export default function Home() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const user = useSelector((s) => s.session.user);
 
-  if (user) return <Navigate to="/Dashboard" />;
-
-  const handleDemoLogin = async () => {
-    try {
-      await dispatch(thunkLogin({
-        email: 'demo@aa.io',
-        password: 'password'
-      }));
-      // Navigation will happen automatically due to the useSelector redirect
-    } catch (error) {
-      console.error('Demo login failed:', error);
-    }
+  const demoLogin = async () => {
+    await dispatch(thunkLogin({ email: "demo@aa.io", password: "password" }));
+    navigate("/");
   };
 
   return (
-    <div className="home-container">
-      <div className="color-orb orb1"></div>
-      <div className="color-orb orb2"></div>
-      <div className="color-orb orb3"></div>
-      <div className="color-orb orb4"></div>
-      
-      <div className="home-content">
-        <div className="home-header">
-          <h1 className="app-name">ABLN</h1>
-           <p className="app-slogan">ABLN — About Last Night</p>
-           <p className="app-tagline">Connect. Share. Remember.</p>
-         
-          <p className="app-quote">Because every night has a story worth telling.</p>
+    <div className="landing">
+      <div className="landing-orb orb-green" />
+      <div className="landing-orb orb-orange" />
+      <div className="landing-orb orb-small" />
+
+      <main className="landing-content">
+        <h1 className="abln-logo landing-logo">ABLN</h1>
+        <p className="landing-sub">ABOUT LAST NIGHT</p>
+        <h2 className="landing-tagline">
+          Share your night. <span className="text-neon">Watch</span> the world&apos;s.
+          <br />Videos, <span className="text-orange">GIFs</span> & the moments worth reliving.
+        </h2>
+
+        <div className="landing-features">
+          <span><FaPlay /> Endless video feed</span>
+          <span><FaWandMagicSparkles /> Built-in video editor</span>
+          <span><FaCommentDots /> GIF comments</span>
+          <span><FaFire /> Trending hashtags & sounds</span>
         </div>
-        
-        <div className="home-buttons">
-          <Link to="/signup" className="home-button sign-up-button">
-            Sign Up!
-          </Link>
-          
-          <Link to="/login" className="home-button login-button">
-            Log In
-          </Link>
-          
-          <button 
-            className="home-button demo-button"
-            onClick={handleDemoLogin}
-          >
-            Demo Login
-          </button>
+
+        <div className="landing-ctas">
+          <Link to="/" className="btn btn-grad landing-btn">▶ Start watching</Link>
+          {!user && (
+            <>
+              <Link to="/signup" className="btn btn-primary landing-btn">Sign up free</Link>
+              <Link to="/login" className="btn btn-ghost landing-btn">Log in</Link>
+              <button onClick={demoLogin} className="btn btn-orange landing-btn">
+                Try the demo ✨
+              </button>
+            </>
+          )}
         </div>
-      </div>
+
+        <p className="landing-note">For night owls of all ages 🌙 — family-friendly GIFs powered by Tenor</p>
+      </main>
     </div>
   );
-};
-
-export default Home;
+}

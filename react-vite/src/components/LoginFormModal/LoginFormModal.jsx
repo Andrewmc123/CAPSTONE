@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { thunkLogin } from "../../redux/session";
 import { useDispatch } from "react-redux";
+import { Link } from "react-router-dom";
 import { useModal } from "../../context/Modal";
 import "./LoginForm.css";
 
@@ -15,16 +16,8 @@ function LoginFormModal({ onLoginSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
-    const serverResponse = await dispatch(
-      thunkLogin({
-        email,
-        password,
-      })
-    );
-
+    const serverResponse = await dispatch(thunkLogin({ email, password }));
     setIsLoading(false);
-    
     if (serverResponse) {
       setErrors(serverResponse);
     } else {
@@ -35,107 +28,76 @@ function LoginFormModal({ onLoginSuccess }) {
 
   const handleDemoLogin = async () => {
     setIsLoading(true);
-    
-    try {
-      const serverResponse = await dispatch(thunkLogin({
-        email: 'demo@aa.io',
-        password: 'password'
-      }));
-      
-      if (serverResponse) {
-        setErrors(serverResponse);
-      } else {
-        closeModal();
-        if (onLoginSuccess) onLoginSuccess();
-      }
-    } catch (error) {
-      setErrors({ general: "Failed to login as demo user" });
-    } finally {
-      setIsLoading(false);
+    const serverResponse = await dispatch(
+      thunkLogin({ email: "demo@aa.io", password: "password" })
+    );
+    setIsLoading(false);
+    if (serverResponse) {
+      setErrors(serverResponse);
+    } else {
+      closeModal();
+      if (onLoginSuccess) onLoginSuccess();
     }
   };
 
   const isDisabled = email.length < 4 || password.length < 6 || isLoading;
 
   return (
-    <div className="modal-container" onClick={() => closeModal()}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div className="login-header">
-          <h1 className="modal-title">Welcome to ABNB</h1>
-          <p className="login-subtitle">Sign in to continue your journey</p>
-        </div>
-        
-        <form onSubmit={handleSubmit} className="login-form">
-          
-          <div className="form-group">
-            <label>
-              <div className="signup-label-title">Email Address
-                {errors.email && <span className="error-message"> {errors.email}</span>}
-              </div>
-              <input
-                type="text"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                required
-                disabled={isLoading}
-                className={errors.email ? 'input-error' : ''}
-              />
-            </label>
-          </div>
-          
-          <div className="form-group">
-            <label>
-              <div className="signup-label-title">Password
-                {errors.password && <span className="error-message"> {errors.password}</span>}
-              </div>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                required
-                disabled={isLoading}
-                className={errors.password ? 'input-error' : ''}
-              />
-            </label>
-          </div>
+    <div className="auth-card auth-card-modal fade-in">
+      <span className="abln-logo auth-logo">ABLN</span>
+      <h1 className="auth-title">Log in to continue</h1>
+      <p className="auth-sub">Like videos, follow creators and comment with GIFs 🎬</p>
 
-          {errors.general && (
-            <div className="error-message general-error">
-              {errors.general}
-            </div>
-          )}
+      <form onSubmit={handleSubmit} className="auth-form">
+        <label className="auth-label">
+          Email
+          {errors.email && <span className="auth-error"> · {errors.email}</span>}
+        </label>
+        <input
+          className="input"
+          type="text"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@night.club"
+          required
+          disabled={isLoading}
+        />
 
-          <div className="button-container">
-            <button 
-              type="submit" 
-              className={`login-button ${isLoading ? 'loading' : ''}`}
-              disabled={isDisabled}
-            >
-              {isLoading ? 'Signing In...' : 'Sign In'}
-            </button>
+        <label className="auth-label">
+          Password
+          {errors.password && <span className="auth-error"> · {errors.password}</span>}
+        </label>
+        <input
+          className="input"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="••••••••"
+          required
+          disabled={isLoading}
+        />
 
-            <div className="divider">
-              <span>or</span>
-            </div>
+        {errors.general && <p className="auth-error">{errors.general}</p>}
 
-            <button 
-              type="button"
-              className={`demo-login-button ${isLoading ? 'loading' : ''}`}
-              onClick={handleDemoLogin}
-              disabled={isLoading}
-            >
-              {isLoading ? 'Please wait...' : 'Try Demo Account'}
-            </button>
-          </div>
+        <button type="submit" className="btn btn-primary auth-submit" disabled={isDisabled}>
+          {isLoading ? "Signing in…" : "Log in"}
+        </button>
 
-          <div className="login-footer">
-            <p>New to ABNB? <a href="/signup" className="signup-link">Create an account</a></p>
-          </div>
+        <div className="auth-divider"><span>or</span></div>
 
-        </form>
-      </div>
+        <button
+          type="button"
+          className="btn btn-orange auth-submit"
+          onClick={handleDemoLogin}
+          disabled={isLoading}
+        >
+          ✨ Try the demo account
+        </button>
+      </form>
+
+      <p className="auth-footer">
+        New to ABLN? <Link to="/signup" onClick={closeModal}>Create an account</Link>
+      </p>
     </div>
   );
 }

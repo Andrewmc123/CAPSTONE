@@ -4,7 +4,10 @@ from .db import environment, SCHEMA
 from .post import Post
 from .likes import Like
 from .notification import Notification
-from .friend import Friend 
+from .friend import Friend
 from .comments import Comment
 from .face_encoding import FaceEncoding
 from .vault_content import VaultContent
+from .follow import Follow
+from .bookmark import Bookmark
+from .comment_like import CommentLike

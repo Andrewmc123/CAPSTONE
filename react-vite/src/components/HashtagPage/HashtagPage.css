@@ -1,0 +1,24 @@
+.hashtag-page { padding-top: 28px; }
+
+.hashtag-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 26px;
+}
+
+.hashtag-bubble {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: var(--grad);
+  color: #0a0a0c;
+  font-size: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 26px rgba(50, 255, 50, 0.3);
+}
+
+.hashtag-head h1 { margin: 0; font-size: 28px; }
+.hashtag-head p { margin: 4px 0 0; }

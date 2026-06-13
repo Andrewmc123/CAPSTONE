@@ -10,12 +10,14 @@ import sessionReducer from "./session";
 import postReducer from "./posts";
 import FriendsReducer from "./friends";
 import notificationsReducer from "./notification";
+import followsReducer from "./follows";
 
 const rootReducer = combineReducers({
   session: sessionReducer,
   posts: postReducer,
   friends: FriendsReducer,
   notifications: notificationsReducer,
+  follows: followsReducer,
 });
 
 let enhancer;

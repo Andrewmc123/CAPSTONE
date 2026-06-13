@@ -1,45 +1,44 @@
 import { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { ModalProvider, Modal } from "../context/Modal";
 import { thunkAuthenticate } from "../redux/session";
-import Navigation from "../components/Navigation/Navigation";
-import BottomPanel from "../components/BottomPanel";
+import Sidebar from "../components/Sidebar";
+import BottomNav from "../components/BottomNav";
+import "./Layout.css";
 
-
+const CHROMELESS = ["/login", "/signup", "/home"];
 
 export default function Layout() {
   const dispatch = useDispatch();
   const [isLoaded, setIsLoaded] = useState(false);
-  const sessionUser = useSelector((state) => state.session.user);
   const location = useLocation();
 
   useEffect(() => {
-  dispatch(thunkAuthenticate()).then(() => setIsLoaded(true));
-}, [dispatch]);
+    dispatch(thunkAuthenticate()).then(() => setIsLoaded(true));
+  }, [dispatch]);
 
-if (!isLoaded) return null;
+  if (!isLoaded) {
+    return (
+      <div className="app-boot">
+        <div className="abln-logo app-boot-logo">ABLN</div>
+        <div className="abln-logo-sub">About Last Night</div>
+      </div>
+    );
+  }
 
-  const isHome = location.pathname === "/";
-  const showBottomPanel = !!sessionUser && !isHome;
+  const chromeless = CHROMELESS.includes(location.pathname);
 
   return (
-  <>
     <ModalProvider>
-      <div className={isHome ? "home-background" : ""}>
-        <Navigation />
-        {isLoaded && (
-          <div className="main-body">
-            {showBottomPanel && <BottomPanel />}
-
-            <div className="main-content">
-              <Outlet />  {/* Only render child routes here */}
-            </div>
-          </div>
-        )}
+      <div className="app-shell">
+        {!chromeless && <Sidebar />}
+        <main className={`app-main ${chromeless ? "chromeless" : ""}`}>
+          <Outlet />
+        </main>
+        {!chromeless && <BottomNav />}
         <Modal />
       </div>
     </ModalProvider>
-  </>
-);
+  );
 }

@@ -1,0 +1,70 @@
+.vgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 14px;
+}
+
+.vgrid-tile {
+  position: relative;
+  aspect-ratio: 9 / 13;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+.vgrid-tile:hover {
+  transform: translateY(-3px);
+  border-color: rgba(50, 255, 50, 0.45);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.5), 0 0 18px rgba(50, 255, 50, 0.12);
+}
+
+.vgrid-tile video,
+.vgrid-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.vgrid-gif-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: var(--orange);
+  color: #1a0e00;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  border-radius: 5px;
+  padding: 2px 6px;
+  z-index: 2;
+}
+
+.vgrid-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 26px 10px 8px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.72));
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+.vgrid-overlay svg { font-size: 11px; margin-right: 4px; }
+.vgrid-likes svg { color: var(--heart); }
+
+.vgrid-empty {
+  text-align: center;
+  color: var(--text-dim);
+  padding: 60px 0;
+  font-size: 15px;
+}
+
+@media (max-width: 600px) {
+  .vgrid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+}

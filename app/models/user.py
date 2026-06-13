@@ -16,6 +16,7 @@ class User(db.Model, UserMixin):
     lastname = db.Column(db.String(30), nullable=False)
     hashed_password = db.Column(db.String(255), nullable=False)
     profile_img = db.Column(db.String(255), default='')
+    bio = db.Column(db.String(255), default='')
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
@@ -24,7 +25,7 @@ class User(db.Model, UserMixin):
     likes = db.relationship('Like', back_populates='user', cascade='all, delete')
     comments = db.relationship('Comment', back_populates='user', cascade='all, delete-orphan')
 
-    # Updated friend relationships (using user_id/friend_id instead of requester_id/receiver_id)
+    # Friend relationships (mutual "Friends" — like TikTok's Friends tab)
     friends_sent = db.relationship(
         'Friend',
         foreign_keys='Friend.user_id',
@@ -39,14 +40,32 @@ class User(db.Model, UserMixin):
         cascade='all, delete-orphan'
     )
 
-    # NEW: Face encoding relationship (one-to-many: one user can have multiple face encodings)
+    # Follower graph (asymmetric, TikTok-style)
+    following = db.relationship(
+        'Follow',
+        foreign_keys='Follow.follower_id',
+        back_populates='follower',
+        cascade='all, delete-orphan'
+    )
+
+    followers = db.relationship(
+        'Follow',
+        foreign_keys='Follow.followed_id',
+        back_populates='followed',
+        cascade='all, delete-orphan'
+    )
+
+    bookmarks = db.relationship('Bookmark', back_populates='user', cascade='all, delete-orphan')
+    comment_likes = db.relationship('CommentLike', back_populates='user', cascade='all, delete-orphan')
+
+    # Face encoding relationship (one-to-many: one user can have multiple face encodings)
     face_encodings = db.relationship(
         'FaceEncoding',
         back_populates='user',
         cascade='all, delete-orphan'
     )
 
-    # NEW: Vault content relationship (one-to-many: one user can have multiple vault contents)
+    # Vault content relationship (one-to-many: one user can have multiple vault contents)
     vault_contents = db.relationship(
         'VaultContent',
         back_populates='user',
@@ -64,22 +83,23 @@ class User(db.Model, UserMixin):
     def check_password(self, password):
         return check_password_hash(self.password, password)
 
+    def total_likes_received(self):
+        return sum(len(post.likes) for post in self.posts)
+
     def to_dict(self):
         # Get accepted friends from both sent and received relationships
         accepted_friends = []
-        
-        # Check friends where this user sent the request and it was accepted
+
         for friend_request in self.friends_sent:
-            if friend_request.status == 'friends':  # Changed from 'accepted' to 'friends'
+            if friend_request.status == 'friends':
                 accepted_friends.append({
                     'id': friend_request.friend.id,
                     'username': friend_request.friend.username,
                     'profile_img': friend_request.friend.profile_img
                 })
-        
-        # Check friends where this user received the request and it was accepted
+
         for friend_request in self.friends_received:
-            if friend_request.status == 'friends':  # Changed from 'accepted' to 'friends'
+            if friend_request.status == 'friends':
                 accepted_friends.append({
                     'id': friend_request.user.id,
                     'username': friend_request.user.username,
@@ -93,10 +113,15 @@ class User(db.Model, UserMixin):
             'firstname': self.firstname,
             'lastname': self.lastname,
             'profile_img': self.profile_img,
+            'bio': self.bio or '',
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
-            'friends': accepted_friends,  # List of friend objects
-            'friends_count': len(accepted_friends),  # Count of friends
+            'friends': accepted_friends,
+            'friends_count': len(accepted_friends),
+            'followers_count': len(self.followers),
+            'following_count': len(self.following),
+            'likes_received': self.total_likes_received(),
+            'video_count': len(self.posts),
             'face_encodings_count': len(self.face_encodings),
             'vault_contents_count': len(self.vault_contents)
         }
@@ -105,5 +130,9 @@ class User(db.Model, UserMixin):
         return {
             'id': self.id,
             'username': self.username,
-            'profile_img': self.profile_img
+            'profile_img': self.profile_img,
+            'firstname': self.firstname,
+            'lastname': self.lastname,
+            'bio': self.bio or '',
+            'followers_count': len(self.followers),
         }

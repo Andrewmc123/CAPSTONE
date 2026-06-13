@@ -1,26 +1,30 @@
-// index.jsx
-import { createBrowserRouter, Navigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import LoginFormPage from '../components/LoginFormPage';
-import SignupFormPage from '../components/SignupFormPage';
-import Home from '../components/Home/Home';
-import Dashboard from '../components/Dashboard/';
-import Layout from './Layout';
-import UserProfilePage from '../components/UserProfilePage'; 
-import Friends from '../components/Friend/Friend';
-import NotificationsPage from '../components/NotificationPage/NotificationsPage';
-import Camera from '../components/Camera/Camera';
-import Vault from '../components/Vault/Vault';
-
+// ABLN router — TikTok-style route map
+import { createBrowserRouter, Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import LoginFormPage from "../components/LoginFormPage";
+import SignupFormPage from "../components/SignupFormPage";
+import Home from "../components/Home/Home";
+import Feed from "../components/Feed";
+import SingleVideo from "../components/SingleVideo";
+import Explore from "../components/Explore";
+import HashtagPage from "../components/HashtagPage";
+import UploadStudio from "../components/Upload";
+import SearchPage from "../components/SearchPage";
+import Inbox from "../components/Inbox";
+import Layout from "./Layout";
+import UserProfilePage from "../components/UserProfilePage";
+import Friends from "../components/Friend/Friend";
+import Camera from "../components/Camera/Camera";
+import Vault from "../components/Vault/Vault";
 
 const createAppRouter = () => {
   const AuthRedirect = ({ children }) => {
-    const sessionUser = useSelector(state => state.session.user);
-    return sessionUser ? <Navigate to="/dashboard" replace /> : children;
+    const sessionUser = useSelector((state) => state.session.user);
+    return sessionUser ? <Navigate to="/" replace /> : children;
   };
 
   const AuthCheck = ({ children }) => {
-    const sessionUser = useSelector(state => state.session.user);
+    const sessionUser = useSelector((state) => state.session.user);
     return sessionUser ? children : <Navigate to="/login" replace />;
   };
 
@@ -28,18 +32,24 @@ const createAppRouter = () => {
     {
       element: <Layout />,
       children: [
-        { path: "/", element: <Home /> },
-        { path: "/dashboard", element: <AuthCheck><Dashboard /></AuthCheck> },
-        {path: "/home",element: <Home />,},
+        { path: "/", element: <Feed tab="foryou" /> },
+        { path: "/following", element: <Feed tab="following" /> },
+        { path: "/video/:postId", element: <SingleVideo /> },
+        { path: "/explore", element: <Explore /> },
+        { path: "/tag/:tag", element: <HashtagPage /> },
+        { path: "/search", element: <SearchPage /> },
+        { path: "/upload", element: <AuthCheck><UploadStudio /></AuthCheck> },
+        { path: "/inbox", element: <AuthCheck><Inbox /></AuthCheck> },
         { path: "/friends", element: <AuthCheck><Friends /></AuthCheck> },
+        { path: "/users/:userId", element: <UserProfilePage /> },
+        { path: "/home", element: <Home /> },
         { path: "/login", element: <AuthRedirect><LoginFormPage /></AuthRedirect> },
         { path: "/signup", element: <AuthRedirect><SignupFormPage /></AuthRedirect> },
-        { path: "/users/:userId", element: <AuthCheck><UserProfilePage /></AuthCheck> },
-        { path: "/notifications", element: <AuthCheck><NotificationsPage /></AuthCheck> },
         { path: "/camera", element: <AuthCheck><Camera /></AuthCheck> },
         { path: "/vault", element: <AuthCheck><Vault /></AuthCheck> },
-        { path: "/login", element: <AuthCheck><LoginFormPage /></AuthCheck> },
-        { path: "/signup", element: <AuthCheck><SignupFormPage /></AuthCheck> },
+        { path: "/dashboard", element: <Navigate to="/" replace /> },
+        { path: "/notifications", element: <Navigate to="/inbox" replace /> },
+        { path: "*", element: <Navigate to="/" replace /> },
       ],
     },
   ]);

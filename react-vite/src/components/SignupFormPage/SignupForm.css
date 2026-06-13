@@ -1,126 +1,67 @@
-/* SignupFormPage.css */
-.signup-container {
-  background-color: #000;
-  min-height: 100vh;
+/* Shared ABLN auth card styling (page + modal variants) */
+
+.auth-page {
+  min-height: 100dvh;
   display: flex;
-  justify-content: center;
   align-items: center;
-  padding: 20px;
-  font-family: 'Arial', sans-serif;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 15% 12%, rgba(50, 255, 50, 0.08), transparent 40%),
+    radial-gradient(circle at 85% 88%, rgba(255, 140, 0, 0.08), transparent 40%),
+    var(--bg);
 }
 
-.signup-form-wrapper {
-  background-color: #111;
-  padding: 2.5rem;
-  border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0, 100, 255, 0.3);
-  width: 100%;
-  max-width: 450px;
-  border: 1px solid #222;
-}
-
-.signup-title {
-  color: #fff;
+.auth-card {
+  width: min(420px, 94vw);
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 34px 32px 26px;
   text-align: center;
-  margin-bottom: 1.5rem;
-  font-size: 2rem;
-  text-shadow: 0 0 10px rgba(0, 150, 255, 0.7);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.5);
+}
+.auth-card-modal { box-shadow: none; border: none; }
+
+.auth-logo { font-size: 38px; display: inline-block; }
+
+.auth-title { margin: 14px 0 6px; font-size: 22px; }
+.auth-sub { margin: 0 0 22px; color: var(--text-dim); font-size: 14px; line-height: 1.5; }
+
+.auth-form { display: flex; flex-direction: column; text-align: left; }
+
+.auth-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  font-weight: 700;
+  color: var(--text-faint);
+  margin: 12px 0 6px;
 }
 
-.signup-form {
+.auth-error { color: var(--heart); text-transform: none; letter-spacing: 0; font-size: 12.5px; }
+p.auth-error { margin: 10px 0 0; }
+
+.auth-submit { margin-top: 16px; width: 100%; font-size: 15.5px; padding: 12px; }
+
+.auth-divider {
   display: flex;
-  flex-direction: column;
-  gap: 1.2rem;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0 0;
+  color: var(--text-faint);
+  font-size: 12px;
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
 }
 
-.form-group {
-  position: relative;
-  margin-bottom: 1rem;
-}
+.auth-footer { margin: 22px 0 0; font-size: 14px; color: var(--text-dim); }
+.auth-footer a { color: var(--neon); font-weight: 700; }
+.auth-footer a:hover { text-decoration: underline; }
 
-.form-input {
-  width: 100%;
-  padding: 1rem;
-  background: #222;
-  border: 1px solid #333;
-  border-radius: 5px;
-  color: #fff;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: #09f;
-  box-shadow: 0 0 10px rgba(0, 150, 255, 0.5);
-}
-
-.form-label {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  color: #888;
-  pointer-events: none;
-  transition: all 0.3s ease;
-}
-
-.form-input:focus ~ .form-label,
-.form-input:not(:placeholder-shown) ~ .form-label {
-  top: -0.5rem;
-  left: 0.5rem;
-  font-size: 0.8rem;
-  background: #111;
-  padding: 0 0.5rem;
-  color: #09f;
-}
-
-.glow-button {
-  background: linear-gradient(45deg, #0072ff, #00c6ff);
-  color: white;
-  border: none;
-  padding: 1rem;
-  border-radius: 5px;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 1rem;
-  position: relative;
-  overflow: hidden;
-  z-index: 1;
-}
-
-.glow-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: all 0.6s ease;
-  z-index: -1;
-}
-
-.glow-button:hover::before {
-  left: 100%;
-}
-
-.glow-button:hover {
-  box-shadow: 0 0 15px rgba(0, 150, 255, 0.8), 0 0 30px rgba(0, 100, 255, 0.5);
-  transform: translateY(-2px);
-}
-
-.error-text, .error-server {
-  color: #ff3366;
-  margin-top: 0.5rem;
-  font-size: 0.9rem;
-  text-shadow: 0 0 5px rgba(255, 51, 102, 0.5);
-}
-
-.error-server {
-  text-align: center;
-  margin-bottom: 1rem;
-  padding: 0.5rem;
-  background: rgba(255, 51, 102, 0.1);
-  border-radius: 5px;
-}
+.auth-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }

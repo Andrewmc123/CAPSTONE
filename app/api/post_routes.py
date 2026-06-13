@@ -1,124 +1,198 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
-from app.models import db, Post, Like, Comment, Friend, User
+from app.models import db, Post, Like, Comment, Friend, User, Notification, Follow
 from sqlalchemy import or_, and_
 from sqlalchemy.orm import joinedload, selectinload
 from datetime import datetime
+import json
 
 post_routes = Blueprint('posts', __name__)
 
-def serialize_comment(comment):
+POST_QUERY_OPTIONS = (
+    joinedload(Post.user),
+    selectinload(Post.likes),
+    selectinload(Post.comments),
+    selectinload(Post.bookmarks),
+)
+
+
+def viewer_id():
+    return current_user.id if current_user.is_authenticated else None
+
+
+def get_friend_ids(user_id):
+    friends = Friend.query.filter(
+        or_(
+            and_(Friend.user_id == user_id, Friend.status == 'friends'),
+            and_(Friend.friend_id == user_id, Friend.status == 'friends')
+        )
+    ).all()
+    ids = set()
+    for f in friends:
+        ids.add(f.friend_id if f.user_id == user_id else f.user_id)
+    return ids
+
+
+def engagement_score(post):
+    """For You ranking: engagement weighted with a gentle recency decay."""
+    now = datetime.utcnow()
+    created = post.created_at or now
+    age_hours = max(1.0, (now - created).total_seconds() / 3600)
+    raw = (
+        len(post.likes) * 3
+        + len(post.comments) * 2
+        + (post.shares or 0) * 4
+        + (post.views or 0) * 0.05
+        + len(post.bookmarks) * 3
+    )
+    return raw / (age_hours ** 0.25)
+
+
+def paginate(items, page, per_page):
+    start = (page - 1) * per_page
+    chunk = items[start:start + per_page]
+    return chunk, start + per_page < len(items)
+
+
+@post_routes.route('/feed')
+def get_feed():
+    """
+    TikTok-style feed. tab=foryou (public) | following | friends (auth required).
+    Paginated with ?page=&per_page=
+    """
+    tab = request.args.get('tab', 'foryou')
+    page = max(1, request.args.get('page', 1, type=int))
+    per_page = min(20, request.args.get('per_page', 8, type=int))
+
+    query = Post.query.options(*POST_QUERY_OPTIONS)
+
+    if tab == 'following':
+        if not current_user.is_authenticated:
+            return {'error': 'Log in to see your Following feed'}, 401
+        followed_ids = [f.followed_id for f in Follow.query.filter_by(follower_id=current_user.id).all()]
+        posts = query.filter(Post.user_id.in_(followed_ids)).order_by(Post.created_at.desc()).all()
+        chunk, has_more = paginate(posts, page, per_page)
+    elif tab == 'friends':
+        if not current_user.is_authenticated:
+            return {'error': 'Log in to see your Friends feed'}, 401
+        friend_ids = get_friend_ids(current_user.id)
+        posts = query.filter(Post.user_id.in_(friend_ids)).order_by(Post.created_at.desc()).all()
+        chunk, has_more = paginate(posts, page, per_page)
+    else:
+        posts = query.all()
+        posts.sort(key=engagement_score, reverse=True)
+        chunk, has_more = paginate(posts, page, per_page)
+
+    uid = viewer_id()
     return {
-        "id": comment.id,
-        "user_id": comment.user_id,
-        "post_id": comment.post_id,
-        "body": comment.body,
-        "created_at": comment.created_at.isoformat() if comment.created_at else None,
-        "updated_at": comment.updated_at.isoformat() if comment.updated_at else None,
-        "user": {
-            "id": comment.user.id,
-            "username": comment.user.username,
-            "profile_img": comment.user.profile_img
-        }
+        'posts': [p.to_dict(uid) for p in chunk],
+        'page': page,
+        'has_more': has_more,
+        'tab': tab,
     }
 
-def serialize_post(post):
-    liked_by_current_user = any(like.user_id == current_user.id for like in post.likes)
-    return {
-        "id": post.id,
-        "user_id": post.user_id,
-        "body": post.body,
-        "image_url": post.image_url,
-        "created_at": post.created_at.isoformat() if post.created_at else None,
-        "updated_at": post.updated_at.isoformat() if post.updated_at else None,
-        "user": {
-            "id": post.user.id,
-            "username": post.user.username,
-            "profile_img": post.user.profile_img
-        },
-        "comments": [serialize_comment(c) for c in post.comments],
-        "like_count": len(post.likes),
-        "liked_by_user": liked_by_current_user
-    }
 
 @post_routes.route('/')
 @login_required
 def get_all_posts():
-    posts = Post.query.options(
-        joinedload(Post.user),
-        selectinload(Post.comments).joinedload(Comment.user),
-        selectinload(Post.likes)
-    ).order_by(Post.created_at.desc()).all()
-    return {'posts': [serialize_post(post) for post in posts]}
+    posts = Post.query.options(*POST_QUERY_OPTIONS).order_by(Post.created_at.desc()).all()
+    uid = viewer_id()
+    return {'posts': [p.to_dict(uid) for p in posts]}
+
+
+@post_routes.route('/<int:post_id>')
+def get_single_post(post_id):
+    """Public single video page (share target)."""
+    post = Post.query.options(*POST_QUERY_OPTIONS).get_or_404(post_id)
+    return post.to_dict(viewer_id())
+
 
 @post_routes.route('/user/<int:user_id>')
-@login_required
 def get_user_posts(user_id):
     user = User.query.get_or_404(user_id)
-    posts = Post.query.options(
-        joinedload(Post.user),
-        selectinload(Post.comments).joinedload(Comment.user),
-        selectinload(Post.likes)
-    ).filter_by(user_id=user.id).order_by(Post.created_at.desc()).all()
-    return {'posts': [serialize_post(post) for post in posts]}
+    posts = Post.query.options(*POST_QUERY_OPTIONS)\
+        .filter_by(user_id=user.id).order_by(Post.created_at.desc()).all()
+    uid = viewer_id()
+    return {'posts': [p.to_dict(uid) for p in posts]}
+
+
+@post_routes.route('/liked/<int:user_id>')
+def get_liked_posts(user_id):
+    """Videos a user has liked (profile 'Liked' tab)."""
+    likes = Like.query.filter_by(user_id=user_id).order_by(Like.created_at.desc()).all()
+    post_ids = [l.post_id for l in likes]
+    posts = Post.query.options(*POST_QUERY_OPTIONS).filter(Post.id.in_(post_ids)).all()
+    by_id = {p.id: p for p in posts}
+    ordered = [by_id[pid] for pid in post_ids if pid in by_id]
+    uid = viewer_id()
+    return {'posts': [p.to_dict(uid) for p in ordered]}
+
 
 @post_routes.route('/', methods=['POST'])
 @login_required
 def create_post():
     data = request.get_json()
-    
+
     if not data:
         return {'error': 'Request body must be JSON'}, 400
-        
-    body = data.get('body')
-    image_url = data.get('image_url')
-    
-    if not body and not image_url:
-        return {'error': 'Post content or image URL is required'}, 400
 
-    # Create the post
+    body = (data.get('body') or '').strip()
+    image_url = data.get('image_url')
+    video_url = data.get('video_url')
+    media_type = data.get('media_type') or ('video' if video_url else ('gif' if (image_url or '').endswith('.gif') else 'image'))
+
+    if not body and not image_url and not video_url:
+        return {'error': 'A caption, video, image or GIF is required'}, 400
+
+    edit_data = data.get('edit_data')
+    if isinstance(edit_data, (dict, list)):
+        edit_data = json.dumps(edit_data)
+
     post = Post(
         user_id=current_user.id,
         body=body,
-        image_url=image_url
+        image_url=image_url,
+        video_url=video_url,
+        media_type=media_type,
+        sound_name=data.get('sound_name'),
+        sound_url=data.get('sound_url'),
+        edit_data=edit_data,
+        views=0,
+        shares=0,
     )
-    
+
     db.session.add(post)
     db.session.commit()
-    
-    # Reload with relationships for the response
-    post_with_relations = Post.query.options(
-        joinedload(Post.user),
-        selectinload(Post.comments).joinedload(Comment.user),
-        selectinload(Post.likes)
-    ).get(post.id)
-    
-    return serialize_post(post_with_relations), 201
+
+    fresh = Post.query.options(*POST_QUERY_OPTIONS).get(post.id)
+    return fresh.to_dict(current_user.id), 201
+
 
 @post_routes.route('/<int:post_id>', methods=['PUT'])
 @login_required
 def update_post(post_id):
-    post = Post.query.options(
-        joinedload(Post.user),
-        selectinload(Post.comments).joinedload(Comment.user),
-        selectinload(Post.likes)
-    ).get_or_404(post_id)
-    
+    post = Post.query.options(*POST_QUERY_OPTIONS).get_or_404(post_id)
+
     if post.user_id != current_user.id:
         return {'error': 'Unauthorized'}, 403
 
-    data = request.get_json()
-    if not data.get('body') and not data.get('image_url'):
-        return {'error': 'Post content or image is required'}, 400
-        
-    post.body = data.get('body', post.body)
-    post.image_url = data.get('image_url', post.image_url)
+    data = request.get_json() or {}
+    body = data.get('body')
+    if body is not None:
+        post.body = body.strip()
+    if 'image_url' in data:
+        post.image_url = data.get('image_url')
+    if 'sound_name' in data:
+        post.sound_name = data.get('sound_name')
+    edit_data = data.get('edit_data')
+    if edit_data is not None:
+        post.edit_data = json.dumps(edit_data) if isinstance(edit_data, (dict, list)) else edit_data
     post.updated_at = datetime.utcnow()
     db.session.commit()
-    
-    # Reload to get fresh data
+
     db.session.refresh(post)
-    return serialize_post(post), 200
+    return post.to_dict(current_user.id), 200
+
 
 @post_routes.route('/<int:post_id>', methods=['DELETE'])
 @login_required
@@ -127,107 +201,120 @@ def delete_post(post_id):
     if post.user_id != current_user.id:
         return {'error': 'Unauthorized'}, 403
 
+    Notification.query.filter_by(post_id=post_id).delete()
     db.session.delete(post)
     db.session.commit()
     return {'message': 'Post deleted successfully'}, 200
 
+
 @post_routes.route('/<int:post_id>/like', methods=['POST'])
 @login_required
 def toggle_like(post_id):
-    post = Post.query.options(
-        joinedload(Post.user),
-        selectinload(Post.comments).joinedload(Comment.user),
-        selectinload(Post.likes)
-    ).get_or_404(post_id)
-    
+    post = Post.query.options(*POST_QUERY_OPTIONS).get_or_404(post_id)
+
     like = Like.query.filter_by(user_id=current_user.id, post_id=post_id).first()
-    
+
     if like:
         db.session.delete(like)
     else:
-        new_like = Like(user_id=current_user.id, post_id=post_id)
-        db.session.add(new_like)
-    
+        db.session.add(Like(user_id=current_user.id, post_id=post_id))
+        if post.user_id != current_user.id:
+            db.session.add(Notification(
+                recipient_id=post.user_id,
+                sender_id=current_user.id,
+                notification_type='post_like',
+                post_id=post_id,
+                is_read=False,
+            ))
+
     db.session.commit()
-    
-    # Reload to get updated like status
     db.session.refresh(post)
-    return serialize_post(post), 200
+    return post.to_dict(current_user.id), 200
+
+
+@post_routes.route('/<int:post_id>/view', methods=['POST'])
+def add_view(post_id):
+    """Increment view count — public, fired after ~2s of watch time."""
+    post = Post.query.get_or_404(post_id)
+    post.views = (post.views or 0) + 1
+    db.session.commit()
+    return {'id': post.id, 'views': post.views}, 200
+
+
+@post_routes.route('/<int:post_id>/share', methods=['POST'])
+def add_share(post_id):
+    """Increment share count — public."""
+    post = Post.query.get_or_404(post_id)
+    post.shares = (post.shares or 0) + 1
+    db.session.commit()
+    return {'id': post.id, 'shares': post.shares}, 200
+
+
+@post_routes.route('/<int:post_id>/comments', methods=['GET'])
+def get_comments(post_id):
+    comments = Comment.query.options(joinedload(Comment.user))\
+        .filter_by(post_id=post_id)\
+        .order_by(Comment.created_at.desc())\
+        .all()
+    uid = viewer_id()
+    return {'comments': [c.to_dict(uid) for c in comments]}, 200
+
 
 @post_routes.route('/<int:post_id>/comments', methods=['POST'])
 @login_required
 def add_comment(post_id):
-    data = request.get_json()
-    if not data.get('body'):
-        return {'error': 'Comment text is required'}, 400
+    data = request.get_json() or {}
+    body = (data.get('body') or data.get('content') or '').strip()
+    gif_url = data.get('gif_url')
+
+    if not body and not gif_url:
+        return {'error': 'Comment text or a GIF is required'}, 400
 
     post = Post.query.get_or_404(post_id)
     comment = Comment(
         user_id=current_user.id,
         post_id=post_id,
-        body=data['body'].strip()
+        body=body,
+        gif_url=gif_url,
     )
     db.session.add(comment)
+
+    if post.user_id != current_user.id:
+        db.session.add(Notification(
+            recipient_id=post.user_id,
+            sender_id=current_user.id,
+            notification_type='post_comment',
+            post_id=post_id,
+            is_read=False,
+        ))
     db.session.commit()
-    
-    # Reload comment with user relationship
-    comment_with_user = Comment.query.options(
-        joinedload(Comment.user)
-    ).get(comment.id)
-    
-    return serialize_comment(comment_with_user), 201
+
+    fresh = Comment.query.options(joinedload(Comment.user)).get(comment.id)
+    return fresh.to_dict(current_user.id), 201
+
 
 @post_routes.route('/<int:post_id>/comments/<int:comment_id>', methods=['DELETE'])
 @login_required
 def delete_comment(post_id, comment_id):
     comment = Comment.query.filter_by(id=comment_id, post_id=post_id).first_or_404()
-    
+
     if comment.user_id != current_user.id and comment.post.user_id != current_user.id:
         return {'error': 'Unauthorized'}, 403
-    
+
+    Notification.query.filter_by(comment_id=comment_id).delete()
     db.session.delete(comment)
     db.session.commit()
     return {'message': 'Comment deleted successfully'}, 200
 
-@post_routes.route('/<int:post_id>/comments', methods=['GET'])
-@login_required
-def get_comments(post_id):
-    comments = Comment.query.options(
-        joinedload(Comment.user)
-    ).filter_by(post_id=post_id)\
-     .order_by(Comment.created_at.asc())\
-     .all()
-    return {'comments': [serialize_comment(comment) for comment in comments]}, 200
 
 @post_routes.route('/friends', methods=['GET'])
 @login_required
 def get_friends_posts():
-    friends = Friend.query.filter(
-        or_(
-            and_(Friend.user_id == current_user.id, Friend.status == 'accepted'),
-            and_(Friend.friend_id == current_user.id, Friend.status == 'accepted')
-        )
-    ).all()
-
-    friend_ids = set()
-    for friend in friends:
-        if friend.user_id == current_user.id:
-            friend_ids.add(friend.friend_id)
-        else:
-            friend_ids.add(friend.user_id)
-
-    # Include current user's ID to get both friend posts and user's own posts
+    friend_ids = get_friend_ids(current_user.id)
     friend_ids.add(current_user.id)
 
-    # Get all posts from friends and current user in a single query with proper ordering
-    all_posts = Post.query.options(
-        joinedload(Post.user),
-        selectinload(Post.comments).joinedload(Comment.user),
-        selectinload(Post.likes)
-    ).filter(
+    all_posts = Post.query.options(*POST_QUERY_OPTIONS).filter(
         Post.user_id.in_(friend_ids)
     ).order_by(Post.created_at.desc()).all()
 
-    return {
-        'posts': [serialize_post(post) for post in all_posts]
-    }, 200
+    return {'posts': [p.to_dict(current_user.id) for p in all_posts]}, 200

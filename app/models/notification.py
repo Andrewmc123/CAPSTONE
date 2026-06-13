@@ -9,7 +9,9 @@ class Notification(db.Model):
         'post_comment',
         'comment_reply',
         'friend_request',
-        'friend_request_accepted'
+        'friend_request_accepted',
+        'new_follower',
+        'video_share'
     }
 
     if environment == "production":
@@ -56,19 +58,21 @@ class Notification(db.Model):
 
     def generate_link(self):
         if self.post_id:
-            return f"/posts/{self.post_id}"
+            return f"/video/{self.post_id}"
         elif self.notification_type == 'friend_request':
-            return "/friends/pending"
-        elif self.notification_type == 'friend_request_accepted':
+            return "/friends"
+        elif self.notification_type in ('friend_request_accepted', 'new_follower'):
             return f"/users/{self.sender_id}"
         return "/"
 
     def generate_message(self):
         sender_name = self.sender.username if self.sender else "Someone"
         return {
-            'post_like': f"{sender_name} liked your post",
-            'post_comment': f"{sender_name} commented on your post",
+            'post_like': f"{sender_name} liked your video",
+            'post_comment': f"{sender_name} commented on your video",
             'comment_reply': f"{sender_name} replied to your comment",
             'friend_request': f"{sender_name} sent you a friend request",
-            'friend_request_accepted': f"{sender_name} accepted your friend request"
+            'friend_request_accepted': f"{sender_name} accepted your friend request",
+            'new_follower': f"{sender_name} started following you",
+            'video_share': f"{sender_name} shared your video"
         }.get(self.notification_type, "New notification")
