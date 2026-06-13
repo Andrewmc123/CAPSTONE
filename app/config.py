@@ -11,4 +11,5 @@ class Config:
     # so the connection uri must be updated here (for production)
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         'DATABASE_URL').replace('postgres://', 'postgresql://')
-    SQLALCHEMY_ECHO = True
+    # Echo SQL in development only — keeps production logs clean.
+    SQLALCHEMY_ECHO = os.environ.get('FLASK_ENV') != 'production'

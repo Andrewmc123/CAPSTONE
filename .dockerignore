@@ -5,3 +5,8 @@ node_modules
 .venv
 dev.db
 .gitignore
+bin
+.git
+react-vite/node_modules
+__pycache__
+*.pyc

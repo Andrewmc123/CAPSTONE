@@ -19,6 +19,6 @@ RUN pip install psycopg2
 
 COPY . .
 
-RUN flask db upgrade
-RUN flask seed all
-CMD gunicorn app:app
+# Migrations and the (first-deploy-only) seed run at container start, once the
+# live DATABASE_URL is available — see start.sh. gunicorn binds to $PORT.
+CMD ["sh", "start.sh"]

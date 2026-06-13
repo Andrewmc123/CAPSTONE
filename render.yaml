@@ -1,0 +1,44 @@
+# Render Blueprint for ABLN — provisions a PostgreSQL database plus a
+# Dockerized Flask + React web service in one shot.
+#
+# Deploy:
+#   Render Dashboard → New + → Blueprint → pick the CAPSTONE repo → Apply.
+# Render reads this file, creates the database and web service, wires the
+# environment variables together, and builds from the Dockerfile.
+
+databases:
+  - name: abln-db
+    plan: free
+    databaseName: abln
+    user: abln
+    region: oregon
+
+services:
+  - type: web
+    name: abln
+    runtime: docker
+    plan: free
+    region: oregon
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/docs
+    autoDeploy: true
+    envVars:
+      - key: FLASK_APP
+        value: app
+      - key: FLASK_ENV
+        value: production
+      - key: SCHEMA
+        value: abln_schema
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: abln-db
+          property: connectionString
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      # Optional: add your own Tenor key for higher GIF rate limits
+      # - key: TENOR_API_KEY
+      #   sync: false

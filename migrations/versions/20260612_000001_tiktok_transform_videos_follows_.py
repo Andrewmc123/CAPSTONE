@@ -73,11 +73,9 @@ def upgrade():
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('user_id', 'comment_id', name='uq_user_comment_like')
     )
-
-    if environment == "production":
-        op.execute(f"ALTER TABLE follows SET SCHEMA {SCHEMA};")
-        op.execute(f"ALTER TABLE bookmarks SET SCHEMA {SCHEMA};")
-        op.execute(f"ALTER TABLE comment_likes SET SCHEMA {SCHEMA};")
+    # Note: in production, migrations/env.py sets search_path to SCHEMA before
+    # running, so the tables above are already created inside SCHEMA — no
+    # explicit "ALTER TABLE ... SET SCHEMA" is needed (and it would error).
 
 
 def downgrade():
