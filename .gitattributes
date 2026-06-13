@@ -1,0 +1,5 @@
+# Shell scripts and the Dockerfile MUST keep LF line endings, or the Alpine
+# container's `sh` chokes on the carriage returns when run on Render.
+*.sh text eol=lf
+Dockerfile text eol=lf
+start.sh text eol=lf
