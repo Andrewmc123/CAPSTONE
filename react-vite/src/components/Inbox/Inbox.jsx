@@ -2,9 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import {
-  FaHeart, FaCommentDots, FaUserPlus, FaUserCheck, FaBell, FaCheckDouble,
+  FaHeart, FaCommentDots, FaUserPlus, FaUserCheck, FaBell, FaCheckDouble, FaPaperPlane,
 } from "react-icons/fa6";
 import { thunkGetUserNotifications, thunkMarkAllAsRead } from "../../redux/notification";
+import { fetchUnreadCount } from "../../redux/messages";
 import { getPendingFriends, acceptFriendRequest, declineFriendRequest } from "../../redux/friends";
 import { timeAgo } from "../../utils/format";
 import "./Inbox.css";
@@ -31,11 +32,13 @@ export default function Inbox() {
   const notifications = useSelector((s) => Object.values(s.notifications?.all || {}));
   const unread = useSelector((s) => s.notifications?.unreadCount || 0);
   const pending = useSelector((s) => Object.values(s.friends?.pending || {}));
+  const dmUnread = useSelector((s) => s.messages?.unreadTotal || 0);
   const [tab, setTab] = useState("all");
 
   useEffect(() => {
     dispatch(thunkGetUserNotifications());
     dispatch(getPendingFriends());
+    dispatch(fetchUnreadCount());
   }, [dispatch]);
 
   const sorted = useMemo(() => {
@@ -49,11 +52,16 @@ export default function Inbox() {
     <div className="page inbox-page">
       <header className="inbox-head">
         <h1>Inbox</h1>
-        {unread > 0 && (
-          <button className="btn btn-ghost inbox-readall" onClick={() => dispatch(thunkMarkAllAsRead())}>
-            <FaCheckDouble /> Mark all read ({unread})
-          </button>
-        )}
+        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+          <Link to="/messages" className="btn btn-ghost inbox-readall">
+            <FaPaperPlane /> Messages{dmUnread > 0 ? ` (${dmUnread})` : ""}
+          </Link>
+          {unread > 0 && (
+            <button className="btn btn-ghost inbox-readall" onClick={() => dispatch(thunkMarkAllAsRead())}>
+              <FaCheckDouble /> Mark all read ({unread})
+            </button>
+          )}
+        </div>
       </header>
 
       <div className="inbox-tabs">

@@ -58,16 +58,15 @@ class User(db.Model, UserMixin):
     bookmarks = db.relationship('Bookmark', back_populates='user', cascade='all, delete-orphan')
     comment_likes = db.relationship('CommentLike', back_populates='user', cascade='all, delete-orphan')
 
-    # Face encoding relationship (one-to-many: one user can have multiple face encodings)
-    face_encodings = db.relationship(
-        'FaceEncoding',
+    # Face-vault: people the user has taught + photos filed under them
+    vault_people = db.relationship(
+        'VaultPerson',
         back_populates='user',
         cascade='all, delete-orphan'
     )
 
-    # Vault content relationship (one-to-many: one user can have multiple vault contents)
-    vault_contents = db.relationship(
-        'VaultContent',
+    vault_photos = db.relationship(
+        'VaultPhoto',
         back_populates='user',
         cascade='all, delete-orphan'
     )
@@ -122,8 +121,8 @@ class User(db.Model, UserMixin):
             'following_count': len(self.following),
             'likes_received': self.total_likes_received(),
             'video_count': len(self.posts),
-            'face_encodings_count': len(self.face_encodings),
-            'vault_contents_count': len(self.vault_contents)
+            'vault_people_count': len(self.vault_people),
+            'vault_photos_count': len(self.vault_photos)
         }
 
     def to_dict_basic(self):

@@ -11,6 +11,7 @@ import HashtagPage from "../components/HashtagPage";
 import UploadStudio from "../components/Upload";
 import SearchPage from "../components/SearchPage";
 import Inbox from "../components/Inbox";
+import { MessagesPage, MessageThread } from "../components/Messages";
 import Layout from "./Layout";
 import UserProfilePage from "../components/UserProfilePage";
 import Friends from "../components/Friend/Friend";
@@ -40,6 +41,8 @@ const createAppRouter = () => {
         { path: "/search", element: <SearchPage /> },
         { path: "/upload", element: <AuthCheck><UploadStudio /></AuthCheck> },
         { path: "/inbox", element: <AuthCheck><Inbox /></AuthCheck> },
+        { path: "/messages", element: <AuthCheck><MessagesPage /></AuthCheck> },
+        { path: "/messages/:userId", element: <AuthCheck><MessageThread /></AuthCheck> },
         { path: "/friends", element: <AuthCheck><Friends /></AuthCheck> },
         { path: "/users/:userId", element: <UserProfilePage /> },
         { path: "/home", element: <Home /> },

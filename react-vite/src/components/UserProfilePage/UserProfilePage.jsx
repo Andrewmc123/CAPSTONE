@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
-  FaUserPlus, FaUserCheck, FaPen, FaShare, FaLock, FaHeart, FaBookmark, FaClapperboard,
+  FaUserPlus, FaUserCheck, FaPen, FaShare, FaLock, FaHeart, FaBookmark, FaClapperboard, FaPaperPlane,
 } from "react-icons/fa6";
 import {
   fetchUserVideos, fetchLikedVideos, fetchBookmarkedVideos, selectCollection,
@@ -100,9 +100,16 @@ export default function UserProfilePage() {
                 <FaPen /> Edit profile
               </button>
             ) : (
-              <button className={`btn ${isFollowing ? "btn-ghost" : "btn-primary"}`} onClick={onFollow}>
-                {isFollowing ? <><FaUserCheck /> Following</> : <><FaUserPlus /> Follow</>}
-              </button>
+              <>
+                <button className={`btn ${isFollowing ? "btn-ghost" : "btn-primary"}`} onClick={onFollow}>
+                  {isFollowing ? <><FaUserCheck /> Following</> : <><FaUserPlus /> Follow</>}
+                </button>
+                {sessionUser && (
+                  <Link className="btn btn-ghost" to={`/messages/${userId}`}>
+                    <FaPaperPlane /> Message
+                  </Link>
+                )}
+              </>
             )}
             <button className="btn btn-ghost" onClick={shareProfile} title="Copy profile link">
               <FaShare /> Share

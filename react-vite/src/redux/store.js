@@ -11,6 +11,8 @@ import postReducer from "./posts";
 import FriendsReducer from "./friends";
 import notificationsReducer from "./notification";
 import followsReducer from "./follows";
+import messagesReducer from "./messages";
+import vaultReducer from "./vault";
 
 const rootReducer = combineReducers({
   session: sessionReducer,
@@ -18,6 +20,8 @@ const rootReducer = combineReducers({
   friends: FriendsReducer,
   notifications: notificationsReducer,
   follows: followsReducer,
+  messages: messagesReducer,
+  vault: vaultReducer,
 });
 
 let enhancer;

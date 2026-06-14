@@ -3,11 +3,12 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
   FaHouse, FaCompass, FaUserGroup, FaUsers, FaInbox, FaUser,
-  FaMagnifyingGlass, FaCirclePlus, FaRightFromBracket, FaVideo,
+  FaMagnifyingGlass, FaCirclePlus, FaRightFromBracket, FaVideo, FaPaperPlane, FaImages,
 } from "react-icons/fa6";
 import { thunkLogout } from "../../redux/session";
 import { fetchMyFollows, clearFollows, fetchSuggestions } from "../../redux/follows";
 import { thunkGetUserNotifications } from "../../redux/notification";
+import { fetchUnreadCount } from "../../redux/messages";
 import { useModal } from "../../context/Modal";
 import LoginFormModal from "../LoginFormModal";
 import "./Sidebar.css";
@@ -18,6 +19,7 @@ export default function Sidebar() {
   const location = useLocation();
   const user = useSelector((s) => s.session.user);
   const unread = useSelector((s) => s.notifications?.unreadCount || 0);
+  const dmUnread = useSelector((s) => s.messages?.unreadTotal || 0);
   const suggestions = useSelector((s) => s.follows.suggestions);
   const { setModalContent } = useModal();
   const [query, setQuery] = useState("");
@@ -28,6 +30,7 @@ export default function Sidebar() {
     if (user) {
       dispatch(fetchMyFollows());
       dispatch(thunkGetUserNotifications());
+      dispatch(fetchUnreadCount());
     }
     dispatch(fetchSuggestions(5));
   }, [dispatch, user]);
@@ -89,6 +92,9 @@ export default function Sidebar() {
         <NavLink to="/friends" onClick={requireLogin} className={({ isActive }) => `side-item ${isActive ? "active" : ""}`}>
           <FaUsers /> <span>Friends</span>
         </NavLink>
+        <NavLink to="/vault" onClick={requireLogin} className={({ isActive }) => `side-item ${isActive ? "active" : ""}`}>
+          <FaImages /> <span>Vault</span>
+        </NavLink>
         <NavLink to="/upload" onClick={requireLogin} className={({ isActive }) => `side-item upload ${isActive ? "active" : ""}`}>
           <FaCirclePlus /> <span>Upload</span>
         </NavLink>
@@ -98,6 +104,13 @@ export default function Sidebar() {
             {user && unread > 0 && <em className="badge">{unread > 99 ? "99+" : unread}</em>}
           </span>
           <span>Inbox</span>
+        </NavLink>
+        <NavLink to="/messages" onClick={requireLogin} className={({ isActive }) => `side-item ${isActive ? "active" : ""}`}>
+          <span className="side-icon-badge">
+            <FaPaperPlane />
+            {user && dmUnread > 0 && <em className="badge">{dmUnread > 99 ? "99+" : dmUnread}</em>}
+          </span>
+          <span>Messages</span>
         </NavLink>
         {user ? (
           <NavLink to={`/users/${user.id}`} className={({ isActive }) => `side-item ${isActive && location.pathname === `/users/${user.id}` ? "active" : ""}`}>

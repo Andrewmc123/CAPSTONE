@@ -1,0 +1,159 @@
+/* ===== Messages (DM conversation list) ===== */
+.messages-page { padding-top: 28px; max-width: 760px; }
+.messages-head { margin-bottom: 18px; }
+.messages-head h1 { margin: 0; font-size: 28px; }
+
+.messages-empty { text-align: center; color: var(--text-dim); padding: 60px 20px; }
+.messages-empty svg { font-size: 34px; color: var(--text-faint); margin-bottom: 12px; }
+.messages-empty p { max-width: 340px; margin: 0 auto; line-height: 1.5; }
+
+.convo-list { list-style: none; margin: 0; padding: 0; }
+.convo-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  margin-bottom: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.13s ease, border-color 0.13s ease;
+}
+.convo-row:hover { background: var(--bg-hover); border-color: rgba(50, 255, 50, 0.3); }
+.convo-row.unread { border-left: 3px solid var(--neon); }
+
+.convo-main { flex: 1; min-width: 0; }
+.convo-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.convo-top strong { font-size: 15px; }
+.convo-time { font-size: 12px; color: var(--text-faint); flex-shrink: 0; }
+.convo-preview {
+  margin: 2px 0 0;
+  font-size: 13.5px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.convo-row.unread .convo-preview { color: var(--text, #fff); font-weight: 600; }
+
+.convo-badge {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--neon);
+  color: #000;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ===== Thread (chat view) ===== */
+.thread-page {
+  padding: 0;
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--topbar-h, 0px));
+  min-height: 0;
+}
+.thread-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-elev);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.thread-back {
+  background: none;
+  border: none;
+  color: var(--text, #fff);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  padding: 4px;
+}
+.thread-peer { display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; }
+.thread-peer span { font-weight: 600; }
+
+.thread-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.thread-empty { text-align: center; color: var(--text-faint); margin: auto; }
+
+.bubble-row { display: flex; justify-content: flex-start; }
+.bubble-row.mine { justify-content: flex-end; }
+.bubble {
+  max-width: 72%;
+  padding: 10px 14px;
+  border-radius: 18px;
+  background: var(--bg-hover);
+  border: 1px solid var(--line);
+  font-size: 14.5px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+.bubble-row.mine .bubble {
+  background: var(--neon);
+  color: #000;
+  border-color: transparent;
+}
+
+.bubble-video { display: block; margin-top: 6px; text-decoration: none; color: inherit; }
+.bubble-video img { width: 160px; max-width: 100%; border-radius: 12px; display: block; }
+.bubble-video-label { display: block; font-size: 12.5px; margin-top: 4px; opacity: 0.85; }
+
+.thread-composer {
+  display: flex;
+  gap: 10px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--line);
+  background: var(--bg-elev);
+  position: sticky;
+  bottom: 0;
+}
+.thread-composer input {
+  flex: 1;
+  padding: 11px 16px;
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  background: var(--bg, #000);
+  color: var(--text, #fff);
+  font-size: 14.5px;
+  outline: none;
+}
+.thread-composer input:focus { border-color: var(--neon); }
+.thread-send {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: none;
+  background: var(--neon);
+  color: #000;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.thread-send:disabled { opacity: 0.4; cursor: not-allowed; }
+
+@media (max-width: 768px) {
+  .messages-page { padding-bottom: calc(var(--bottomnav-h) + 20px); }
+  .thread-page { height: calc(100vh - var(--bottomnav-h)); }
+}
