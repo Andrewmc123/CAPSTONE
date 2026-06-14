@@ -1,14 +1,16 @@
-# Render Blueprint for ABLN — provisions a PostgreSQL database plus a
-# Dockerized Flask + React web service in one shot.
+# Render Blueprint for ABLN — a Dockerized Flask + React web service.
 #
 # Deploy:
 #   Render Dashboard → New + → Blueprint → pick the CAPSTONE repo → Apply.
-# Render reads this file, creates the database and web service, wires the
-# environment variables together, and builds from the Dockerfile.
-
-# Database: an external managed Postgres (Neon — free, serverless, always-on,
-# with no 30-day expiry or 1-per-account limit like Render's free Postgres).
-# Set DATABASE_URL below to its connection string in the Render dashboard.
+#
+# Database: defaults to a self-contained SQLite file (DATABASE_URL below) so the
+# app always boots with ZERO external setup. Demo data is (re)seeded on each
+# fresh boot. Data is not persistent across redeploys — fine for a demo.
+#
+# To upgrade to a PERSISTENT database later (e.g. Neon — free, serverless):
+#   1. set DATABASE_URL to the Neon Postgres connection string
+#   2. change FLASK_ENV to "production"  (enables the abln_schema)
+# No code changes needed — the app already supports both.
 
 services:
   - type: web
@@ -24,14 +26,18 @@ services:
     envVars:
       - key: FLASK_APP
         value: app
+      # "development" keeps SQLite-friendly behavior (no Postgres-only schema).
+      # Switch to "production" only together with a Postgres DATABASE_URL.
       - key: FLASK_ENV
-        value: production
+        value: development
       - key: SCHEMA
         value: abln_schema
       - key: SECRET_KEY
         generateValue: true
+      # Self-contained SQLite so the deploy always boots. Replace with a Neon
+      # Postgres URL (and set FLASK_ENV=production) for a persistent database.
       - key: DATABASE_URL
-        sync: false   # paste your Neon connection string here in the Render dashboard
+        value: sqlite:////var/www/prod.db
       - key: PYTHONUNBUFFERED
         value: "1"
       # Optional: add your own Tenor key for higher GIF rate limits
