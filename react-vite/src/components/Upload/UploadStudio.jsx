@@ -350,7 +350,7 @@ export default function UploadStudio() {
             <FaArrowLeft /> Back
           </button>
         ) : <span />}
-        <h1><FaWandMagicSparkles /> Create</h1>
+        <h1><FaWandMagicSparkles /> Upload</h1>
         <span className="studio-step-label">
           {step === "select" ? "1 · Pick" : step === "edit" ? "2 · Edit" : "3 · Post"}
         </span>

@@ -133,3 +133,15 @@ def delete_message(message_id):
     db.session.delete(msg)
     db.session.commit()
     return jsonify({'id': message_id})
+
+
+@message_routes.route('/clear', methods=['DELETE'])
+@login_required
+def clear_messages():
+    """Delete every DM the current user has sent or received (clear all chats)."""
+    me = current_user.id
+    Message.query.filter(
+        or_(Message.sender_id == me, Message.recipient_id == me)
+    ).delete(synchronize_session=False)
+    db.session.commit()
+    return jsonify({'ok': True})

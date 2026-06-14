@@ -1,0 +1,62 @@
+/* ============================================================
+   Responsive & cross-device polish — imported LAST so it wins.
+   Goal: every page neat on ~360–480px phones — no horizontal
+   overflow, no overlaps, all content visible above the bottom nav.
+   ============================================================ */
+
+/* --- Sound control: unmistakable TikTok-style speaker on every device --- */
+.vcard-mute {
+  width: 44px;
+  height: 44px;
+  font-size: 20px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+.vcard-mute:hover { color: var(--neon); }
+
+@media (max-width: 768px) {
+  /* never allow accidental horizontal scroll */
+  html, body, #root { overflow-x: hidden; max-width: 100vw; }
+
+  /* every standard page clears the bottom nav so nothing is hidden */
+  .page { padding-bottom: calc(var(--bottomnav-h, 56px) + 24px) !important; }
+
+  /* comments drawer: full-width bottom sheet */
+  .cdrawer { width: 100% !important; max-width: 100vw !important; }
+
+  /* keep the share menu fully on-screen */
+  .sharesheet { width: min(190px, 64vw) !important; }
+
+  /* collapse desktop multi-column grids on phones */
+  .search-users { grid-template-columns: 1fr !important; }
+  .studio-select { grid-template-columns: 1fr !important; }
+  .studio-edit { grid-template-columns: 1fr !important; }
+  .friends-page { grid-template-columns: 1fr !important; }
+  .gifpicker-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .live-grid { grid-template-columns: repeat(auto-fill, minmax(116px, 1fr)) !important; }
+
+  /* upload studio: full-width preview + stacked tools */
+  .studio-stage-wrap, .studio-tools { max-width: 100% !important; width: 100% !important; }
+  .studio-drop { padding: 40px 18px !important; }
+
+  /* profile: smaller avatar so the header fits */
+  .profile-avatar { width: 92px !important; height: 92px !important; }
+
+  /* inbox: header buttons may wrap; tighter rows */
+  .inbox-head { flex-wrap: wrap; gap: 10px; }
+  .inbox-row { gap: 9px !important; padding: 11px 12px !important; }
+
+  /* messages: slightly wider bubbles on tiny screens */
+  .bubble { max-width: 84% !important; }
+
+  /* auth cards: even side gutters */
+  .auth-card { width: calc(100vw - 24px) !important; max-width: 420px !important; }
+}
+
+@media (max-width: 420px) {
+  .messages-head h1, .inbox-head h1, .live-discover-head h1 { font-size: 22px; }
+  .trend-card { min-width: 150px !important; }
+  .action-rail { width: 50px !important; right: 4px !important; }
+  .vcard-meta { right: 60px !important; }
+}

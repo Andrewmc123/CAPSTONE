@@ -67,6 +67,11 @@ export const sendMessage = (userId, { content, postId } = {}) => async (dispatch
   return null;
 };
 
+export const clearAllConversations = () => async (dispatch) => {
+  const res = await fetch("/api/messages/clear", { method: "DELETE", credentials: "include" });
+  if (res.ok) dispatch(clearMessages());
+};
+
 // ---------- Selectors ----------
 export const selectConversations = (state) => state.messages.conversations;
 export const selectDmUnread = (state) => state.messages.unreadTotal;

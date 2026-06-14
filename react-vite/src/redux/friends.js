@@ -4,6 +4,7 @@ const GET_PENDING_FRIENDS = 'friends/GET_PENDING_FRIENDS';
 const SET_FRIENDS_LOADING = 'friends/SET_LOADING';
 const SET_FRIENDS_ERROR = 'friends/SET_ERROR';
 const UPDATE_FRIENDS_COUNT = 'friends/UPDATE_FRIENDS_COUNT';
+const REMOVE_PENDING = 'friends/REMOVE_PENDING';
 
 // Action Creators
 const loadFriends = (friends) => ({ type: GET_FRIENDS, friends });
@@ -11,6 +12,7 @@ const loadPending = (pending) => ({ type: GET_PENDING_FRIENDS, pending });
 const setLoading = (loading) => ({ type: SET_FRIENDS_LOADING, loading });
 const setError = (error) => ({ type: SET_FRIENDS_ERROR, error });
 export const updateFriendsCount = (change) => ({ type: UPDATE_FRIENDS_COUNT, change });
+const removePending = (id) => ({ type: REMOVE_PENDING, id });
 
 // Helper function to handle fetch errors safely
 const handleResponse = async (res, errorMessage) => {
@@ -52,6 +54,7 @@ export const getPendingFriends = () => async (dispatch) => {
 };
 
 export const acceptFriendRequest = (friendId) => async (dispatch) => {
+  dispatch(removePending(friendId)); // optimistic — the request row disappears at once
   dispatch(setLoading(true));
   try {
     // Try POST method instead of PUT (based on the 405 error)
@@ -77,6 +80,7 @@ export const acceptFriendRequest = (friendId) => async (dispatch) => {
 };
 
 export const declineFriendRequest = (friendId) => async (dispatch) => {
+  dispatch(removePending(friendId)); // optimistic — the request row disappears at once
   dispatch(setLoading(true));
   try {
     const res = await fetch(`/api/friends/decline/${friendId}`, {
@@ -188,6 +192,11 @@ export default function friendsReducer(state = initialState, action) {
     case UPDATE_FRIENDS_COUNT:
       // This action is handled by the session reducer, not here
       return state;
+    case REMOVE_PENDING: {
+      const pending = { ...state.pending };
+      delete pending[action.id];
+      return { ...state, pending };
+    }
     default:
       return state;
   }

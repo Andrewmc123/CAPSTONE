@@ -56,3 +56,22 @@ def get_user_notifications():
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+
+@notification_routes.route('/read/all', methods=['PUT'])
+@login_required
+def mark_all_read():
+    """Mark every notification for the current user as read."""
+    Notification.query.filter_by(recipient_id=current_user.id, is_read=False)\
+        .update({'is_read': True})
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
+@notification_routes.route('/clear', methods=['DELETE'])
+@login_required
+def clear_notifications():
+    """Delete all of the current user's notifications (clear the inbox)."""
+    Notification.query.filter_by(recipient_id=current_user.id).delete()
+    db.session.commit()
+    return jsonify({'ok': True})

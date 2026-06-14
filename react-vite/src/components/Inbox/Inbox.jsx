@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import {
-  FaHeart, FaCommentDots, FaUserPlus, FaUserCheck, FaBell, FaCheckDouble, FaPaperPlane,
+  FaHeart, FaCommentDots, FaUserPlus, FaUserCheck, FaBell, FaCheckDouble, FaPaperPlane, FaTrash,
 } from "react-icons/fa6";
-import { thunkGetUserNotifications, thunkMarkAllAsRead } from "../../redux/notification";
+import { thunkGetUserNotifications, thunkMarkAllAsRead, thunkClearNotifications } from "../../redux/notification";
 import { fetchUnreadCount } from "../../redux/messages";
 import { getPendingFriends, acceptFriendRequest, declineFriendRequest } from "../../redux/friends";
 import { timeAgo } from "../../utils/format";
@@ -60,6 +60,11 @@ export default function Inbox() {
           {unread > 0 && (
             <button className="btn btn-ghost inbox-readall" onClick={() => dispatch(thunkMarkAllAsRead())}>
               <FaCheckDouble /> Mark all read ({unread})
+            </button>
+          )}
+          {notifications.length > 0 && (
+            <button className="btn btn-ghost inbox-readall" onClick={() => dispatch(thunkClearNotifications())}>
+              <FaTrash /> Clear
             </button>
           )}
         </div>

@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { FaPaperPlane } from "react-icons/fa6";
-import { fetchConversations } from "../../redux/messages";
+import { fetchConversations, clearAllConversations } from "../../redux/messages";
 import { timeAgo } from "../../utils/format";
 import "./Messages.css";
 
@@ -17,8 +17,13 @@ export default function MessagesPage() {
 
   return (
     <div className="page messages-page">
-      <header className="messages-head">
+      <header className="messages-head" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <h1>Messages</h1>
+        {conversations.length > 0 && (
+          <button className="btn btn-ghost" onClick={() => dispatch(clearAllConversations())}>
+            Clear all
+          </button>
+        )}
       </header>
 
       {loaded && conversations.length === 0 && (

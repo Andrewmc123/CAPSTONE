@@ -1,6 +1,7 @@
 // Action Types
 const SET_NOTIFICATIONS = 'notifications/SET_NOTIFICATIONS';
 const MARK_ALL_READ = 'notifications/MARK_ALL_READ';
+const CLEAR_ALL = 'notifications/CLEAR_ALL';
 
 // Action Creators
 const setNotifications = (payload) => ({
@@ -11,6 +12,8 @@ const setNotifications = (payload) => ({
 const markAllRead = () => ({
   type: MARK_ALL_READ
 });
+
+const clearAll = () => ({ type: CLEAR_ALL });
 
 // Thunks
 export const thunkGetUserNotifications = () => async (dispatch) => {
@@ -40,6 +43,14 @@ export const thunkMarkAllAsRead = () => async (dispatch) => {
     dispatch(markAllRead());
     dispatch(thunkGetUserNotifications());
   }
+};
+
+export const thunkClearNotifications = () => async (dispatch) => {
+  const response = await fetch('/api/notifications/clear', {
+    method: 'DELETE',
+    credentials: 'include',
+  });
+  if (response.ok) dispatch(clearAll());
 };
 
 // Reducer
@@ -78,6 +89,8 @@ export default function notificationsReducer(state = initialState, action) {
           ])
         )
       };
+    case CLEAR_ALL:
+      return { ...state, all: {}, unreadCount: 0 };
     default:
       return state;
   }
