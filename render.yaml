@@ -6,12 +6,9 @@
 # Render reads this file, creates the database and web service, wires the
 # environment variables together, and builds from the Dockerfile.
 
-databases:
-  - name: abln-db
-    plan: free
-    databaseName: abln
-    user: abln
-    region: oregon
+# Database: an external managed Postgres (Neon — free, serverless, always-on,
+# with no 30-day expiry or 1-per-account limit like Render's free Postgres).
+# Set DATABASE_URL below to its connection string in the Render dashboard.
 
 services:
   - type: web
@@ -34,9 +31,7 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: DATABASE_URL
-        fromDatabase:
-          name: abln-db
-          property: connectionString
+        sync: false   # paste your Neon connection string here in the Render dashboard
       - key: PYTHONUNBUFFERED
         value: "1"
       # Optional: add your own Tenor key for higher GIF rate limits
