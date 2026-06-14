@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { FaArrowLeft } from "react-icons/fa6";
 import { fetchSinglePost } from "../../redux/posts";
@@ -9,6 +9,8 @@ import "./SingleVideo.css";
 
 export default function SingleVideo() {
   const { postId } = useParams();
+  const [searchParams] = useSearchParams();
+  const targetCommentId = searchParams.get("comment");
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const post = useSelector((s) => s.posts.byId[Number(postId)]);
@@ -20,6 +22,11 @@ export default function SingleVideo() {
       if (!p) setNotFound(true);
     });
   }, [dispatch, postId]);
+
+  // Deep-link from a notification: open comments straight to the target comment.
+  useEffect(() => {
+    if (targetCommentId) setCommentsOpen(true);
+  }, [targetCommentId]);
 
   if (notFound) {
     return (
@@ -49,7 +56,13 @@ export default function SingleVideo() {
       <div className="single-stage">
         <VideoCard post={post} active onOpenComments={() => setCommentsOpen(true)} />
       </div>
-      {commentsOpen && <CommentsDrawer post={post} onClose={() => setCommentsOpen(false)} />}
+      {commentsOpen && (
+        <CommentsDrawer
+          post={post}
+          targetCommentId={targetCommentId ? Number(targetCommentId) : null}
+          onClose={() => setCommentsOpen(false)}
+        />
+      )}
     </div>
   );
 }

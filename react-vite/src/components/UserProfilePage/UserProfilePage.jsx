@@ -24,6 +24,7 @@ export default function UserProfilePage() {
 
   const [profile, setProfile] = useState(null);
   const [tab, setTab] = useState("videos");
+  const [visitors, setVisitors] = useState([]);
 
   const isOwn = sessionUser && Number(userId) === sessionUser.id;
   const videos = useSelector(selectCollection(`user:${userId}`));
@@ -46,6 +47,19 @@ export default function UserProfilePage() {
     if (tab === "liked") dispatch(fetchLikedVideos(userId));
     if (tab === "favorites" && isOwn) dispatch(fetchBookmarkedVideos());
   }, [tab, dispatch, userId, isOwn]);
+
+  // Profile-visitor tracking: log my visit to others; load my own viewers.
+  useEffect(() => {
+    if (!sessionUser) return;
+    if (isOwn) {
+      fetch("/api/users/visitors", { credentials: "include" })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => d && setVisitors(d.visitors || []))
+        .catch(() => {});
+    } else {
+      fetch(`/api/users/${userId}/visit`, { method: "POST", credentials: "include" }).catch(() => {});
+    }
+  }, [sessionUser, isOwn, userId]);
 
   const onFollow = () => {
     if (!sessionUser) {
@@ -123,6 +137,33 @@ export default function UserProfilePage() {
           </div>
 
           {profile.bio && <p className="profile-bio">{profile.bio}</p>}
+
+          {isOwn && visitors.length > 0 && (
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 13, color: "var(--text-dim)" }}>
+                👀 {visitors.length} recent profile {visitors.length === 1 ? "view" : "views"}
+              </span>
+              <div style={{ display: "flex" }}>
+                {visitors.slice(0, 8).map((v, i) => (
+                  <Link
+                    key={v.id}
+                    to={`/users/${v.visitor?.id}`}
+                    title={`@${v.visitor?.username}`}
+                    style={{ marginLeft: i === 0 ? 0 : -8, zIndex: 8 - i }}
+                  >
+                    <img
+                      className="avatar"
+                      width={28}
+                      height={28}
+                      style={{ border: "2px solid var(--bg, #0b0b0f)" }}
+                      src={v.visitor?.profile_img || `https://i.pravatar.cc/40?u=${v.visitor?.id}`}
+                      alt={v.visitor?.username}
+                    />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </header>
 

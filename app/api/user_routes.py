@@ -1,6 +1,7 @@
 from flask import Blueprint, request
 from flask_login import login_required, current_user
-from app.models import db, User
+from app.models import db, User, ProfileVisit
+from datetime import datetime
 
 user_routes = Blueprint('users', __name__)
 
@@ -55,3 +56,34 @@ def update_profile():
 
     db.session.commit()
     return current_user.to_dict()
+
+
+@user_routes.route('/<int:id>/visit', methods=['POST'])
+@login_required
+def record_visit(id):
+    """Record that the current user viewed user <id>'s profile."""
+    if id == current_user.id:
+        return {'ok': True, 'self': True}
+    if not User.query.get(id):
+        return {'errors': {'message': 'User not found'}}, 404
+
+    visit = ProfileVisit.query.filter_by(
+        visitor_id=current_user.id, profile_id=id).first()
+    if visit:
+        visit.updated_at = datetime.utcnow()
+    else:
+        db.session.add(ProfileVisit(visitor_id=current_user.id, profile_id=id))
+    db.session.commit()
+    return {'ok': True}
+
+
+@user_routes.route('/visitors')
+@login_required
+def my_visitors():
+    """People who viewed the current user's profile, most recent first."""
+    visits = ProfileVisit.query.filter_by(profile_id=current_user.id)\
+        .order_by(ProfileVisit.updated_at.desc()).limit(50).all()
+    return {
+        'visitors': [v.to_dict() for v in visits],
+        'count': len(visits),
+    }

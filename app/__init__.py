@@ -20,6 +20,7 @@ from .api.upload_routes import upload_routes
 #from .api.camera_routes import camera_routes
 from .api.vault_routes import vault_routes
 from .api.message_routes import message_routes
+from .api.live_routes import live_routes
 from .seeds import seed_commands
 from .config import Config
 
@@ -50,6 +51,7 @@ app.register_blueprint(upload_routes, url_prefix='/api/uploads')
 #app.register_blueprint(camera_routes, url_prefix='/api/camera')
 app.register_blueprint(vault_routes, url_prefix='/api/vault')
 app.register_blueprint(message_routes, url_prefix='/api/messages')
+app.register_blueprint(live_routes, url_prefix='/api/live')
 
 db.init_app(app)
 Migrate(app, db)

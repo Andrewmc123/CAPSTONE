@@ -12,6 +12,7 @@ import "./Inbox.css";
 
 const TYPE_META = {
   post_like: { icon: FaHeart, color: "var(--heart)", tab: "likes" },
+  comment_like: { icon: FaHeart, color: "var(--heart)", tab: "likes" },
   post_comment: { icon: FaCommentDots, color: "var(--neon)", tab: "comments" },
   comment_reply: { icon: FaCommentDots, color: "var(--neon)", tab: "comments" },
   new_follower: { icon: FaUserPlus, color: "var(--orange)", tab: "followers" },

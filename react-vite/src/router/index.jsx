@@ -12,6 +12,7 @@ import UploadStudio from "../components/Upload";
 import SearchPage from "../components/SearchPage";
 import Inbox from "../components/Inbox";
 import { MessagesPage, MessageThread } from "../components/Messages";
+import { LiveDiscover, LiveRoom } from "../components/Live";
 import Layout from "./Layout";
 import UserProfilePage from "../components/UserProfilePage";
 import Friends from "../components/Friend/Friend";
@@ -43,6 +44,8 @@ const createAppRouter = () => {
         { path: "/inbox", element: <AuthCheck><Inbox /></AuthCheck> },
         { path: "/messages", element: <AuthCheck><MessagesPage /></AuthCheck> },
         { path: "/messages/:userId", element: <AuthCheck><MessageThread /></AuthCheck> },
+        { path: "/live", element: <AuthCheck><LiveDiscover /></AuthCheck> },
+        { path: "/live/:id", element: <AuthCheck><LiveRoom /></AuthCheck> },
         { path: "/friends", element: <AuthCheck><Friends /></AuthCheck> },
         { path: "/users/:userId", element: <UserProfilePage /> },
         { path: "/home", element: <Home /> },

@@ -11,7 +11,7 @@ import "./CommentsDrawer.css";
 
 const QUICK_EMOJI = ["😂", "🔥", "😍", "💀", "👏", "😭", "🎉", "💚"];
 
-export default function CommentsDrawer({ post, onClose }) {
+export default function CommentsDrawer({ post, onClose, targetCommentId }) {
   const dispatch = useDispatch();
   const user = useSelector((s) => s.session.user);
   const { setModalContent } = useModal();
@@ -38,6 +38,13 @@ export default function CommentsDrawer({ post, onClose }) {
       .catch(() => alive && setLoading(false));
     return () => { alive = false; };
   }, [post.id]);
+
+  // Opened from a notification: scroll to + highlight the target comment.
+  useEffect(() => {
+    if (!targetCommentId || loading || !comments.length) return;
+    const el = listRef.current?.querySelector(`[data-comment-id="${targetCommentId}"]`);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [targetCommentId, loading, comments]);
 
   const gate = () => {
     if (!user) {
@@ -143,7 +150,12 @@ export default function CommentsDrawer({ post, onClose }) {
         )}
 
         {comments.map((c) => (
-          <div className="comment-row" key={c.id}>
+          <div
+            className="comment-row"
+            data-comment-id={c.id}
+            style={c.id === targetCommentId ? { background: "rgba(50,255,50,0.12)", borderRadius: 12, transition: "background .3s" } : undefined}
+            key={c.id}
+          >
             <Link to={`/users/${c.user?.id}`}>
               <img className="avatar" width={36} height={36} src={c.user?.profile_img || `https://i.pravatar.cc/60?u=${c.user?.id}`} alt="" />
             </Link>

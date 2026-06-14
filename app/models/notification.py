@@ -11,7 +11,8 @@ class Notification(db.Model):
         'friend_request',
         'friend_request_accepted',
         'new_follower',
-        'video_share'
+        'video_share',
+        'comment_like'
     }
 
     if environment == "production":
@@ -57,6 +58,9 @@ class Notification(db.Model):
         }
 
     def generate_link(self):
+        # Comment-related notifications deep-link straight to the comment.
+        if self.post_id and self.comment_id:
+            return f"/video/{self.post_id}?comment={self.comment_id}"
         if self.post_id:
             return f"/video/{self.post_id}"
         elif self.notification_type == 'friend_request':
@@ -74,5 +78,6 @@ class Notification(db.Model):
             'friend_request': f"{sender_name} sent you a friend request",
             'friend_request_accepted': f"{sender_name} accepted your friend request",
             'new_follower': f"{sender_name} started following you",
-            'video_share': f"{sender_name} shared your video"
+            'video_share': f"{sender_name} shared your video",
+            'comment_like': f"{sender_name} liked your comment"
         }.get(self.notification_type, "New notification")

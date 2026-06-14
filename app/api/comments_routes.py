@@ -85,6 +85,18 @@ def toggle_comment_like(comment_id):
         db.session.delete(existing)
     else:
         db.session.add(CommentLike(user_id=current_user.id, comment_id=comment_id))
+        # Notify the comment's author — deep-links straight to the comment.
+        if comment.user_id != current_user.id:
+            db.session.add(Notification(
+                sender_id=current_user.id,
+                recipient_id=comment.user_id,
+                notification_type='comment_like',
+                post_id=comment.post_id,
+                comment_id=comment.id,
+                is_read=False,
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow(),
+            ))
 
     db.session.commit()
     return comment.to_dict(current_user.id), 200
