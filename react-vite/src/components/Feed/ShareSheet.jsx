@@ -15,8 +15,8 @@ export default function ShareSheet({ post, onClose }) {
     const close = (e) => {
       if (ref.current && !ref.current.contains(e.target)) onClose();
     };
-    document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
+    document.addEventListener("pointerdown", close);
+    return () => document.removeEventListener("pointerdown", close);
   }, [onClose]);
 
   const countShare = () => dispatch(thunkAddShare(post.id));

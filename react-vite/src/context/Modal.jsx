@@ -1,14 +1,30 @@
-import { useRef, useState, useContext, createContext } from 'react';
+import { useRef, useState, useContext, createContext, useEffect } from 'react';
 import ReactDOM from 'react-dom';
+import { useLocation } from 'react-router-dom';
 import './Modal.css';
 
 const ModalContext = createContext();
 
 export function ModalProvider({ children }) {
   const modalRef = useRef();
+  const location = useLocation();
   const [modalContent, setModalContent] = useState(null);
   // callback function that will be called when modal is closing
   const [onModalClose, setOnModalClose] = useState(null);
+
+  // Close any open modal when the route changes — otherwise the login modal
+  // "sticks" and follows you across pages (very noticeable on mobile).
+  useEffect(() => {
+    setModalContent(null);
+    setOnModalClose(null);
+  }, [location.pathname]);
+
+  // Lock background scroll while a modal is open (stops iOS scroll-behind and
+  // pull-to-refresh from dismissing or shifting the modal).
+  useEffect(() => {
+    document.body.style.overflow = modalContent ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [modalContent]);
 
   const closeModal = () => {
     setModalContent(null); // clear the modal contents

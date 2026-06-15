@@ -39,8 +39,8 @@ export default function Sidebar() {
     const close = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
     };
-    document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
+    document.addEventListener("pointerdown", close);
+    return () => document.removeEventListener("pointerdown", close);
   }, []);
 
   const submitSearch = (e) => {

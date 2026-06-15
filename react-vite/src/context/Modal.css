@@ -16,9 +16,15 @@
   left: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.7);
+  touch-action: none;
+  overscroll-behavior: none;
 }
 
 #modal-content {
-  position: absolute;
-  background-color:white;
+  position: relative;
+  max-width: min(440px, calc(100vw - 24px));
+  max-height: 90dvh;
+  overflow-y: auto;
+  border-radius: 16px;
+  background-color: white;
 }

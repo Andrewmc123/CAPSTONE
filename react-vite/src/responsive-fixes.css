@@ -60,3 +60,15 @@
   .action-rail { width: 50px !important; right: 4px !important; }
   .vcard-meta { right: 60px !important; }
 }
+
+/* --- touch-device behavior (no hover) --- */
+@media (hover: none) {
+  /* the seek thumb is hover-only on desktop — keep it visible for touch */
+  .vcard-progress::-webkit-slider-thumb { opacity: 1 !important; }
+  .vcard-mute:active { color: var(--neon); }
+  .rail-avatar:active { transform: scale(1.06); }
+}
+
+/* keep inner scroll areas from leaking the gesture to the feed/page behind */
+.cdrawer-list, .thread-body, .live-chat, .gifpicker-grid { overscroll-behavior: contain; }
+.vcard-progress { touch-action: none; }
