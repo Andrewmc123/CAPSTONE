@@ -91,3 +91,30 @@
   color: var(--text-dim);
   padding: 28px 0;
 }
+
+/* save-star overlay on each GIF */
+.gif-cell-wrap { position: relative; }
+.gif-cell-wrap .gif-cell { width: 100%; display: block; }
+.gif-save {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.55);
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, color 0.15s ease;
+  z-index: 3;
+}
+.gif-cell-wrap:hover .gif-save,
+.gif-save.on { opacity: 1; }
+.gif-save.on { color: var(--orange, gold); }
+@media (hover: none) { .gif-save { opacity: 1; } }

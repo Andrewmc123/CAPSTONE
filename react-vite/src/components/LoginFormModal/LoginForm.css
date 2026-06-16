@@ -21,7 +21,37 @@
   text-align: center;
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.5);
 }
-.auth-card-modal { box-shadow: none; border: none; }
+.auth-card-modal { box-shadow: none; border: none; position: relative; }
+
+.auth-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: var(--bg-hover);
+  color: var(--text);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+}
+.auth-close:hover { background: var(--line); color: var(--heart); }
+
+.auth-link {
+  background: none;
+  border: none;
+  color: var(--neon);
+  font-weight: 700;
+  font-size: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+.auth-link:hover { text-decoration: underline; }
 
 .auth-logo { font-size: 38px; display: inline-block; }
 

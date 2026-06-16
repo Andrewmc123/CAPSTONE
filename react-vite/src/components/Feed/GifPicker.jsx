@@ -1,8 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { FaMagnifyingGlass, FaXmark } from "react-icons/fa6";
+import { FaMagnifyingGlass, FaXmark, FaStar } from "react-icons/fa6";
 import "./GifPicker.css";
 
 const QUICK_CATEGORIES = ["trending", "reactions", "laughing", "love", "fire", "dance", "omg", "cat", "dog", "party", "mood", "yes", "no"];
+
+// Saved GIFs persist on-device so they're one tap away in future comments.
+const SAVED_KEY = "abln_saved_gifs";
+const readSaved = () => {
+  try { return JSON.parse(localStorage.getItem(SAVED_KEY)) || []; } catch { return []; }
+};
 
 // Reusable GIF picker — powers GIF comments, GIF posts and GIF stickers.
 export default function GifPicker({ onSelect, onClose, title = "Pick a GIF" }) {
@@ -10,7 +16,10 @@ export default function GifPicker({ onSelect, onClose, title = "Pick a GIF" }) {
   const [activeCat, setActiveCat] = useState("trending");
   const [gifs, setGifs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [saved, setSaved] = useState(readSaved);
   const debounceRef = useRef(null);
+
+  const showingSaved = activeCat === "saved";
 
   const load = async (term) => {
     setLoading(true);
@@ -41,8 +50,23 @@ export default function GifPicker({ onSelect, onClose, title = "Pick a GIF" }) {
   const pickCategory = (cat) => {
     setActiveCat(cat);
     setQuery("");
-    load(cat);
+    if (cat !== "saved") load(cat);
   };
+
+  const isSaved = (gif) => saved.some((g) => g.id === gif.id);
+
+  const toggleSave = (e, gif) => {
+    e.stopPropagation();
+    setSaved((prev) => {
+      const next = prev.some((g) => g.id === gif.id)
+        ? prev.filter((g) => g.id !== gif.id)
+        : [{ id: gif.id, url: gif.url, preview: gif.preview, title: gif.title }, ...prev].slice(0, 60);
+      localStorage.setItem(SAVED_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const display = showingSaved ? saved : gifs;
 
   return (
     <div className="gifpicker fade-in" onClick={(e) => e.stopPropagation()}>
@@ -63,6 +87,12 @@ export default function GifPicker({ onSelect, onClose, title = "Pick a GIF" }) {
       </div>
 
       <div className="gifpicker-cats">
+        <button
+          className={`chip ${showingSaved ? "active" : ""}`}
+          onClick={() => pickCategory("saved")}
+        >
+          ⭐ Saved{saved.length ? ` (${saved.length})` : ""}
+        </button>
         {QUICK_CATEGORIES.map((cat) => (
           <button
             key={cat}
@@ -75,14 +105,27 @@ export default function GifPicker({ onSelect, onClose, title = "Pick a GIF" }) {
       </div>
 
       <div className="gifpicker-grid">
-        {loading
+        {!showingSaved && loading
           ? Array.from({ length: 9 }).map((_, i) => <div key={i} className="gif-cell skeleton" />)
-          : gifs.map((gif) => (
-              <button key={gif.id} className="gif-cell" onClick={() => onSelect(gif)} title={gif.title}>
-                <img src={gif.preview} alt={gif.title} loading="lazy" />
-              </button>
+          : display.map((gif) => (
+              <div key={gif.id} className="gif-cell-wrap">
+                <button className="gif-cell" onClick={() => onSelect(gif)} title={gif.title}>
+                  <img src={gif.preview} alt={gif.title} loading="lazy" />
+                </button>
+                <button
+                  className={`gif-save ${isSaved(gif) ? "on" : ""}`}
+                  onClick={(e) => toggleSave(e, gif)}
+                  aria-label={isSaved(gif) ? "Unsave GIF" : "Save GIF"}
+                >
+                  <FaStar />
+                </button>
+              </div>
             ))}
-        {!loading && gifs.length === 0 && (
+
+        {showingSaved && saved.length === 0 && (
+          <p className="gifpicker-empty">No saved GIFs yet — tap the ⭐ on any GIF to save it for later.</p>
+        )}
+        {!showingSaved && !loading && gifs.length === 0 && (
           <p className="gifpicker-empty">No GIFs found — try another word 🤔</p>
         )}
       </div>

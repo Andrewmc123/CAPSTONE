@@ -15,7 +15,9 @@
   right: 0;
   left: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   touch-action: none;
   overscroll-behavior: none;
 }
@@ -25,6 +27,5 @@
   max-width: min(440px, calc(100vw - 24px));
   max-height: 90dvh;
   overflow-y: auto;
-  border-radius: 16px;
-  background-color: white;
+  background-color: transparent;
 }

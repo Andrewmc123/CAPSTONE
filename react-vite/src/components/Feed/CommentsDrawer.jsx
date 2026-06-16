@@ -6,6 +6,7 @@ import { bumpCommentCount } from "../../redux/posts";
 import { useModal } from "../../context/Modal";
 import LoginFormModal from "../LoginFormModal";
 import GifPicker from "./GifPicker";
+import EmojiPicker from "./EmojiPicker";
 import { compact, timeAgo } from "../../utils/format";
 import "./CommentsDrawer.css";
 
@@ -21,6 +22,7 @@ export default function CommentsDrawer({ post, onClose, targetCommentId }) {
   const [body, setBody] = useState("");
   const [pendingGif, setPendingGif] = useState(null);
   const [gifOpen, setGifOpen] = useState(false);
+  const [emojiOpen, setEmojiOpen] = useState(false);
   const [posting, setPosting] = useState(false);
   const listRef = useRef(null);
 
@@ -189,6 +191,11 @@ export default function CommentsDrawer({ post, onClose, targetCommentId }) {
           <GifPicker onSelect={sendGifNow} onClose={() => setGifOpen(false)} title="Comment with a GIF" />
         </div>
       )}
+      {emojiOpen && (
+        <div className="cdrawer-gif-pop">
+          <EmojiPicker onPick={(em) => setBody((b) => b + em)} onClose={() => setEmojiOpen(false)} />
+        </div>
+      )}
 
       <div className="cdrawer-composer">
         {pendingGif && (
@@ -205,8 +212,16 @@ export default function CommentsDrawer({ post, onClose, targetCommentId }) {
         <form className="composer-bar" onSubmit={submit}>
           <button
             type="button"
+            className={`composer-gif-btn ${emojiOpen ? "on" : ""}`}
+            onClick={() => { setGifOpen(false); setEmojiOpen(!emojiOpen); }}
+            aria-label="Emoji"
+          >
+            😀
+          </button>
+          <button
+            type="button"
             className={`composer-gif-btn ${gifOpen ? "on" : ""}`}
-            onClick={() => (gate() ? null : setGifOpen(!gifOpen))}
+            onClick={() => (gate() ? null : (setEmojiOpen(false), setGifOpen(!gifOpen)))}
           >
             GIF
           </button>
