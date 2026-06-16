@@ -21,7 +21,7 @@
   color: inherit;
   transition: background 0.13s ease, border-color 0.13s ease;
 }
-.convo-row:hover { background: var(--bg-hover); border-color: rgba(50, 255, 50, 0.3); }
+.convo-row:hover { background: var(--bg-hover); border-color: rgba(168, 85, 247, 0.3); }
 .convo-row.unread { border-left: 3px solid var(--neon); }
 
 .convo-main { flex: 1; min-width: 0; }

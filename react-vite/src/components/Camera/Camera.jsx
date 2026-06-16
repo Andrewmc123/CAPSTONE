@@ -101,12 +101,12 @@ export default function Camera() {
           const id = matchPerson(matcherRef.current, d.descriptor);
           const person = id && people.find((p) => p.id === id);
           const label = person ? person.name : "Unknown";
-          ctx.strokeStyle = person ? "#32ff32" : "#ff5a5a";
+          ctx.strokeStyle = person ? "#a855f7" : "#ff5a5a";
           ctx.lineWidth = 3;
           ctx.strokeRect(x, y, width, height);
           ctx.font = "600 15px sans-serif";
           const tw = ctx.measureText(label).width;
-          ctx.fillStyle = person ? "#32ff32" : "#ff5a5a";
+          ctx.fillStyle = person ? "#a855f7" : "#ff5a5a";
           ctx.fillRect(x, y - 22, tw + 12, 22);
           ctx.fillStyle = "#000";
           ctx.fillText(label, x + 6, y - 6);

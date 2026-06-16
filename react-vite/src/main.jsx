@@ -5,8 +5,11 @@ import { RouterProvider } from "react-router-dom";
 import configureStore from "./redux/store";
 import { router } from "./router";
 import * as sessionActions from "./redux/session";
+import { initTheme } from "./utils/theme";
 import "./index.css";
 import "./responsive-fixes.css";
+
+initTheme(); // apply saved light/dark theme before first paint
 
 const store = configureStore();
 

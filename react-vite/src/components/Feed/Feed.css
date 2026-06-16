@@ -32,7 +32,7 @@
 .feed-tab.active {
   color: #04140a;
   background: var(--neon);
-  box-shadow: 0 0 14px rgba(50, 255, 50, 0.45);
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.45);
 }
 
 .feed-scroller {

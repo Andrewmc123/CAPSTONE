@@ -12,6 +12,7 @@ import { useModal } from "../../context/Modal";
 import LoginFormModal from "../LoginFormModal";
 import EditProfileModal from "./EditProfileModal";
 import VideoGrid from "../VideoGrid";
+import ThemeToggle from "../common/ThemeToggle";
 import { compact } from "../../utils/format";
 import "./UserProfilePage.css";
 
@@ -128,6 +129,7 @@ export default function UserProfilePage() {
             <button className="btn btn-ghost" onClick={shareProfile} title="Copy profile link">
               <FaShare /> Share
             </button>
+            {isOwn && <ThemeToggle variant="icon" />}
           </div>
 
           <div className="profile-stats">

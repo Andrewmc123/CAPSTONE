@@ -50,9 +50,9 @@
 .studio-drop.over {
   border-color: var(--neon);
   background: var(--neon-soft);
-  box-shadow: 0 0 40px rgba(50, 255, 50, 0.15) inset;
+  box-shadow: 0 0 40px rgba(168, 85, 247, 0.15) inset;
 }
-.studio-drop-icon { font-size: 46px; color: var(--neon); filter: drop-shadow(0 0 14px rgba(50,255,50,.5)); }
+.studio-drop-icon { font-size: 46px; color: var(--neon); filter: drop-shadow(0 0 14px rgba(168, 85, 247,.5)); }
 .studio-drop h2 { margin: 6px 0 0; font-size: 22px; }
 .studio-drop p { margin: 0 0 14px; color: var(--text-dim); font-size: 14px; }
 
@@ -259,7 +259,7 @@ button.studio-alt-card:hover { border-color: var(--orange); }
   min-width: 78px;
   transition: all 0.13s ease;
 }
-.filter-chip.on { border-color: var(--neon); color: var(--neon); box-shadow: 0 0 14px rgba(50,255,50,.2); }
+.filter-chip.on { border-color: var(--neon); color: var(--neon); box-shadow: 0 0 14px rgba(168, 85, 247,.2); }
 .filter-dot {
   width: 34px;
   height: 34px;

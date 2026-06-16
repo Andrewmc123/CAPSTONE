@@ -168,7 +168,7 @@
 .composer-gif-btn:hover, .composer-gif-btn.on {
   background: var(--orange);
   color: #1a0e00;
-  box-shadow: 0 0 12px rgba(255, 140, 0, 0.45);
+  box-shadow: 0 0 12px rgba(255, 194, 51, 0.45);
 }
 
 .composer-input {
@@ -195,7 +195,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 12px rgba(50, 255, 50, 0.35);
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.35);
 }
 .composer-send:disabled { background: var(--bg-card); color: var(--text-faint); box-shadow: none; }
 

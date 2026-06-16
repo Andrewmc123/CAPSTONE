@@ -32,7 +32,7 @@
   margin-bottom: 8px;
   transition: background 0.13s ease, border-color 0.13s ease;
 }
-.inbox-row.notif:hover { background: var(--bg-hover); border-color: rgba(50, 255, 50, 0.3); }
+.inbox-row.notif:hover { background: var(--bg-hover); border-color: rgba(168, 85, 247, 0.3); }
 .inbox-row.unread { border-left: 3px solid var(--neon); }
 
 .inbox-icon { font-size: 17px; width: 22px; text-align: center; flex-shrink: 0; }
@@ -49,7 +49,7 @@
   height: 9px;
   border-radius: 50%;
   background: var(--neon);
-  box-shadow: 0 0 8px rgba(50, 255, 50, 0.7);
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.7);
   flex-shrink: 0;
 }
 

@@ -14,7 +14,7 @@
   background:
     linear-gradient(var(--bg), var(--bg)) padding-box,
     var(--grad) border-box;
-  box-shadow: 0 0 34px rgba(50, 255, 50, 0.18);
+  box-shadow: 0 0 34px rgba(168, 85, 247, 0.18);
 }
 
 .profile-id { flex: 1; min-width: 0; }
@@ -61,7 +61,7 @@
 }
 .profile-tabs button:hover { color: var(--text); }
 .profile-tabs button.active { color: var(--neon); border-bottom-color: var(--neon); }
-.profile-tabs button.active svg { filter: drop-shadow(0 0 8px rgba(50, 255, 50, 0.55)); }
+.profile-tabs button.active svg { filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.55)); }
 
 .profile-upload-cta {
   position: fixed;

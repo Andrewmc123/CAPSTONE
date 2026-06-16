@@ -157,7 +157,7 @@ export default function CommentsDrawer({ post, onClose, targetCommentId }) {
           <div
             className="comment-row"
             data-comment-id={c.id}
-            style={c.id === targetCommentId ? { background: "rgba(50,255,50,0.12)", borderRadius: 12, transition: "background .3s" } : undefined}
+            style={c.id === targetCommentId ? { background: "rgba(168, 85, 247,0.12)", borderRadius: 12, transition: "background .3s" } : undefined}
             key={c.id}
           >
             <Link to={`/users/${c.user?.id}`}>

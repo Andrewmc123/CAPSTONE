@@ -50,7 +50,7 @@
   color: inherit;
   transition: background 0.13s ease, border-color 0.13s ease, transform 0.1s ease;
 }
-.vault-person-card:hover { background: var(--bg-hover); border-color: rgba(50, 255, 50, 0.3); }
+.vault-person-card:hover { background: var(--bg-hover); border-color: rgba(168, 85, 247, 0.3); }
 .vault-person-card:active { transform: scale(0.98); }
 .vault-person-card strong { font-size: 15px; }
 .vault-person-count { font-size: 12px; color: var(--text-faint); }

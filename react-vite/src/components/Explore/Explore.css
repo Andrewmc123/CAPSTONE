@@ -75,13 +75,13 @@
   align-items: center;
   gap: 6px;
   background: var(--neon);
-  color: #04140a;
+  color: var(--accent-fg);
   border: none;
   border-radius: 999px;
   padding: 9px 16px;
   font-size: 13.5px;
   font-weight: 800;
-  box-shadow: 0 0 14px rgba(50, 255, 50, 0.28);
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.28);
   transition: filter 0.15s ease, transform 0.12s ease;
 }
 .explore-follow:hover { filter: brightness(1.08); }
@@ -117,7 +117,7 @@
   transition: all 0.15s ease;
 }
 .trend-card:hover {
-  border-color: rgba(50, 255, 50, 0.5);
+  border-color: rgba(168, 85, 247, 0.5);
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }

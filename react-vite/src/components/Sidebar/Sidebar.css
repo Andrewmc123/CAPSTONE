@@ -53,7 +53,7 @@
 .side-item svg { font-size: 20px; width: 24px; }
 .side-item:hover { background: var(--bg-hover); }
 .side-item.active { color: var(--neon); }
-.side-item.active svg { filter: drop-shadow(0 0 8px rgba(50, 255, 50, 0.6)); }
+.side-item.active svg { filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.6)); }
 .side-item.upload svg { color: var(--orange); }
 .side-item.as-button { background: none; border: none; width: 100%; text-align: left; }
 

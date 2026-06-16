@@ -28,7 +28,7 @@
   gap: 8px;
   background: var(--bg-elev);
   border: 1px solid var(--orange);
-  box-shadow: 0 0 18px rgba(255, 140, 0, 0.12);
+  box-shadow: 0 0 18px rgba(255, 194, 51, 0.12);
   border-radius: var(--radius);
   padding: 16px 20px;
   min-width: 170px;
@@ -54,7 +54,7 @@
   padding: 12px 14px;
   transition: border-color 0.15s ease;
 }
-.friend-card:hover { border-color: rgba(50, 255, 50, 0.4); }
+.friend-card:hover { border-color: rgba(168, 85, 247, 0.4); }
 
 .friend-card-id {
   display: flex;

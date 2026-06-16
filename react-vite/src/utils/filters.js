@@ -13,7 +13,7 @@ export const FILTERS = {
   party: { label: "Party",  css: "saturate(1.8) contrast(1.2) hue-rotate(25deg)" },
 };
 
-export const TEXT_COLORS = ["#ffffff", "#32ff32", "#ff8c00", "#ff3b5c", "#42c8f5", "#ffd000", "#0a0a0c"];
+export const TEXT_COLORS = ["#ffffff", "#a855f7", "#ffc233", "#ff3b5c", "#42c8f5", "#ffd000", "#0a0a0c"];
 
 export const TEXT_FONTS = {
   classic: { label: "Classic", css: "-apple-system, 'Segoe UI', Roboto, sans-serif", weight: 800 },

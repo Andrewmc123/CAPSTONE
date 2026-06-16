@@ -17,7 +17,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 26px rgba(50, 255, 50, 0.3);
+  box-shadow: 0 0 26px rgba(168, 85, 247, 0.3);
 }
 
 .hashtag-head h1 { margin: 0; font-size: 28px; }

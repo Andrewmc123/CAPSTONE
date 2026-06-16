@@ -4,8 +4,10 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   FaHouse, FaCompass, FaUserGroup, FaUsers, FaInbox, FaUser,
   FaMagnifyingGlass, FaCirclePlus, FaRightFromBracket, FaVideo, FaPaperPlane, FaImages, FaTowerBroadcast,
+  FaSun, FaMoon,
 } from "react-icons/fa6";
 import { thunkLogout } from "../../redux/session";
+import { getTheme, toggleTheme } from "../../utils/theme";
 import { fetchMyFollows, clearFollows, fetchSuggestions } from "../../redux/follows";
 import { thunkGetUserNotifications } from "../../redux/notification";
 import { fetchUnreadCount } from "../../redux/messages";
@@ -24,6 +26,7 @@ export default function Sidebar() {
   const { setModalContent } = useModal();
   const [query, setQuery] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [theme, setTheme] = useState(getTheme());
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -165,6 +168,9 @@ export default function Sidebar() {
                 </button>
                 <button onClick={() => { setMenuOpen(false); navigate("/camera"); }}>
                   <FaVideo /> Camera
+                </button>
+                <button onClick={() => setTheme(toggleTheme())}>
+                  {theme === "light" ? <FaMoon /> : <FaSun />} {theme === "light" ? "Dark mode" : "Light mode"}
                 </button>
                 <button onClick={logout}>
                   <FaRightFromBracket /> Log out
