@@ -49,7 +49,7 @@ export default function Friends() {
     <div className="page friends-page">
       <header className="friends-head">
         <h1><FaUserGroup /> Friends</h1>
-        <p className="text-dim">Your people on ABLN — mutuals, requests and their latest drops</p>
+        <p className="text-dim">Your people on Aura — mutuals, requests and their latest drops</p>
       </header>
 
       {pending.length > 0 && (

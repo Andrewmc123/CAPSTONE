@@ -387,7 +387,7 @@ export default function UploadStudio() {
             </button>
             <div className="studio-alt-card studio-gif-card">
               <strong className="studio-gif-title">Post a GIF 🔥</strong>
-              <span>The ABLN signature move</span>
+              <span>The Aura signature move</span>
               <GifPicker
                 title="Pick your GIF post"
                 onSelect={(gif) => {
@@ -668,7 +668,7 @@ export default function UploadStudio() {
             {error && <p className="edit-error">{error}</p>}
 
             <button className="btn btn-grad details-post" disabled={posting} onClick={publish}>
-              {posting ? "Posting…" : "Post to ABLN 🚀"}
+              {posting ? "Posting…" : "Post to Aura 🚀"}
             </button>
           </div>
         </div>

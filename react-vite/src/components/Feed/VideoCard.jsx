@@ -10,8 +10,9 @@ import { splitCaption } from "../../utils/format";
 import ActionRail from "./ActionRail";
 import "./VideoCard.css";
 
-// global mute shared across cards (TikTok behavior), persisted
-let GLOBAL_MUTED = localStorage.getItem("abln_muted") !== "0";
+// global mute shared across cards (TikTok behavior), persisted.
+// Default is SOUND ON — the active video's audio auto-plays; users tap to mute.
+let GLOBAL_MUTED = localStorage.getItem("abln_muted") === "1";
 
 export default function VideoCard({ post, active, onOpenComments, standalone = false }) {
   const dispatch = useDispatch();
@@ -49,7 +50,15 @@ export default function VideoCard({ post, active, onOpenComments, standalone = f
       video.playbackRate = speed;
       if (trim && video.currentTime < trim.start) video.currentTime = trim.start;
       const attempt = video.play();
-      if (attempt) attempt.catch(() => {});
+      if (attempt) {
+        attempt.catch(() => {
+          // Browser blocked autoplay-with-sound → play muted so the video
+          // still moves and surface the mute icon for a one-tap unmute.
+          video.muted = true;
+          setMuted(true);
+          video.play().catch(() => {});
+        });
+      }
       if (audio) {
         audio.playbackRate = speed;
         const a = audio.play();
@@ -173,7 +182,7 @@ export default function VideoCard({ post, active, onOpenComments, standalone = f
 
   useEffect(() => () => clearTimeout(tapTimer.current), []);
 
-  const soundLabel = post.sound_name || `Original sound — ${post.user?.username || "ABLN"}`;
+  const soundLabel = post.sound_name || `Original sound — ${post.user?.username || "Aura"}`;
 
   return (
     <div className={`vcard ${standalone ? "standalone" : ""}`}>

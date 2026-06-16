@@ -127,7 +127,9 @@ export default function CommentsDrawer({ post, onClose, targetCommentId }) {
   };
 
   return (
-    <div className="cdrawer fade-in">
+    <>
+      <div className="cdrawer-backdrop" onClick={onClose} />
+      <div className="cdrawer fade-in">
       <div className="cdrawer-head">
         <h3>Comments <span className="text-dim">({compact(post.comment_count)})</span></h3>
         <button className="cdrawer-close" onClick={onClose} aria-label="Close comments"><FaXmark /></button>
@@ -237,6 +239,7 @@ export default function CommentsDrawer({ post, onClose, targetCommentId }) {
           </button>
         </form>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

@@ -9,7 +9,7 @@ export default function ShareSheet({ post, onClose }) {
   const ref = useRef(null);
 
   const url = `${window.location.origin}/video/${post.id}`;
-  const text = `Watch this on ABLN — ${post.body?.slice(0, 80) || "About Last Night"}`;
+  const text = `Watch this on Aura — ${post.body?.slice(0, 80) || "Aura"}`;
 
   useEffect(() => {
     const close = (e) => {
@@ -55,7 +55,7 @@ export default function ShareSheet({ post, onClose }) {
       <button onClick={() => external(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`)}>
         <FaFacebook /> Facebook
       </button>
-      <button onClick={() => external(`mailto:?subject=${encodeURIComponent("Check this ABLN video")}&body=${encodeURIComponent(`${text}\n${url}`)}`)}>
+      <button onClick={() => external(`mailto:?subject=${encodeURIComponent("Check this Aura video")}&body=${encodeURIComponent(`${text}\n${url}`)}`)}>
         <FaEnvelope /> Email
       </button>
     </div>

@@ -39,8 +39,8 @@ function SignupFormPage() {
   return (
     <div className="auth-page">
       <div className="auth-card fade-in">
-        <Link to="/home" className="abln-logo auth-logo">ABLN</Link>
-        <h1 className="auth-title">Sign up for ABLN</h1>
+        <Link to="/home" className="abln-logo auth-logo">Aura</Link>
+        <h1 className="auth-title">Sign up for Aura</h1>
         <p className="auth-sub">Create your account — start posting videos & GIFs tonight 🌃</p>
 
         {errors.server && <p className="auth-error">{errors.server}</p>}

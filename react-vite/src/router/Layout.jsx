@@ -21,8 +21,8 @@ export default function Layout() {
   if (!isLoaded) {
     return (
       <div className="app-boot">
-        <div className="abln-logo app-boot-logo">ABLN</div>
-        <div className="abln-logo-sub">About Last Night</div>
+        <div className="abln-logo app-boot-logo">Aura</div>
+        <div className="abln-logo-sub">You got Aura?</div>
       </div>
     );
   }

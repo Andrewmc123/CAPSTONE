@@ -58,7 +58,7 @@ function LoginFormModal({ onLoginSuccess, initialMode = "login" }) {
       <button className="auth-close" onClick={closeModal} aria-label="Close">
         <FaXmark />
       </button>
-      <span className="abln-logo auth-logo">ABLN</span>
+      <span className="abln-logo auth-logo">Aura</span>
 
       {mode === "login" ? (
         <>
@@ -92,7 +92,7 @@ function LoginFormModal({ onLoginSuccess, initialMode = "login" }) {
           </form>
 
           <p className="auth-footer">
-            New to ABLN?{" "}
+            New to Aura?{" "}
             <button type="button" className="auth-link" onClick={() => switchMode("signup")}>
               Create an account
             </button>
@@ -101,7 +101,7 @@ function LoginFormModal({ onLoginSuccess, initialMode = "login" }) {
       ) : (
         <>
           <h1 className="auth-title">Create your account</h1>
-          <p className="auth-sub">Join ABLN — post videos &amp; GIFs tonight 🌃</p>
+          <p className="auth-sub">Join Aura — post videos &amp; GIFs tonight 🌃</p>
 
           {errors.server && <p className="auth-error">{errors.server}</p>}
 

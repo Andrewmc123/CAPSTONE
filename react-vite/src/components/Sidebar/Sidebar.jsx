@@ -65,8 +65,8 @@ export default function Sidebar() {
   return (
     <aside className="sidebar">
       <NavLink to="/" className="sidebar-logo-link">
-        <div className="abln-logo sidebar-logo">ABLN</div>
-        <div className="abln-logo-sub">About Last Night</div>
+        <div className="abln-logo sidebar-logo">Aura</div>
+        <div className="abln-logo-sub">You got Aura?</div>
       </NavLink>
 
       <form className="sidebar-search" onSubmit={submitSearch}>
@@ -173,7 +173,7 @@ export default function Sidebar() {
             )}
           </div>
         )}
-        <p className="sidebar-copy">© 2026 ABLN · Share your night ✨</p>
+        <p className="sidebar-copy">© 2026 Aura · Share your night ✨</p>
       </div>
     </aside>
   );

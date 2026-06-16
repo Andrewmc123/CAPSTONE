@@ -42,7 +42,7 @@ export const thunkLogin = (credentials) => async dispatch => {
   if(response.ok) {
     const data = await response.json();
     dispatch(setUser(data));
-    return data;
+    return null; // null = success → callers close the modal / navigate
   } else if (response.status < 500) {
     const errorMessages = await response.json();
     return errorMessages;
@@ -62,7 +62,7 @@ export const thunkSignup = (user) => async (dispatch) => {
   if(response.ok) {
     const data = await response.json();
     dispatch(setUser(data));
-    return data;
+    return null; // null = success → callers close the modal / navigate
   } else if (response.status < 500) {
     const errorMessages = await response.json();
     return errorMessages;

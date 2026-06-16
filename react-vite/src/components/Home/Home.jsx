@@ -21,8 +21,8 @@ export default function Home() {
       <div className="landing-orb orb-small" />
 
       <main className="landing-content">
-        <h1 className="abln-logo landing-logo">ABLN</h1>
-        <p className="landing-sub">ABOUT LAST NIGHT</p>
+        <h1 className="abln-logo landing-logo">Aura</h1>
+        <p className="landing-sub">YOU GOT AURA?</p>
         <h2 className="landing-tagline">
           Share your night. <span className="text-neon">Watch</span> the world&apos;s.
           <br />Videos, <span className="text-orange">GIFs</span> & the moments worth reliving.

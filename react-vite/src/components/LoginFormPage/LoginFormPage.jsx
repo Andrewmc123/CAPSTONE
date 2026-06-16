@@ -42,8 +42,8 @@ function LoginFormPage() {
   return (
     <div className="auth-page">
       <div className="auth-card fade-in">
-        <Link to="/home" className="abln-logo auth-logo">ABLN</Link>
-        <h1 className="auth-title">Log in to ABLN</h1>
+        <Link to="/home" className="abln-logo auth-logo">Aura</Link>
+        <h1 className="auth-title">Log in to Aura</h1>
         <p className="auth-sub">Your feed, your follows, your GIFs — all waiting.</p>
 
         <form onSubmit={handleSubmit} className="auth-form">
@@ -94,7 +94,7 @@ function LoginFormPage() {
         </form>
 
         <p className="auth-footer">
-          New to ABLN? <Link to="/signup">Create an account</Link>
+          New to Aura? <Link to="/signup">Create an account</Link>
         </p>
       </div>
     </div>

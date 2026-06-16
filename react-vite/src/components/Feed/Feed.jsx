@@ -86,11 +86,11 @@ export default function Feed({ tab = "foryou" }) {
     return (
       <div className="feed-gate">
         <div className="feed-gate-card fade-in">
-          <div className="abln-logo feed-gate-logo">ABLN</div>
+          <div className="abln-logo feed-gate-logo">Aura</div>
           <h2>{tab === "following" ? "Videos from creators you follow" : "Your friends' videos"}</h2>
           <p>Log in to unlock your {tab === "following" ? "Following" : "Friends"} feed, like videos and comment with GIFs.</p>
           <button className="btn btn-primary" onClick={() => setModalContent(<LoginFormModal />)}>
-            Log in to ABLN
+            Log in to Aura
           </button>
         </div>
       </div>
