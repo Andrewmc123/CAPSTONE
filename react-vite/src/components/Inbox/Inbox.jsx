@@ -35,12 +35,16 @@ export default function Inbox() {
   const pending = useSelector((s) => Object.values(s.friends?.pending || {}));
   const dmUnread = useSelector((s) => s.messages?.unreadTotal || 0);
   const [tab, setTab] = useState("all");
+  const [visible, setVisible] = useState(20); // page in chunks; 219 rows at once is a 20k-px wall
 
   useEffect(() => {
     dispatch(thunkGetUserNotifications());
     dispatch(getPendingFriends());
     dispatch(fetchUnreadCount());
   }, [dispatch]);
+
+  // reset the window when switching tabs so a filter never opens fully expanded
+  useEffect(() => setVisible(20), [tab]);
 
   const sorted = useMemo(() => {
     const filtered = tab === "all"
@@ -84,7 +88,7 @@ export default function Inbox() {
           {pending.map((p) => (
             <div className="inbox-row" key={`req-${p.id}`}>
               <Link to={`/users/${p.id}`}>
-                <img className="avatar" width={46} height={46} src={p.profile_img || `https://i.pravatar.cc/70?u=${p.id}`} alt="" />
+                <img className="avatar" width={46} height={46} loading="lazy" src={p.profile_img || `https://i.pravatar.cc/70?u=${p.id}`} alt="" />
               </Link>
               <div className="inbox-row-main">
                 <p><strong>@{p.username}</strong> wants to be your friend</p>
@@ -110,7 +114,7 @@ export default function Inbox() {
           </div>
         )}
 
-        {sorted.map((n) => {
+        {sorted.slice(0, visible).map((n) => {
           const meta = TYPE_META[n.notification_type] || TYPE_META.video_share;
           const Icon = meta.icon;
           return (
@@ -126,6 +130,7 @@ export default function Inbox() {
                 className="avatar"
                 width={42}
                 height={42}
+                loading="lazy"
                 src={n.sender?.profile_img || `https://i.pravatar.cc/70?u=${n.sender_id}`}
                 alt=""
               />
@@ -137,6 +142,12 @@ export default function Inbox() {
             </Link>
           );
         })}
+
+        {sorted.length > visible && (
+          <button className="btn btn-ghost inbox-more" onClick={() => setVisible((v) => v + 20)}>
+            Show more ({sorted.length - visible})
+          </button>
+        )}
       </section>
     </div>
   );

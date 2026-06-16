@@ -89,6 +89,20 @@ button.studio-alt-card:hover { border-color: var(--orange); }
 }
 .studio-gif-card .gifpicker-close { display: none; }
 
+/* Let grid/flex children shrink below their content's intrinsic width so the
+   embedded GIF picker (search input + grid) can never force horizontal
+   overflow on narrow phones. min-width:0 is the canonical flex/grid fix. */
+.studio-select > *,
+.studio-edit > *,
+.studio-details > * { min-width: 0; }
+.studio-alt,
+.studio-alt-card,
+.studio-gif-card { min-width: 0; }
+.studio-gif-card .gifpicker,
+.gifpicker-search,
+.gifpicker-grid { min-width: 0; max-width: 100%; }
+.gifpicker-search input { min-width: 0; width: 100%; }
+
 /* ---------- recorder ---------- */
 .recorder-overlay {
   position: fixed;

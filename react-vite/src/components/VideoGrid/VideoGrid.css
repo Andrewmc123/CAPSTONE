@@ -27,6 +27,20 @@
   display: block;
 }
 
+/* placeholder shown until a video tile scrolls near the viewport */
+.vgrid-ph {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* invisible lazy-load sentinel that fills the tile bounds */
+.vgrid-sentinel {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
 .vgrid-gif-badge {
   position: absolute;
   top: 8px;

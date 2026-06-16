@@ -61,6 +61,8 @@
 .inbox-empty svg { font-size: 34px; color: var(--text-faint); margin-bottom: 12px; }
 .inbox-empty p { max-width: 320px; margin: 0 auto; line-height: 1.5; }
 
+.inbox-more { width: 100%; margin-top: 12px; }
+
 @media (max-width: 768px) {
   .inbox-page { padding-bottom: calc(var(--bottomnav-h) + 20px); }
 }

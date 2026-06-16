@@ -86,24 +86,31 @@ class User(db.Model, UserMixin):
         return sum(len(post.likes) for post in self.posts)
 
     def to_dict(self):
-        # Get accepted friends from both sent and received relationships
-        accepted_friends = []
+        # Collect accepted friends from both directions, de-duplicated by user
+        # id. A friendship can be stored as two rows (sent + received) and the
+        # seeds may add duplicate rows, so without this the same friend would be
+        # counted many times (e.g. friends_count 40 for ~6 real friends).
+        friends_by_id = {}
 
         for friend_request in self.friends_sent:
-            if friend_request.status == 'friends':
-                accepted_friends.append({
-                    'id': friend_request.friend.id,
-                    'username': friend_request.friend.username,
-                    'profile_img': friend_request.friend.profile_img
-                })
+            other = friend_request.friend
+            if friend_request.status == 'friends' and other and other.id != self.id:
+                friends_by_id[other.id] = {
+                    'id': other.id,
+                    'username': other.username,
+                    'profile_img': other.profile_img
+                }
 
         for friend_request in self.friends_received:
-            if friend_request.status == 'friends':
-                accepted_friends.append({
-                    'id': friend_request.user.id,
-                    'username': friend_request.user.username,
-                    'profile_img': friend_request.user.profile_img
-                })
+            other = friend_request.user
+            if friend_request.status == 'friends' and other and other.id != self.id:
+                friends_by_id[other.id] = {
+                    'id': other.id,
+                    'username': other.username,
+                    'profile_img': other.profile_img
+                }
+
+        accepted_friends = list(friends_by_id.values())
 
         return {
             'id': self.id,

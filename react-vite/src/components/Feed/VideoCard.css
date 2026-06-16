@@ -354,5 +354,5 @@
   .rail-count { color: #fff; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8); }
   .vcard-meta { right: 70px; bottom: 64px; }
   .vcard-disc { display: none; }
-  .feed-slide { padding-bottom: var(--bottomnav-h); }
+  .feed-slide { padding-bottom: calc(var(--bottomnav-h) + env(safe-area-inset-bottom, 0px)); }
 }

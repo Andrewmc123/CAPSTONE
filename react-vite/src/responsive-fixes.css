@@ -19,8 +19,8 @@
   /* never allow accidental horizontal scroll */
   html, body, #root { overflow-x: hidden; max-width: 100vw; }
 
-  /* every standard page clears the bottom nav so nothing is hidden */
-  .page { padding-bottom: calc(var(--bottomnav-h, 56px) + 24px) !important; }
+  /* every standard page clears the bottom nav + iOS home indicator */
+  .page { padding-bottom: calc(var(--bottomnav-h, 56px) + env(safe-area-inset-bottom, 0px) + 24px) !important; }
 
   /* comments drawer: full-width bottom sheet */
   .cdrawer { width: 100% !important; max-width: 100vw !important; }
