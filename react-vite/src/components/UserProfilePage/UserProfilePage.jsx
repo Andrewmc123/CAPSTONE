@@ -129,7 +129,7 @@ export default function UserProfilePage() {
             <button className="btn btn-ghost" onClick={shareProfile} title="Copy profile link">
               <FaShare /> Share
             </button>
-            {isOwn && <ThemeToggle variant="icon" />}
+            {isOwn && <ThemeToggle variant="row" />}
           </div>
 
           <div className="profile-stats">

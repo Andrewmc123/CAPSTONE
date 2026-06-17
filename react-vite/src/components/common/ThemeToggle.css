@@ -23,3 +23,14 @@
   font-size: 15px;
 }
 .theme-toggle.icon:hover { border-color: var(--neon); }
+
+/* labeled pill variant — an obvious, tappable "setting" (used on the profile) */
+.theme-toggle.row {
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+.theme-toggle.row:hover { border-color: var(--neon); }
+.theme-toggle.row svg { color: var(--orange); }
