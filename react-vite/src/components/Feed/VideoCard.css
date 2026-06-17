@@ -31,6 +31,63 @@
 }
 .vcard-img { object-fit: contain; background: #0d0d10; }
 
+/* ---- image carousel (multi-image posts) ---- */
+.vcarousel { position: absolute; inset: 0; }
+.vcarousel-track {
+  display: flex;
+  height: 100%;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.vcarousel-track::-webkit-scrollbar { display: none; }
+.vcarousel-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+.vcarousel-slide img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.vcarousel-count {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 6;
+  background: rgba(10, 10, 12, 0.6);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 3px 11px;
+  border-radius: 999px;
+}
+.vcarousel-dots {
+  position: absolute;
+  bottom: 78px;
+  left: 0;
+  right: 0;
+  z-index: 6;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+.vcarousel-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.45);
+  padding: 0;
+  transition: all 0.15s ease;
+}
+.vcarousel-dot.on { background: #fff; width: 18px; border-radius: 4px; }
+
 /* gradient scrims for legibility */
 .vcard-stage::before,
 .vcard-stage::after {
@@ -332,6 +389,72 @@
 .sharesheet button:hover { background: var(--bg-hover); color: var(--neon); }
 
 .rail-views { font-size: 11px; color: var(--text-faint); font-weight: 600; }
+
+/* ============ share sheet (send to friends + classic share) ============ */
+.sharesheet-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: abln-fade-in 0.18s ease both;
+}
+.sharesheet-panel {
+  width: 100%;
+  max-width: 460px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: 20px 20px 0 0;
+  padding: 10px 16px calc(18px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -16px 50px rgba(0, 0, 0, 0.5);
+  max-height: 82dvh;
+  overflow-y: auto;
+}
+.sharesheet-grip { width: 40px; height: 4px; border-radius: 2px; background: var(--line); margin: 4px auto 10px; }
+.sharesheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.sharesheet-head h3 { margin: 0; font-size: 17px; }
+.sharesheet-x { background: none; border: none; color: var(--text-dim); font-size: 18px; }
+.sharesheet-x:hover { color: var(--text); }
+
+.sharesheet-search {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg-card); border: 1px solid var(--line);
+  border-radius: 999px; padding: 9px 14px; margin-bottom: 14px;
+}
+.sharesheet-search svg { color: var(--text-faint); font-size: 13px; flex-shrink: 0; }
+.sharesheet-search input { flex: 1; min-width: 0; background: none; border: none; outline: none; color: var(--text); font-size: 14.5px; }
+
+.sharesheet-people { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 12px; margin-bottom: 4px; scrollbar-width: none; }
+.sharesheet-people::-webkit-scrollbar { display: none; }
+.sharesheet-person { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 6px; width: 62px; flex-shrink: 0; }
+.sharesheet-person-av { position: relative; }
+.sharesheet-person-av img { width: 54px; height: 54px; border-radius: 50%; object-fit: cover; background: var(--bg-card); }
+.sharesheet-person-badge {
+  position: absolute; right: -2px; bottom: -2px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--neon); color: var(--accent-fg);
+  display: flex; align-items: center; justify-content: center; font-size: 10px;
+  border: 2px solid var(--bg-elev);
+}
+.sharesheet-person-name { font-size: 11.5px; color: var(--text-dim); max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sharesheet-hint { color: var(--text-faint); font-size: 13px; text-align: center; padding: 8px 0 14px; margin: 0; }
+
+.sharesheet-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border-top: 1px solid var(--line); padding-top: 14px; }
+.sharesheet-options button {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg-card); border: 1px solid var(--line);
+  color: var(--text); border-radius: 12px; padding: 11px 13px;
+  font-size: 14px; font-weight: 600; text-align: left;
+}
+.sharesheet-options button:hover { background: var(--bg-hover); border-color: var(--neon); }
+.ss-ico { display: inline-flex; width: 20px; justify-content: center; font-size: 16px; }
+
+@media (min-width: 700px) {
+  .sharesheet-overlay { align-items: center; }
+  .sharesheet-panel { border-radius: 20px; }
+}
 
 /* ============ mobile: rail overlays the video ============ */
 @media (max-width: 768px) {

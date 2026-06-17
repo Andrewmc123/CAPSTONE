@@ -14,9 +14,10 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey(add_prefix_for_prod('users.id')), nullable=False)
     body = db.Column(db.Text, nullable=False)            # caption (may contain #hashtags)
-    image_url = db.Column(db.String)                     # poster / thumbnail / gif url
+    image_url = db.Column(db.String)                     # poster / thumbnail / gif url (first slide for carousels)
+    images = db.Column(db.Text)                          # JSON array of image urls for multi-image carousel posts
     video_url = db.Column(db.String)                     # main video source
-    media_type = db.Column(db.String(10), default='image')  # 'video' | 'image' | 'gif'
+    media_type = db.Column(db.String(10), default='image')  # 'video' | 'image' | 'gif' | 'carousel'
     sound_name = db.Column(db.String(120))               # display name of the sound
     sound_url = db.Column(db.String)                     # audio track mixed over the video
     views = db.Column(db.Integer, default=0)
@@ -42,12 +43,25 @@ class Post(db.Model):
         except (ValueError, TypeError):
             return None
 
+    def parsed_images(self):
+        """List of image urls for a carousel post (capped at 10). Falls back
+        to the single image_url so existing single-image posts still work."""
+        if self.images:
+            try:
+                v = json.loads(self.images)
+                if isinstance(v, list):
+                    return [u for u in v if u][:10]
+            except (ValueError, TypeError):
+                pass
+        return [self.image_url] if self.image_url else []
+
     def to_dict(self, current_user_id=None):
         return {
             'id': self.id,
             'user_id': self.user_id,
             'body': self.body,
             'image_url': self.image_url,
+            'images': self.parsed_images(),
             'video_url': self.video_url,
             'media_type': self.media_type or 'image',
             'sound_name': self.sound_name,
@@ -72,6 +86,7 @@ class Post(db.Model):
             'user_id': self.user_id,
             'body': self.body,
             'image_url': self.image_url,
+            'images': self.parsed_images(),
             'video_url': self.video_url,
             'media_type': self.media_type or 'image',
             'views': self.views or 0,

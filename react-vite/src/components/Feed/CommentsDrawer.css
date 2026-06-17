@@ -57,6 +57,44 @@
 
 .comment-row { display: flex; gap: 10px; }
 
+/* threaded replies */
+.comment-thread { display: flex; flex-direction: column; gap: 12px; }
+.comment-replies {
+  margin-left: 46px;
+  padding-left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-left: 1.5px solid var(--line);
+}
+.comment-row.is-reply { gap: 8px; }
+.comment-reply-btn {
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  font-weight: 700;
+  font-size: 12px;
+  padding: 2px;
+}
+.comment-reply-btn:hover { color: var(--text-dim); }
+
+.composer-replying {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 7px 12px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.composer-replying strong { color: var(--neon); }
+.composer-replying button { background: none; border: none; color: var(--text-dim); font-size: 13px; display: flex; }
+.composer-replying button:hover { color: var(--text); }
+
 .comment-main { flex: 1; min-width: 0; }
 .comment-username { font-weight: 700; font-size: 13.5px; color: var(--text-dim); }
 .comment-username:hover { color: var(--neon); }

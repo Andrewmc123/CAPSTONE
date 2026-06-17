@@ -25,13 +25,15 @@
   align-items: center;
   gap: 2px;
   color: var(--text-dim);
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 700;
   background: none;
   border: none;
-  padding: 4px 10px;
+  padding: 4px 5px;
+  min-width: 0;
 }
-.bn-item svg { font-size: 21px; }
+.bn-item svg { font-size: 20px; }
+.bn-item span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .bn-item.active { color: var(--text); }
 .bn-item.active svg { color: var(--neon); filter: drop-shadow(0 0 7px rgba(168, 85, 247, 0.55)); }
 

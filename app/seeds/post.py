@@ -1,6 +1,7 @@
 from app.models import db, Post, environment, SCHEMA
 from sqlalchemy.sql import text
 from datetime import datetime, timedelta
+import json
 import random
 
 SH = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-{}.mp3'
@@ -232,6 +233,15 @@ def seed_posts():
          "body": "heyyy IM NEW HERE!! 👀👋 #newhere #fyp",
          "sound_name": None, "sound_url": None,
          "views": 18230, "shares": 12},
+
+        # ---- Multi-image carousel post (swipeable photo dump) ----
+        {"user_id": 5, "media_type": "carousel",
+         "image_url": "/images/rooftop.jpg",
+         "images": ["/images/rooftop.jpg", "/images/lastnightmovie.jpg",
+                    "/images/whotookthis.jpg", "/images/feltcute.jpg"],
+         "body": "swipe through last night ➡️📸 the photo dump you didn't ask for #photodump #aboutlastnight #carousel",
+         "sound_name": "About Last Night (Anthem)", "sound_url": SH.format(1),
+         "views": 51420, "shares": 173},
     ]
 
     random.seed(99)
@@ -244,6 +254,7 @@ def seed_posts():
             user_id=p["user_id"],
             body=p["body"],
             image_url=p.get("image_url"),
+            images=json.dumps(p["images"]) if p.get("images") else None,
             video_url=p.get("video_url"),
             media_type=p["media_type"],
             sound_name=p.get("sound_name"),

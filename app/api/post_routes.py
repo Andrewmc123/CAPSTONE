@@ -139,7 +139,21 @@ def create_post():
     body = (data.get('body') or '').strip()
     image_url = data.get('image_url')
     video_url = data.get('video_url')
-    media_type = data.get('media_type') or ('video' if video_url else ('gif' if (image_url or '').endswith('.gif') else 'image'))
+
+    # carousel: up to 10 images shown side-by-side as swipeable slides
+    images = data.get('images')
+    if isinstance(images, list):
+        images = [u for u in images if u][:10]
+    else:
+        images = None
+    if images and not image_url:
+        image_url = images[0]  # first slide doubles as poster/thumbnail
+
+    media_type = data.get('media_type') or (
+        'video' if video_url else
+        ('carousel' if images and len(images) > 1 else
+         ('gif' if (image_url or '').endswith('.gif') else 'image'))
+    )
 
     if not body and not image_url and not video_url:
         return {'error': 'A caption, video, image or GIF is required'}, 400
@@ -152,6 +166,7 @@ def create_post():
         user_id=current_user.id,
         body=body,
         image_url=image_url,
+        images=json.dumps(images) if images else None,
         video_url=video_url,
         media_type=media_type,
         sound_name=data.get('sound_name'),
@@ -252,12 +267,13 @@ def add_share(post_id):
 
 @post_routes.route('/<int:post_id>/comments', methods=['GET'])
 def get_comments(post_id):
+    # Top-level comments only (newest first); each carries its replies nested.
     comments = Comment.query.options(joinedload(Comment.user))\
-        .filter_by(post_id=post_id)\
+        .filter_by(post_id=post_id, parent_id=None)\
         .order_by(Comment.created_at.desc())\
         .all()
     uid = viewer_id()
-    return {'comments': [c.to_dict(uid) for c in comments]}, 200
+    return {'comments': [c.to_dict(uid, include_replies=True) for c in comments]}, 200
 
 
 @post_routes.route('/<int:post_id>/comments', methods=['POST'])
@@ -266,22 +282,37 @@ def add_comment(post_id):
     data = request.get_json() or {}
     body = (data.get('body') or data.get('content') or '').strip()
     gif_url = data.get('gif_url')
+    parent_id = data.get('parent_id')
 
     if not body and not gif_url:
         return {'error': 'Comment text or a GIF is required'}, 400
 
     post = Post.query.get_or_404(post_id)
+
+    # a reply must point at a real top-level comment on this same post
+    parent = None
+    if parent_id:
+        parent = Comment.query.filter_by(id=parent_id, post_id=post_id).first()
+        if not parent:
+            return {'error': 'Parent comment not found'}, 404
+        # keep threads one level deep (TikTok-style): replies attach to the root
+        if parent.parent_id:
+            parent_id = parent.parent_id
+
     comment = Comment(
         user_id=current_user.id,
         post_id=post_id,
+        parent_id=parent_id,
         body=body,
         gif_url=gif_url,
     )
     db.session.add(comment)
 
-    if post.user_id != current_user.id:
+    # notify the post author (top-level) or the parent comment's author (reply)
+    notify_uid = parent.user_id if parent else post.user_id
+    if notify_uid != current_user.id:
         db.session.add(Notification(
-            recipient_id=post.user_id,
+            recipient_id=notify_uid,
             sender_id=current_user.id,
             notification_type='post_comment',
             post_id=post_id,

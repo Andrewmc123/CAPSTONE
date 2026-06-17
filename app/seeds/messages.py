@@ -1,4 +1,5 @@
-from app.models import db, Message, User, Post, environment, SCHEMA
+from app.models import db, Message, User, Post, Friend, environment, SCHEMA
+from sqlalchemy import or_, and_
 from sqlalchemy.sql import text
 from datetime import datetime, timedelta
 import random
@@ -54,6 +55,28 @@ def seed_messages():
                 created_at=ts,
                 updated_at=ts,
             ))
+
+    # Guarantee a couple of visible multi-day streaks on the Friends page:
+    # messages on each of the last 5 consecutive days with demo's accepted friends.
+    me = demo.id
+    fr = Friend.query.filter(
+        and_(or_(Friend.user_id == me, Friend.friend_id == me), Friend.status == 'accepted')
+    ).all()
+    friend_ids = []
+    for f in fr:
+        other = f.friend_id if f.user_id == me else f.user_id
+        if other not in friend_ids:
+            friend_ids.append(other)
+
+    today = datetime.utcnow()
+    for other in friend_ids[:2]:
+        for d in range(5):  # today + previous 4 days = a 5-day streak
+            ts = today - timedelta(days=d, hours=2)
+            messages.append(Message(sender_id=me, recipient_id=other,
+                content=random.choice(SAMPLE_LINES), is_read=True, created_at=ts, updated_at=ts))
+            ts2 = today - timedelta(days=d, hours=1)
+            messages.append(Message(sender_id=other, recipient_id=me,
+                content=random.choice(SAMPLE_LINES), is_read=True, created_at=ts2, updated_at=ts2))
 
     db.session.add_all(messages)
     db.session.commit()

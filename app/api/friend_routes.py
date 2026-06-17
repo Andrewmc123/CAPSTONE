@@ -1,10 +1,51 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
-from app.models import Friend, User, db, Notification
-from datetime import datetime, timezone
+from app.models import Friend, User, db, Notification, Message
+from datetime import datetime, timezone, timedelta
 from sqlalchemy import or_, and_
 
 friend_routes = Blueprint('friends', __name__)
+
+
+def _streak_with(me, other):
+    """Consecutive days (ending today or yesterday) with at least one message
+    either direction — Snapchat-style streak. 0 if the chain is broken."""
+    msgs = Message.query.filter(
+        or_(
+            and_(Message.sender_id == me, Message.recipient_id == other),
+            and_(Message.sender_id == other, Message.recipient_id == me),
+        )
+    ).all()
+    days = {m.created_at.date() for m in msgs if m.created_at}
+    if not days:
+        return 0
+    today = datetime.now(timezone.utc).date()
+    start = today if today in days else today - timedelta(days=1)
+    streak, d = 0, start
+    while d in days:
+        streak += 1
+        d -= timedelta(days=1)
+    return streak
+
+
+@friend_routes.route('/streaks')
+@login_required
+def get_streaks():
+    """{ friend_user_id: streak_days } for every accepted friend with a live streak."""
+    me = current_user.id
+    friends = Friend.query.filter(
+        and_(
+            or_(Friend.user_id == me, Friend.friend_id == me),
+            Friend.status == 'accepted',
+        )
+    ).all()
+    result = {}
+    for f in friends:
+        other = f.friend_id if f.user_id == me else f.user_id
+        s = _streak_with(me, other)
+        if s > 0:
+            result[other] = s
+    return jsonify({'streaks': result})
 
 @friend_routes.route('/add', methods=['POST'])
 @login_required

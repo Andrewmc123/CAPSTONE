@@ -18,6 +18,7 @@ import UserProfilePage from "../components/UserProfilePage";
 import Friends from "../components/Friend/Friend";
 import Camera from "../components/Camera/Camera";
 import Vault from "../components/Vault/Vault";
+import Shop from "../components/Shop";
 
 const createAppRouter = () => {
   const AuthRedirect = ({ children }) => {
@@ -38,6 +39,7 @@ const createAppRouter = () => {
         { path: "/following", element: <Feed tab="following" /> },
         { path: "/video/:postId", element: <SingleVideo /> },
         { path: "/explore", element: <Explore /> },
+        { path: "/shop", element: <Shop /> },
         { path: "/tag/:tag", element: <HashtagPage /> },
         { path: "/search", element: <SearchPage /> },
         { path: "/upload", element: <AuthCheck><UploadStudio /></AuthCheck> },

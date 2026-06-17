@@ -8,6 +8,7 @@ import LoginFormModal from "../LoginFormModal";
 import { filterCss, TEXT_FONTS } from "../../utils/filters";
 import { splitCaption } from "../../utils/format";
 import ActionRail from "./ActionRail";
+import ImageCarousel from "./ImageCarousel";
 import "./VideoCard.css";
 
 // global mute shared across cards (TikTok behavior), persisted.
@@ -34,6 +35,8 @@ export default function VideoCard({ post, active, onOpenComments, standalone = f
 
   const edit = post.edit_data || {};
   const isVideo = post.media_type === "video" && post.video_url;
+  const carouselImages = Array.isArray(post.images) ? post.images.filter(Boolean) : [];
+  const isCarousel = !isVideo && carouselImages.length > 1;
   const speed = edit.speed || 1;
   const trim = edit.trim || null;
 
@@ -41,23 +44,28 @@ export default function VideoCard({ post, active, onOpenComments, standalone = f
   const captionParts = useMemo(() => splitCaption(post.body), [post.body]);
 
   // ---- playback control: play when active, pause + rewind when not ----
+  // NOTE: this must run for EVERY post, not just videos — image/gif/carousel
+  // posts can carry a separate sound track (audioRef). If we bailed early for
+  // non-videos, that track would keep playing as you scroll to the next post
+  // (the classic "previous post's music bleeds into the feed" bug).
   useEffect(() => {
     const video = videoRef.current;
     const audio = audioRef.current;
-    if (!isVideo || !video) return;
 
     if (active) {
-      video.playbackRate = speed;
-      if (trim && video.currentTime < trim.start) video.currentTime = trim.start;
-      const attempt = video.play();
-      if (attempt) {
-        attempt.catch(() => {
-          // Browser blocked autoplay-with-sound → play muted so the video
-          // still moves and surface the mute icon for a one-tap unmute.
-          video.muted = true;
-          setMuted(true);
-          video.play().catch(() => {});
-        });
+      if (isVideo && video) {
+        video.playbackRate = speed;
+        if (trim && video.currentTime < trim.start) video.currentTime = trim.start;
+        const attempt = video.play();
+        if (attempt) {
+          attempt.catch(() => {
+            // Browser blocked autoplay-with-sound → play muted so the video
+            // still moves and surface the mute icon for a one-tap unmute.
+            video.muted = true;
+            setMuted(true);
+            video.play().catch(() => {});
+          });
+        }
       }
       if (audio) {
         audio.playbackRate = speed;
@@ -65,12 +73,22 @@ export default function VideoCard({ post, active, onOpenComments, standalone = f
         if (a) a.catch(() => {});
       }
     } else {
-      video.pause();
-      if (audio) audio.pause();
+      // inactive → stop BOTH the video and any separate sound track, and
+      // rewind the audio so it never resumes mid-song under another post.
+      if (video) video.pause();
+      if (audio) { audio.pause(); audio.currentTime = 0; }
       viewCounted.current = false;
       watchTime.current = 0;
     }
   }, [active, isVideo, speed, trim]);
+
+  // hard stop on unmount — a card leaving the DOM must never leave sound behind
+  useEffect(() => () => {
+    const v = videoRef.current;
+    const a = audioRef.current;
+    if (v) v.pause();
+    if (a) a.pause();
+  }, []);
 
   // ---- volume routing: global mute + original/sound mix ----
   useEffect(() => {
@@ -201,6 +219,8 @@ export default function VideoCard({ post, active, onOpenComments, standalone = f
             onPlay={() => setPlaying(true)}
             onPause={() => setPlaying(false)}
           />
+        ) : isCarousel ? (
+          <ImageCarousel images={carouselImages} filter={filterCss(edit.filter)} />
         ) : (
           <img
             className="vcard-video vcard-img"

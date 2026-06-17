@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { FaHouse, FaCompass, FaInbox, FaUser } from "react-icons/fa6";
+import { FaHouse, FaCompass, FaInbox, FaUser, FaBagShopping } from "react-icons/fa6";
 import { useModal } from "../../context/Modal";
 import LoginFormModal from "../LoginFormModal";
 import "./BottomNav.css";
@@ -29,6 +29,10 @@ export default function BottomNav() {
       </NavLink>
       <NavLink to="/upload" onClick={requireLogin} className="bn-create" aria-label="Upload">
         <span className="bn-create-pill">+</span>
+      </NavLink>
+      <NavLink to="/shop" className={({ isActive }) => `bn-item ${isActive ? "active" : ""}`}>
+        <FaBagShopping />
+        <span>Shop</span>
       </NavLink>
       <NavLink to="/inbox" onClick={requireLogin} className={({ isActive }) => `bn-item ${isActive ? "active" : ""}`}>
         <span className="bn-badge-wrap">

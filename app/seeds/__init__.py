@@ -8,6 +8,7 @@ from .friend import seed_friends, undo_friends
 from .follows import seed_follows, undo_follows
 from .bookmarks import seed_bookmarks, undo_bookmarks
 from .messages import seed_messages, undo_messages
+from .products import seed_products, undo_products
 
 from app.models.db import db, environment, SCHEMA
 
@@ -24,6 +25,7 @@ def seed():
         # command, which will  truncate all tables prefixed with
         # the schema name (see comment in users.py undo_users function).
         # Make sure to add all your other model's undo functions below
+        undo_products()
         undo_messages()
         undo_notifications()
         undo_bookmarks()
@@ -42,11 +44,13 @@ def seed():
     seed_bookmarks()
     seed_notifications()
     seed_messages()
+    seed_products()
 
 
 # Creates the `flask seed undo` command
 @seed_commands.command('undo')
 def undo():
+    undo_products()
     undo_messages()
     undo_notifications()
     undo_bookmarks()

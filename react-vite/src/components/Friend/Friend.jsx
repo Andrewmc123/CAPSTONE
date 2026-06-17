@@ -18,10 +18,16 @@ export default function Friends() {
   const [friendPosts, setFriendPosts] = useState([]);
   const [suggested, setSuggested] = useState([]);
   const [sentTo, setSentTo] = useState([]);
+  const [streaks, setStreaks] = useState({});
 
   useEffect(() => {
     dispatch(getFriends());
     dispatch(getPendingFriends());
+
+    fetch("/api/friends/streaks", { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : { streaks: {} }))
+      .then((d) => setStreaks(d.streaks || {}))
+      .catch(() => {});
 
     fetch("/api/posts/friends", { credentials: "include" })
       .then((r) => (r.ok ? r.json() : { posts: [] }))
@@ -85,7 +91,10 @@ export default function Friends() {
             {friends.map((f) => (
               <div className="friend-card" key={f.id}>
                 <Link to={`/users/${f.id}`} className="friend-card-id">
-                  <img className="avatar" width={50} height={50} src={f.profile_img || `https://i.pravatar.cc/80?u=${f.id}`} alt="" />
+                  <span className="friend-card-av">
+                    <img className="avatar" width={50} height={50} src={f.profile_img || `https://i.pravatar.cc/80?u=${f.id}`} alt="" />
+                    {streaks[f.id] > 0 && <span className="friend-streak" title={`${streaks[f.id]}-day streak`}>🔥{streaks[f.id]}</span>}
+                  </span>
                   <span>@{f.username}</span>
                 </Link>
                 <button
