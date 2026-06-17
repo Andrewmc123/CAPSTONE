@@ -1,4 +1,4 @@
-# Render Blueprint for ABLN — a Dockerized Flask + React web service.
+# Render Blueprint for Aura — a Dockerized Flask + React web service.
 #
 # Deploy:
 #   Render Dashboard → New + → Blueprint → pick the CAPSTONE repo → Apply.
@@ -14,7 +14,7 @@
 
 services:
   - type: web
-    name: abln
+    name: aura
     runtime: docker
     plan: free
     region: oregon
