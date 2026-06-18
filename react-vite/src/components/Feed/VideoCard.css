@@ -414,6 +414,39 @@
 }
 .rail-views svg { color: var(--neon); font-size: 12px; }
 
+/* three-dots "more" menu (delete your own post) */
+.rail-more-wrap { position: relative; }
+.rail-more-btn .rail-icon { font-size: 17px; background: rgba(20, 20, 24, 0.45); backdrop-filter: blur(6px); }
+.rail-more-overlay { position: fixed; inset: 0; z-index: 40; }
+.rail-more-menu {
+  position: absolute;
+  top: 0;
+  right: 52px;
+  z-index: 41;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  min-width: 150px;
+}
+.rail-more-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+.rail-more-item:hover { background: var(--bg-hover); }
+.rail-more-item.danger { color: var(--heart); }
+
 /* ============ share sheet (send to friends + classic share) ============ */
 .sharesheet-overlay {
   position: fixed;

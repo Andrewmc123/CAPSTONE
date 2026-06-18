@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
-  FaStar, FaEye, FaCommentDots, FaBookmark, FaShare, FaPlus, FaCheck,
+  FaStar, FaEye, FaCommentDots, FaBookmark, FaShare, FaPlus, FaCheck, FaEllipsisVertical, FaTrash,
 } from "react-icons/fa6";
-import { thunkToggleLike, thunkToggleBookmark } from "../../redux/posts";
+import { thunkToggleLike, thunkToggleBookmark, thunkDeletePost } from "../../redux/posts";
 import { thunkToggleFollow, selectIsFollowing } from "../../redux/follows";
 import { useModal } from "../../context/Modal";
 import LoginFormModal from "../LoginFormModal";
@@ -16,8 +16,19 @@ export default function ActionRail({ post, onOpenComments }) {
   const user = useSelector((s) => s.session.user);
   const isFollowing = useSelector(selectIsFollowing(post.user?.id));
   const { setModalContent } = useModal();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [shareOpen, setShareOpen] = useState(false);
   const [likePop, setLikePop] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const onDelete = async () => {
+    setMenuOpen(false);
+    if (!window.confirm("Delete this post? This can't be undone.")) return;
+    await dispatch(thunkDeletePost(post.id));
+    // if we're on the standalone video page, the post is gone — head home
+    if (location.pathname.startsWith("/video/")) navigate("/");
+  };
 
   const gate = (fn) => () => {
     if (!user) {
@@ -41,6 +52,24 @@ export default function ActionRail({ post, onOpenComments }) {
 
   return (
     <aside className="action-rail" onClick={(e) => e.stopPropagation()}>
+      {isOwnPost && (
+        <div className="rail-more-wrap">
+          <button className="rail-btn rail-more-btn" onClick={() => setMenuOpen((v) => !v)} aria-label="More options">
+            <span className="rail-icon"><FaEllipsisVertical /></span>
+          </button>
+          {menuOpen && (
+            <>
+              <div className="rail-more-overlay" onClick={() => setMenuOpen(false)} />
+              <div className="rail-more-menu">
+                <button className="rail-more-item danger" onClick={onDelete}>
+                  <FaTrash /> Delete post
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
       <div className="rail-avatar-wrap">
         <Link to={`/users/${post.user?.id}`}>
           <img

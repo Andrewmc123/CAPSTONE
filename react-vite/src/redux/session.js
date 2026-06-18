@@ -75,10 +75,23 @@ export const thunkLogout = () => async (dispatch) => {
   const response = await fetch("/api/auth/logout", {
     credentials: 'include' // NECESSARY TO CLEAR SESSION
   });
-  
+
   if (response.ok) {
     dispatch(removeUser());
   }
+};
+
+export const thunkDeleteAccount = () => async (dispatch) => {
+  const response = await fetch("/api/auth/delete", {
+    method: "DELETE",
+    credentials: 'include'
+  });
+
+  if (response.ok) {
+    dispatch(removeUser());
+    return null; // success
+  }
+  return { server: "Could not delete your account. Please try again." };
 };
 
 const initialState = { user: null };

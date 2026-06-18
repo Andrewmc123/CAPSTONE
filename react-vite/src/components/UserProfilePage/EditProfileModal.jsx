@@ -1,16 +1,32 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { thunkAuthenticate } from "../../redux/session";
+import { useNavigate } from "react-router-dom";
+import { thunkAuthenticate, thunkDeleteAccount } from "../../redux/session";
 import { useModal } from "../../context/Modal";
 
 export default function EditProfileModal({ profile, onSaved }) {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { closeModal } = useModal();
   const [bio, setBio] = useState(profile.bio || "");
   const [username, setUsername] = useState(profile.username || "");
   const [img, setImg] = useState(profile.profile_img || "");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [confirmDel, setConfirmDel] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    const res = await dispatch(thunkDeleteAccount());
+    setDeleting(false);
+    if (!res) {
+      closeModal();
+      navigate("/");
+    } else {
+      setError(res.server || "Could not delete account");
+    }
+  };
 
   const uploadAvatar = async (file) => {
     const form = new FormData();
@@ -82,6 +98,28 @@ export default function EditProfileModal({ profile, onSaved }) {
         <button type="submit" className="btn btn-primary" disabled={saving}>
           {saving ? "Saving…" : "Save"}
         </button>
+      </div>
+
+      {/* Privacy — intentionally subtle: discoverable, not loud */}
+      <div className="edit-privacy">
+        <span className="edit-privacy-label">Privacy</span>
+        {!confirmDel ? (
+          <button type="button" className="edit-delete-link" onClick={() => setConfirmDel(true)}>
+            Delete account
+          </button>
+        ) : (
+          <div className="edit-delete-confirm">
+            <p>This permanently deletes your account, videos and data. It can&apos;t be undone.</p>
+            <div className="edit-delete-actions">
+              <button type="button" className="btn btn-ghost" onClick={() => setConfirmDel(false)}>
+                Keep my account
+              </button>
+              <button type="button" className="edit-delete-go" onClick={handleDelete} disabled={deleting}>
+                {deleting ? "Deleting…" : "Delete forever"}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </form>
   );
