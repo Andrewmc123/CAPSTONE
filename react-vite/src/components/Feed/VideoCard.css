@@ -118,10 +118,10 @@
 .vcard-burst-heart {
   position: absolute;
   z-index: 6;
-  color: var(--heart);
-  font-size: 42px;
+  color: #ffd24a;
+  font-size: 40px;
   pointer-events: none;
-  filter: drop-shadow(0 0 12px rgba(255, 59, 92, 0.8));
+  filter: drop-shadow(0 0 14px rgba(168, 85, 247, 0.9));
   animation: abln-float-up 1s ease-out both;
 }
 
@@ -347,10 +347,21 @@
 .rail-btn:hover .rail-icon { background: var(--bg-hover); transform: scale(1.05); }
 .rail-count { font-size: 12.5px; font-weight: 700; color: var(--text-dim); }
 
-.rail-btn.liked .rail-icon {
-  color: var(--heart);
-  border-color: rgba(255, 59, 92, 0.5);
-  box-shadow: 0 0 14px rgba(255, 59, 92, 0.35);
+/* ---- Aura reaction (was "like"): glowing purple+gold orb ---- */
+.aura-btn .rail-icon { color: #e3d2ff; }
+.rail-btn.aura-on .rail-icon {
+  color: #ffd24a;
+  border-color: rgba(168, 85, 247, 0.65);
+  box-shadow: 0 0 18px rgba(168, 85, 247, 0.55), 0 0 12px rgba(255, 210, 74, 0.45);
+}
+.rail-tag {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--neon);
+  margin-top: -3px;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.85);
 }
 .rail-btn.pop .rail-icon { animation: abln-pop 0.45s ease; }
 .rail-btn.bookmarked .rail-icon {
@@ -388,7 +399,20 @@
 }
 .sharesheet button:hover { background: var(--bg-hover); color: var(--neon); }
 
-.rail-views { font-size: 11px; color: var(--text-faint); font-weight: 600; }
+.rail-views {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #fff;
+  background: rgba(10, 10, 12, 0.5);
+  backdrop-filter: blur(6px);
+  padding: 4px 10px;
+  border-radius: 999px;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.85);
+}
+.rail-views svg { color: var(--neon); font-size: 12px; }
 
 /* ============ share sheet (send to friends + classic share) ============ */
 .sharesheet-overlay {

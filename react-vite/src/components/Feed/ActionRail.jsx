@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import {
-  FaHeart, FaCommentDots, FaBookmark, FaShare, FaPlus, FaCheck,
+  FaStar, FaEye, FaCommentDots, FaBookmark, FaShare, FaPlus, FaCheck,
 } from "react-icons/fa6";
 import { thunkToggleLike, thunkToggleBookmark } from "../../redux/posts";
 import { thunkToggleFollow, selectIsFollowing } from "../../redux/follows";
@@ -60,9 +60,10 @@ export default function ActionRail({ post, onOpenComments }) {
         )}
       </div>
 
-      <button className={`rail-btn ${post.liked ? "liked" : ""} ${likePop ? "pop" : ""}`} onClick={onLike} aria-label="Like">
-        <span className="rail-icon"><FaHeart /></span>
+      <button className={`rail-btn aura-btn ${post.liked ? "aura-on" : ""} ${likePop ? "pop" : ""}`} onClick={onLike} aria-label={post.liked ? "Remove aura" : "Give aura"}>
+        <span className="rail-icon"><FaStar /></span>
         <span className="rail-count">{compact(post.like_count)}</span>
+        <span className="rail-tag">aura</span>
       </button>
 
       <button className="rail-btn" onClick={onOpenComments} aria-label="Comments">
@@ -83,7 +84,7 @@ export default function ActionRail({ post, onOpenComments }) {
         {shareOpen && <ShareSheet post={post} onClose={() => setShareOpen(false)} />}
       </div>
 
-      <div className="rail-views">{compact(post.views)} views</div>
+      <div className="rail-views"><FaEye /> {compact(post.views)} views</div>
     </aside>
   );
 }

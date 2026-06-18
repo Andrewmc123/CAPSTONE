@@ -148,7 +148,7 @@ export default function UserProfilePage() {
           <div className="profile-stats">
             <span><strong>{compact(profile.following_count)}</strong> Following</span>
             <span><strong>{compact(followerCount)}</strong> Followers</span>
-            <span><strong>{compact(profile.likes_received)}</strong> Likes</span>
+            <span><strong>{compact(profile.likes_received)}</strong> Aura</span>
           </div>
 
           {profile.bio && <p className="profile-bio">{profile.bio}</p>}

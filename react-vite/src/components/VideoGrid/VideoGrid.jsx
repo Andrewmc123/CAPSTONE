@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { FaPlay, FaHeart } from "react-icons/fa6";
+import { FaPlay, FaStar } from "react-icons/fa6";
 import { compact } from "../../utils/format";
 import "./VideoGrid.css";
 
@@ -126,7 +126,7 @@ function GridTile({ post }) {
 
       <div className="vgrid-overlay">
         <span className="vgrid-views"><FaPlay /> {compact(post.views)}</span>
-        <span className="vgrid-likes"><FaHeart /> {compact(post.like_count)}</span>
+        <span className="vgrid-likes"><FaStar /> {compact(post.like_count)}</span>
       </div>
     </Link>
   );

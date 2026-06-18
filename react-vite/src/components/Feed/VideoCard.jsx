@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { FaPlay, FaVolumeHigh, FaVolumeXmark, FaMusic, FaCompactDisc, FaHeart } from "react-icons/fa6";
+import { FaPlay, FaVolumeHigh, FaVolumeXmark, FaMusic, FaCompactDisc, FaStar } from "react-icons/fa6";
 import { thunkAddView, thunkToggleLike } from "../../redux/posts";
 import { useModal } from "../../context/Modal";
 import LoginFormModal from "../LoginFormModal";
@@ -255,7 +255,7 @@ export default function VideoCard({ post, active, onOpenComments, standalone = f
 
         {/* floating hearts on double-tap */}
         {hearts.map((h) => (
-          <FaHeart
+          <FaStar
             key={h.id}
             className="vcard-burst-heart"
             style={{ left: h.x, top: h.y, "--rot": `${h.rot}deg`, animationDelay: `${h.delay}ms` }}

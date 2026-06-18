@@ -70,7 +70,7 @@
   color: #fff;
 }
 .vgrid-overlay svg { font-size: 11px; margin-right: 4px; }
-.vgrid-likes svg { color: var(--heart); }
+.vgrid-likes svg { color: #ffd24a; }
 
 .vgrid-empty {
   text-align: center;
