@@ -160,6 +160,144 @@ button.studio-alt-card:hover { border-color: var(--orange); }
 }
 .recorder-spacer { width: 46px; }
 
+/* ---------- camera-first capture (TikTok-style) ---------- */
+.cam {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  aspect-ratio: 9 / 16;
+  max-height: calc(100dvh - 150px);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: #000;
+  border: 1px solid var(--line);
+}
+.cam-live {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #0b0b10;
+}
+.cam-live.mirror { transform: scaleX(-1); }   /* selfie preview mirrors like a mirror */
+.cam-live.drag { opacity: 0.5; }
+
+.cam-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  padding: 30px;
+  color: var(--text-dim);
+}
+.cam-error svg { font-size: 42px; color: var(--text-faint); }
+
+.cam-top {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px;
+  z-index: 5;
+  background: linear-gradient(rgba(0, 0, 0, 0.45), transparent);
+}
+.cam-icon {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(10, 10, 12, 0.5);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  font-size: 17px;
+  display: flex; align-items: center; justify-content: center;
+}
+.cam-mode, .cam-timer {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: rgba(10, 10, 12, 0.5);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  font-weight: 700; font-size: 13px;
+  padding: 6px 14px; border-radius: 999px;
+}
+.cam-timer { color: var(--heart); }
+
+/* side dropdown menu */
+.cam-side { position: absolute; top: 64px; right: 14px; z-index: 6; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.cam-side-toggle {
+  width: 40px; height: 40px; border-radius: 50%; border: none;
+  background: rgba(10, 10, 12, 0.5); backdrop-filter: blur(8px); color: #fff; font-size: 17px;
+}
+.cam-side-menu {
+  display: flex; flex-direction: column; gap: 6px;
+  opacity: 0; transform: translateY(-6px) scale(0.96); pointer-events: none;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+.cam-side.open .cam-side-menu { opacity: 1; transform: none; pointer-events: auto; }
+.cam-side-menu button {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(10, 10, 12, 0.62); backdrop-filter: blur(8px);
+  border: 1px solid var(--line-soft); color: #fff;
+  padding: 9px 13px; border-radius: 12px; font-size: 13.5px; font-weight: 700;
+}
+.cam-side-menu button:hover { background: rgba(40, 40, 48, 0.85); }
+.cam-side-menu svg { color: var(--neon); }
+
+/* bottom controls */
+.cam-bottom {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 24px calc(22px + env(safe-area-inset-bottom, 0px));
+  padding-top: 30px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.5));
+}
+.cam-gallery {
+  width: 46px; height: 46px; border-radius: 12px;
+  background: rgba(255, 255, 255, 0.14); backdrop-filter: blur(8px);
+  border: 1px solid var(--line-soft); color: #fff; font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.cam-shutter {
+  width: 76px; height: 76px; border-radius: 50%;
+  border: 5px solid #fff; background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--heart); font-size: 24px;
+  transition: transform 0.12s ease;
+}
+.cam-shutter:active { transform: scale(0.94); }
+.cam-shutter-dot { width: 58px; height: 58px; border-radius: 50%; background: var(--heart); }
+.cam-shutter.recording { border-color: var(--heart); }
+
+/* GIF picker sheet over the camera */
+.cam-gif-sheet {
+  position: absolute; inset: 0; z-index: 10;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex; align-items: flex-end;
+}
+.cam-gif-inner {
+  width: 100%;
+  background: var(--bg-elev);
+  border-radius: 18px 18px 0 0;
+  padding: 12px;
+  max-height: 82%;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .cam { max-width: none; max-height: calc(100dvh - var(--bottomnav-h) - env(safe-area-inset-bottom, 0px) - 120px); }
+}
+
 /* ---------- edit ---------- */
 .studio-edit {
   display: grid;

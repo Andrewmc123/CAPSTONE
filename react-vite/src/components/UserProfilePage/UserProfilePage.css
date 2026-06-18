@@ -22,6 +22,8 @@
 .profile-name { margin: 0 0 14px; color: var(--text-dim); font-size: 15px; }
 
 .profile-actions { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.profile-logout { color: var(--heart); border-color: rgba(255, 59, 92, 0.4); }
+.profile-logout:hover { background: rgba(255, 59, 92, 0.12); border-color: var(--heart); color: var(--heart); }
 
 .profile-stats { display: flex; gap: 22px; font-size: 15px; color: var(--text-dim); }
 .profile-stats strong { color: var(--text); font-size: 17px; margin-right: 5px; }

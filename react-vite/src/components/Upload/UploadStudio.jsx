@@ -3,7 +3,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
   FaCloudArrowUp, FaVideo, FaWandMagicSparkles, FaMusic, FaFont,
-  FaArrowLeft, FaCircle, FaStop, FaXmark, FaPlay, FaPause, FaImage, FaScissors,
+  FaArrowLeft, FaStop, FaXmark, FaPlay, FaPause, FaImage, FaScissors,
+  FaCameraRotate, FaEllipsisVertical,
 } from "react-icons/fa6";
 import { thunkCreatePost } from "../../redux/posts";
 import { FILTERS, TEXT_COLORS, TEXT_FONTS, filterCss } from "../../utils/filters";
@@ -27,10 +28,14 @@ export default function UploadStudio() {
   const [gifPost, setGifPost] = useState(null);    // selected GIF for gif posts
   const [dragOver, setDragOver] = useState(false);
 
-  // recorder
+  // camera (camera-first capture, TikTok-style)
   const [recording, setRecording] = useState(false);
   const [recordSecs, setRecordSecs] = useState(0);
-  const [recorderOpen, setRecorderOpen] = useState(false);
+  const [facingMode, setFacingMode] = useState("user");
+  const [camError, setCamError] = useState("");
+  const [camGifOpen, setCamGifOpen] = useState(false);
+  const [sideOpen, setSideOpen] = useState(false);
+  const fileInputRef = useRef(null);
   const liveRef = useRef(null);
   const recRef = useRef(null);
   const chunksRef = useRef([]);
@@ -81,25 +86,44 @@ export default function UploadStudio() {
     acceptFile(e.dataTransfer.files?.[0]);
   };
 
-  // ---------- recorder ----------
-  const openRecorder = async () => {
+  // ---------- camera ----------
+  const startCamera = useCallback(async (facing = "user") => {
+    setCamError("");
     try {
+      if (streamRef.current) streamRef.current.getTracks().forEach((t) => t.stop());
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user", width: { ideal: 1080 }, height: { ideal: 1920 } },
+        video: { facingMode: facing, width: { ideal: 1080 }, height: { ideal: 1920 } },
         audio: true,
       });
       streamRef.current = stream;
-      setRecorderOpen(true);
-      setTimeout(() => {
-        if (liveRef.current) {
-          liveRef.current.srcObject = stream;
-          liveRef.current.play().catch(() => {});
-        }
-      }, 50);
+      if (liveRef.current) {
+        liveRef.current.srcObject = stream;
+        liveRef.current.play().catch(() => {});
+      }
     } catch {
-      setError("Camera unavailable — check permissions");
+      setCamError("Camera unavailable — you can still upload a video or pick a GIF below.");
     }
+  }, []);
+
+  const flipCamera = () => {
+    const next = facingMode === "user" ? "environment" : "user";
+    setFacingMode(next);
+    startCamera(next);
   };
+
+  // open the camera the moment we land on the capture step
+  useEffect(() => {
+    if (step === "select" && user) startCamera(facingMode);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, user]);
+
+  // release the camera as soon as we leave capture (edit/details/unmount)
+  useEffect(() => {
+    if (step !== "select" && streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+  }, [step]);
 
   const startRecording = () => {
     const stream = streamRef.current;
@@ -130,7 +154,6 @@ export default function UploadStudio() {
   const closeRecorder = useCallback(() => {
     clearInterval(timerRef.current);
     setRecording(false);
-    setRecorderOpen(false);
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
@@ -358,66 +381,105 @@ export default function UploadStudio() {
 
       {/* ---------- STEP: SELECT ---------- */}
       {step === "select" && (
-        <div className="studio-select fade-in">
-          <div
-            className={`studio-drop ${dragOver ? "over" : ""}`}
-            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={onDrop}
-          >
-            <FaCloudArrowUp className="studio-drop-icon" />
-            <h2>Drag & drop a video</h2>
-            <p>MP4 / WebM / MOV · photos & GIFs welcome too · up to 100MB</p>
-            <label className="btn btn-primary">
-              Browse files
+        <div
+          className="cam fade-in"
+          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={onDrop}
+        >
+          {/* full-screen live camera */}
+          <video
+            ref={liveRef}
+            className={`cam-live ${facingMode === "user" ? "mirror" : ""} ${dragOver ? "drag" : ""}`}
+            muted
+            playsInline
+          />
+
+          {camError && (
+            <div className="cam-error">
+              <FaVideo />
+              <p>{camError}</p>
+            </div>
+          )}
+
+          {/* top bar: close · status · flip */}
+          <div className="cam-top">
+            <button className="cam-icon" onClick={() => navigate(-1)} aria-label="Close">
+              <FaXmark />
+            </button>
+            {recording
+              ? <span className="cam-timer">● {recordSecs}s</span>
+              : <span className="cam-mode"><FaVideo /> Video</span>}
+            <button className="cam-icon" onClick={flipCamera} aria-label="Flip camera">
+              <FaCameraRotate />
+            </button>
+          </div>
+
+          {/* side dropdown: upload · GIF · flip */}
+          <div className={`cam-side ${sideOpen ? "open" : ""}`}>
+            <button className="cam-side-toggle" onClick={() => setSideOpen((v) => !v)} aria-label="More options">
+              <FaEllipsisVertical />
+            </button>
+            <div className="cam-side-menu">
+              <button onClick={() => { setSideOpen(false); fileInputRef.current?.click(); }}>
+                <FaCloudArrowUp /><span>Upload</span>
+              </button>
+              <button onClick={() => { setSideOpen(false); setCamGifOpen(true); }}>
+                <FaWandMagicSparkles /><span>GIF</span>
+              </button>
+              <button onClick={() => { setSideOpen(false); flipCamera(); }}>
+                <FaCameraRotate /><span>Flip</span>
+              </button>
+            </div>
+          </div>
+
+          {/* bottom controls: gallery · shutter · GIF */}
+          <div className="cam-bottom">
+            <label className="cam-gallery" aria-label="Upload from device">
+              <FaImage />
               <input
+                ref={fileInputRef}
                 type="file"
                 hidden
                 accept="video/*,image/*"
                 onChange={(e) => acceptFile(e.target.files?.[0])}
               />
             </label>
-          </div>
 
-          <div className="studio-alt">
-            <button className="studio-alt-card" onClick={openRecorder}>
-              <FaVideo />
-              <strong>Record now</strong>
-              <span>Use your camera, TikTok-style</span>
-            </button>
-            <div className="studio-alt-card studio-gif-card">
-              <strong className="studio-gif-title">Post a GIF 🔥</strong>
-              <span>The Aura signature move</span>
-              <GifPicker
-                title="Pick your GIF post"
-                onSelect={(gif) => {
-                  setGifPost(gif);
-                  setPreviewUrl(gif.url);
-                  setMediaKind("gif");
-                  setFile(null);
-                  setStep("details");
-                }}
-                onClose={() => {}}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ---------- RECORDER OVERLAY ---------- */}
-      {recorderOpen && (
-        <div className="recorder-overlay">
-          <video ref={liveRef} className="recorder-live" muted playsInline />
-          <div className="recorder-timer">{recording ? `● ${recordSecs}s` : "Ready"}</div>
-          <div className="recorder-controls">
-            <button className="recorder-close" onClick={closeRecorder} aria-label="Close"><FaXmark /></button>
             {recording ? (
-              <button className="recorder-stop" onClick={stopRecording} aria-label="Stop"><FaStop /></button>
+              <button className="cam-shutter recording" onClick={stopRecording} aria-label="Stop recording">
+                <FaStop />
+              </button>
             ) : (
-              <button className="recorder-rec" onClick={startRecording} aria-label="Record"><FaCircle /></button>
+              <button className="cam-shutter" onClick={startRecording} aria-label="Record">
+                <span className="cam-shutter-dot" />
+              </button>
             )}
-            <span className="recorder-spacer" />
+
+            <button className="cam-gallery" onClick={() => setCamGifOpen(true)} aria-label="Post a GIF">
+              <FaWandMagicSparkles />
+            </button>
           </div>
+
+          {/* GIF picker sheet */}
+          {camGifOpen && (
+            <div className="cam-gif-sheet" onClick={() => setCamGifOpen(false)}>
+              <div className="cam-gif-inner" onClick={(e) => e.stopPropagation()}>
+                <GifPicker
+                  title="Pick your GIF post"
+                  onSelect={(gif) => {
+                    setGifPost(gif);
+                    setPreviewUrl(gif.url);
+                    setMediaKind("gif");
+                    setFile(null);
+                    setCamGifOpen(false);
+                    setStep("details");
+                  }}
+                  onClose={() => setCamGifOpen(false)}
+                />
+              </div>
+            </div>
+          )}
         </div>
       )}
 

@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
-  FaUserPlus, FaUserCheck, FaPen, FaShare, FaLock, FaHeart, FaBookmark, FaClapperboard, FaPaperPlane,
+  FaUserPlus, FaUserCheck, FaPen, FaShare, FaLock, FaHeart, FaBookmark, FaClapperboard, FaPaperPlane, FaRightFromBracket,
 } from "react-icons/fa6";
 import {
   fetchUserVideos, fetchLikedVideos, fetchBookmarkedVideos, selectCollection,
 } from "../../redux/posts";
-import { thunkToggleFollow, selectIsFollowing, fetchUserFollowLists } from "../../redux/follows";
+import { thunkLogout } from "../../redux/session";
+import { thunkToggleFollow, selectIsFollowing, fetchUserFollowLists, clearFollows } from "../../redux/follows";
 import { useModal } from "../../context/Modal";
 import LoginFormModal from "../LoginFormModal";
 import EditProfileModal from "./EditProfileModal";
@@ -19,6 +20,7 @@ import "./UserProfilePage.css";
 export default function UserProfilePage() {
   const { userId } = useParams();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const sessionUser = useSelector((s) => s.session.user);
   const isFollowing = useSelector(selectIsFollowing(Number(userId)));
   const { setModalContent } = useModal();
@@ -82,6 +84,12 @@ export default function UserProfilePage() {
     } catch { /* ignore */ }
   };
 
+  const logout = async () => {
+    await dispatch(thunkLogout());
+    dispatch(clearFollows());
+    navigate("/");
+  };
+
   if (!profile) {
     return (
       <div className="feed-gate">
@@ -130,6 +138,11 @@ export default function UserProfilePage() {
               <FaShare /> Share
             </button>
             {isOwn && <ThemeToggle variant="row" />}
+            {isOwn && (
+              <button className="btn btn-ghost profile-logout" onClick={logout} title="Log out">
+                <FaRightFromBracket /> Log out
+              </button>
+            )}
           </div>
 
           <div className="profile-stats">
