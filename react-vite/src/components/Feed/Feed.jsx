@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { NavLink } from "react-router-dom";
+import { FaTowerBroadcast, FaBagShopping } from "react-icons/fa6";
 import { fetchFeedPage, selectFeedPosts, selectFeed } from "../../redux/posts";
 import { useModal } from "../../context/Modal";
 import LoginFormModal from "../LoginFormModal";
@@ -106,6 +107,11 @@ export default function Feed({ tab = "foryou" }) {
         <NavLink to="/following" className={({ isActive }) => `feed-tab ${isActive ? "active" : ""}`}>
           Following
         </NavLink>
+      </div>
+
+      <div className="feed-quick">
+        <NavLink to="/live" className="feed-quick-btn" aria-label="Live" title="Live"><FaTowerBroadcast /></NavLink>
+        <NavLink to="/shop" className="feed-quick-btn" aria-label="Shop" title="Shop"><FaBagShopping /></NavLink>
       </div>
 
       <div className={`feed-scroller ${commentsPostId ? "with-drawer" : ""}`} ref={containerRef}>

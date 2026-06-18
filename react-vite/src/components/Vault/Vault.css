@@ -1,5 +1,9 @@
 .vault-page { max-width: 880px; padding-top: 24px; }
 
+/* embedded inside the profile "Vault" tab — no full-page wrapper/min-height */
+.vault-embedded { padding-top: 6px; }
+.vault-embedded .vault-head { margin-bottom: 16px; }
+
 .vault-head {
   display: flex;
   align-items: center;

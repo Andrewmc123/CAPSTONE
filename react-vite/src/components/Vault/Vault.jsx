@@ -5,8 +5,9 @@ import { FaArrowLeft, FaCamera, FaTrash, FaUserGroup } from "react-icons/fa6";
 import { fetchPeople, fetchPersonPhotos, deletePerson } from "../../redux/vault";
 import "./Vault.css";
 
-export default function Vault() {
+export default function Vault({ embedded = false }) {
   const dispatch = useDispatch();
+  const wrapClass = embedded ? "vault-embedded" : "page vault-page";
   const people = useSelector((s) => s.vault.people);
   const loaded = useSelector((s) => s.vault.loaded);
   const [active, setActive] = useState(null);
@@ -29,7 +30,7 @@ export default function Vault() {
   // ---- per-person gallery ----
   if (active) {
     return (
-      <div className="page vault-page">
+      <div className={wrapClass}>
         <header className="vault-head">
           <button className="vault-back" onClick={close} aria-label="Back"><FaArrowLeft /></button>
           <h1>{active.name}</h1>
@@ -59,7 +60,7 @@ export default function Vault() {
 
   // ---- people grid ----
   return (
-    <div className="page vault-page">
+    <div className={wrapClass}>
       <header className="vault-head">
         <h1>Your People</h1>
         <Link to="/camera" className="btn btn-primary"><FaCamera /> Camera</Link>

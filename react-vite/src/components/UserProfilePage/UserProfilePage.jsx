@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
-  FaUserPlus, FaUserCheck, FaPen, FaShare, FaLock, FaHeart, FaBookmark, FaClapperboard, FaPaperPlane, FaRightFromBracket,
+  FaUserPlus, FaUserCheck, FaPen, FaShare, FaLock, FaHeart, FaBookmark, FaClapperboard, FaPaperPlane, FaRightFromBracket, FaImages,
 } from "react-icons/fa6";
 import {
   fetchUserVideos, fetchLikedVideos, fetchBookmarkedVideos, selectCollection,
@@ -12,7 +12,9 @@ import { thunkToggleFollow, selectIsFollowing, fetchUserFollowLists, clearFollow
 import { useModal } from "../../context/Modal";
 import LoginFormModal from "../LoginFormModal";
 import EditProfileModal from "./EditProfileModal";
+import FollowListModal from "./FollowListModal";
 import VideoGrid from "../VideoGrid";
+import Vault from "../Vault";
 import ThemeToggle from "../common/ThemeToggle";
 import { compact } from "../../utils/format";
 import "./UserProfilePage.css";
@@ -146,9 +148,13 @@ export default function UserProfilePage() {
           </div>
 
           <div className="profile-stats">
-            <span><strong>{compact(profile.following_count)}</strong> Following</span>
-            <span><strong>{compact(followerCount)}</strong> Followers</span>
-            <span><strong>{compact(profile.likes_received)}</strong> Aura</span>
+            <button className="profile-stat" onClick={() => setModalContent(<FollowListModal userId={userId} mode="following" />)}>
+              <strong>{compact(profile.following_count)}</strong> Following
+            </button>
+            <button className="profile-stat" onClick={() => setModalContent(<FollowListModal userId={userId} mode="followers" />)}>
+              <strong>{compact(followerCount)}</strong> Followers
+            </button>
+            <span className="profile-stat"><strong>{compact(profile.likes_received)}</strong> Aura</span>
           </div>
 
           {profile.bio && <p className="profile-bio">{profile.bio}</p>}
@@ -194,6 +200,11 @@ export default function UserProfilePage() {
             <FaBookmark /> Favorites
           </button>
         )}
+        {isOwn && (
+          <button className={tab === "vault" ? "active" : ""} onClick={() => setTab("vault")}>
+            <FaImages /> Vault
+          </button>
+        )}
       </nav>
 
       {tab === "videos" && (
@@ -209,6 +220,7 @@ export default function UserProfilePage() {
       {tab === "favorites" && !isOwn && (
         <div className="vgrid-empty"><FaLock /> Favorites are private</div>
       )}
+      {tab === "vault" && isOwn && <Vault embedded />}
 
       {isOwn && (
         <Link to="/upload" className="btn btn-grad profile-upload-cta">+ New video</Link>

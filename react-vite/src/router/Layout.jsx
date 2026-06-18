@@ -5,9 +5,14 @@ import { ModalProvider, Modal } from "../context/Modal";
 import { thunkAuthenticate } from "../redux/session";
 import Sidebar from "../components/Sidebar";
 import BottomNav from "../components/BottomNav";
+import MobileTopBar from "../components/common/MobileTopBar";
 import "./Layout.css";
 
 const CHROMELESS = ["/login", "/signup", "/home"];
+
+// full-screen, immersive screens that get no mobile app bar
+const isImmersive = (path) =>
+  path === "/" || path === "/following" || path.startsWith("/video/");
 
 export default function Layout() {
   const dispatch = useDispatch();
@@ -34,6 +39,7 @@ export default function Layout() {
       <div className="app-shell">
         {!chromeless && <Sidebar />}
         <main className={`app-main ${chromeless ? "chromeless" : ""}`}>
+          {!chromeless && !isImmersive(location.pathname) && <MobileTopBar />}
           <Outlet />
         </main>
         {!chromeless && <BottomNav />}
