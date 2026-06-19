@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { NavLink } from "react-router-dom";
-import { FaTowerBroadcast, FaBagShopping, FaUsers } from "react-icons/fa6";
+import { NavLink, useNavigate } from "react-router-dom";
 import { fetchFeedPage, selectFeedPosts, selectFeed } from "../../redux/posts";
 import { useModal } from "../../context/Modal";
 import LoginFormModal from "../LoginFormModal";
@@ -17,8 +16,32 @@ export default function Feed({ tab = "foryou" }) {
   const { setModalContent } = useModal();
 
   const containerRef = useRef(null);
+  const navigate = useNavigate();
+  const touchStart = useRef(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [commentsPostId, setCommentsPostId] = useState(null);
+
+  // TikTok-style swipe between the top tabs (For You · Following · Network · Live · Shop)
+  const SWIPE_ROUTES = ["/", "/following", "/network", "/live", "/shop"];
+  const curIdx = tab === "following" ? 1 : 0;
+  const onTouchStart = (e) => {
+    const t = e.touches[0];
+    touchStart.current = { x: t.clientX, y: t.clientY, target: e.target };
+  };
+  const onTouchEnd = (e) => {
+    const s = touchStart.current;
+    touchStart.current = null;
+    if (!s) return;
+    // leave horizontally-interactive elements alone (photo carousel, seek bar, rail)
+    if (s.target?.closest?.(".vcarousel-track, .vcard-progress, .action-rail, input")) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - s.x;
+    const dy = t.clientY - s.y;
+    if (Math.abs(dx) > 64 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+      const next = dx < 0 ? curIdx + 1 : curIdx - 1;
+      if (next >= 0 && next < SWIPE_ROUTES.length) navigate(SWIPE_ROUTES[next]);
+    }
+  };
 
   const needsAuth = tab !== "foryou" && !user;
 
@@ -101,21 +124,19 @@ export default function Feed({ tab = "foryou" }) {
   return (
     <div className="feed-wrap">
       <div className="feed-tabs">
-        <NavLink to="/" end className={({ isActive }) => `feed-tab ${isActive ? "active" : ""}`}>
-          For You
-        </NavLink>
-        <NavLink to="/following" className={({ isActive }) => `feed-tab ${isActive ? "active" : ""}`}>
-          Following
-        </NavLink>
+        <NavLink to="/" end className={({ isActive }) => `feed-tab ${isActive ? "active" : ""}`}>For You</NavLink>
+        <NavLink to="/following" className={({ isActive }) => `feed-tab ${isActive ? "active" : ""}`}>Following</NavLink>
+        <NavLink to="/network" className={({ isActive }) => `feed-tab ${isActive ? "active" : ""}`}>Network</NavLink>
+        <NavLink to="/live" className={({ isActive }) => `feed-tab ${isActive ? "active" : ""}`}>Live</NavLink>
+        <NavLink to="/shop" className={({ isActive }) => `feed-tab ${isActive ? "active" : ""}`}>Shop</NavLink>
       </div>
 
-      <div className="feed-quick">
-        <NavLink to="/network" className="feed-quick-btn" aria-label="Network" title="Network"><FaUsers /></NavLink>
-        <NavLink to="/live" className="feed-quick-btn" aria-label="Live" title="Live"><FaTowerBroadcast /></NavLink>
-        <NavLink to="/shop" className="feed-quick-btn" aria-label="Shop" title="Shop"><FaBagShopping /></NavLink>
-      </div>
-
-      <div className={`feed-scroller ${commentsPostId ? "with-drawer" : ""}`} ref={containerRef}>
+      <div
+        className={`feed-scroller ${commentsPostId ? "with-drawer" : ""}`}
+        ref={containerRef}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
         {posts.map((post, i) => (
           <section className="feed-slide" data-feed-index={i} key={post.id}>
             <VideoCard
