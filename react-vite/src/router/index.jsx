@@ -37,7 +37,6 @@ const createAppRouter = () => {
       children: [
         { path: "/", element: <Feed tab="foryou" /> },
         { path: "/following", element: <Feed tab="following" /> },
-        { path: "/friends", element: <Feed tab="friends" /> },
         { path: "/network", element: <Network /> },
         { path: "/video/:postId", element: <SingleVideo /> },
         { path: "/explore", element: <Explore /> },

@@ -44,9 +44,12 @@ export default function UserProfilePage() {
       .then((data) => alive && setProfile(data))
       .catch(() => {});
     dispatch(fetchUserVideos(userId));
-    dispatch(fetchUserFollowLists(userId));
+    // privacy: only YOUR own follower/following lists are viewable
+    if (sessionUser && Number(userId) === sessionUser.id) {
+      dispatch(fetchUserFollowLists(userId));
+    }
     return () => { alive = false; };
-  }, [dispatch, userId]);
+  }, [dispatch, userId, sessionUser]);
 
   useEffect(() => {
     if (tab === "liked") dispatch(fetchLikedVideos(userId));
@@ -148,12 +151,21 @@ export default function UserProfilePage() {
           </div>
 
           <div className="profile-stats">
-            <button className="profile-stat" onClick={() => setModalContent(<FollowListModal userId={userId} mode="following" />)}>
-              <strong>{compact(profile.following_count)}</strong> Following
-            </button>
-            <button className="profile-stat" onClick={() => setModalContent(<FollowListModal userId={userId} mode="followers" />)}>
-              <strong>{compact(followerCount)}</strong> Followers
-            </button>
+            {isOwn ? (
+              <>
+                <button className="profile-stat" onClick={() => setModalContent(<FollowListModal userId={userId} mode="following" />)}>
+                  <strong>{compact(profile.following_count)}</strong> Following
+                </button>
+                <button className="profile-stat" onClick={() => setModalContent(<FollowListModal userId={userId} mode="followers" />)}>
+                  <strong>{compact(followerCount)}</strong> Followers
+                </button>
+              </>
+            ) : (
+              <>
+                <span className="profile-stat"><strong>{compact(profile.following_count)}</strong> Following</span>
+                <span className="profile-stat"><strong>{compact(followerCount)}</strong> Followers</span>
+              </>
+            )}
             <span className="profile-stat"><strong>{compact(profile.likes_received)}</strong> Aura</span>
           </div>
 

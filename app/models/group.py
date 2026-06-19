@@ -106,6 +106,7 @@ class GroupMessage(db.Model):
     content = db.Column(db.Text)
     media_type = db.Column(db.String(10), default='text')  # text | gif | image | audio
     media_url = db.Column(db.String)
+    is_pinned = db.Column(db.Boolean, default=False, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     group = db.relationship('Group', back_populates='messages')
@@ -119,6 +120,7 @@ class GroupMessage(db.Model):
             'content': self.content,
             'media_type': self.media_type or 'text',
             'media_url': self.media_url,
+            'is_pinned': bool(self.is_pinned),
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'user': self.user.to_dict_basic() if self.user else None,
         }

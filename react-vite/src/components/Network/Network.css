@@ -190,6 +190,37 @@
 .gmsg-del:hover { color: var(--heart); }
 .gmsg-text { margin: 3px 0 0; font-size: 14.5px; line-height: 1.4; word-break: break-word; }
 .gmsg-media { margin-top: 6px; max-width: 200px; max-height: 200px; border-radius: 12px; display: block; }
+.gmsg-audio { margin-top: 6px; max-width: 240px; height: 38px; display: block; }
+.gmsg.pinned { background: rgba(255, 194, 51, 0.08); border-radius: 10px; padding: 6px; margin: 0 -6px 14px; }
+.gmsg-actions { margin-left: auto; display: flex; gap: 9px; opacity: 0; }
+.gmsg:hover .gmsg-actions { opacity: 1; }
+.gmsg-actions button { background: none; border: none; color: var(--text-faint); font-size: 11px; }
+.gmsg-actions button:hover { color: var(--text); }
+.gmsg-pinned-tag { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; color: var(--orange); font-weight: 700; }
+
+/* pinned banner */
+.gchat-pinned-bar { flex-shrink: 0; border-bottom: 1px solid var(--line); background: rgba(255, 194, 51, 0.07); padding: 6px 14px; }
+.gchat-pinned-item { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-dim); padding: 2px 0; }
+.gchat-pinned-item > svg { color: var(--orange); flex-shrink: 0; }
+.gchat-pinned-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gchat-pinned-item button { background: none; border: none; color: var(--text-faint); }
+.gchat-pinned-item button:hover { color: var(--text); }
+
+/* leader/mod tools + invite */
+.gchat-leader-tools { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.gchat-leader-tools button { display: inline-flex; align-items: center; gap: 6px; background: var(--bg-card); border: 1px solid var(--line); color: var(--text); border-radius: 9px; padding: 8px 12px; font-size: 13px; font-weight: 700; }
+.gchat-leader-tools button:hover { border-color: var(--neon); }
+.gchat-invite { background: var(--bg-card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-bottom: 12px; }
+.gchat-invite-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.gchat-invite-head button { background: none; border: none; color: var(--text-dim); }
+.gchat-invite-empty { color: var(--text-faint); font-size: 13px; margin: 6px 0; }
+.gchat-invite-row { display: flex; align-items: center; gap: 9px; padding: 5px 0; font-size: 14px; }
+.gchat-invite-row > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gchat-invite-row button { display: inline-flex; align-items: center; gap: 5px; background: var(--neon-soft); border: 1px solid var(--neon); color: var(--neon); border-radius: 8px; padding: 5px 10px; font-size: 12.5px; font-weight: 700; }
+.gchat-invite-in { color: var(--text-faint); font-size: 12px; flex: none !important; }
+
+.gchat-tool.rec { background: var(--heart); color: #fff; border-color: var(--heart); animation: gchat-pulse 1s ease-in-out infinite; }
+@keyframes gchat-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
 
 .role-badge { display: inline-flex; align-items: center; font-size: 10px; padding: 1px 5px; border-radius: 5px; }
 .role-leader { background: rgba(255, 194, 51, 0.18); color: var(--orange); }

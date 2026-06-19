@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  FaHouse, FaCompass, FaUserGroup, FaUsers, FaInbox, FaUser,
+  FaHouse, FaCompass, FaUsers, FaInbox, FaUser,
   FaMagnifyingGlass, FaCirclePlus, FaRightFromBracket, FaVideo, FaPaperPlane, FaTowerBroadcast,
   FaSun, FaMoon, FaBagShopping,
 } from "react-icons/fa6";
@@ -88,9 +88,6 @@ export default function Sidebar() {
         </NavLink>
         <NavLink to="/explore" className={({ isActive }) => `side-item ${isActive ? "active" : ""}`}>
           <FaCompass /> <span>Explore</span>
-        </NavLink>
-        <NavLink to="/following" onClick={requireLogin} className={({ isActive }) => `side-item ${isActive ? "active" : ""}`}>
-          <FaUserGroup /> <span>Following</span>
         </NavLink>
         <NavLink to="/network" className={({ isActive }) => `side-item ${isActive ? "active" : ""}`}>
           <FaUsers /> <span>Network</span>

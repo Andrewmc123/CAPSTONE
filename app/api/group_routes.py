@@ -158,6 +158,36 @@ def delete_message(group_id, message_id):
     return jsonify({'id': message_id})
 
 
+@group_routes.route('/<int:group_id>/messages/<int:message_id>/pin', methods=['POST'])
+@login_required
+def pin_message(group_id, message_id):
+    """Pin/unpin a message — leaders AND mods can do this."""
+    group = Group.query.get(group_id)
+    msg = GroupMessage.query.get(message_id)
+    if not group or not msg or msg.group_id != group_id:
+        return jsonify({'error': 'Not found'}), 404
+    if not _can_moderate(group, current_user.id):
+        return jsonify({'error': 'Only leaders/mods can pin'}), 403
+    msg.is_pinned = not msg.is_pinned
+    db.session.commit()
+    return jsonify(msg.to_dict())
+
+
+@group_routes.route('/<int:group_id>/visibility', methods=['POST'])
+@login_required
+def set_visibility(group_id):
+    """Make the group public or private — leader only."""
+    group = Group.query.get(group_id)
+    if not group:
+        return jsonify({'error': 'Group not found'}), 404
+    if _role(group, current_user.id) != 'leader':
+        return jsonify({'error': 'Only the leader can change visibility'}), 403
+    data = request.get_json() or {}
+    group.is_public = bool(data.get('is_public', not group.is_public))
+    db.session.commit()
+    return jsonify(group.to_dict(current_user.id, with_members=True))
+
+
 @group_routes.route('/<int:group_id>/members/<int:user_id>/promote', methods=['POST'])
 @login_required
 def promote_member(group_id, user_id):

@@ -74,15 +74,21 @@ def my_follows():
 
 
 @follow_routes.route('/<int:user_id>/followers')
+@login_required
 def get_followers(user_id):
-    """List a user's followers — public."""
+    """List a user's followers — private: only YOU can see your own list."""
+    if user_id != current_user.id:
+        return {'error': 'You can only see your own followers'}, 403
     user = User.query.get_or_404(user_id)
     return {'followers': [f.follower.to_dict_basic() for f in user.followers]}
 
 
 @follow_routes.route('/<int:user_id>/following')
+@login_required
 def get_following(user_id):
-    """List who a user follows — public."""
+    """List who a user follows — private: only YOU can see your own list."""
+    if user_id != current_user.id:
+        return {'error': 'You can only see who you follow'}, 403
     user = User.query.get_or_404(user_id)
     return {'following': [f.followed.to_dict_basic() for f in user.following]}
 
