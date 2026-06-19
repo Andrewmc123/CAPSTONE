@@ -20,21 +20,20 @@ seed_commands = AppGroup('seed')
 # Creates the `flask seed all` command
 @seed_commands.command('all')
 def seed():
-    if environment == 'production':
-        # Before seeding in production, you want to run the seed undo
-        # command, which will  truncate all tables prefixed with
-        # the schema name (see comment in users.py undo_users function).
-        # Make sure to add all your other model's undo functions below
-        undo_products()
-        undo_messages()
-        undo_notifications()
-        undo_bookmarks()
-        undo_follows()
-        undo_likes()
-        undo_comments()
-        undo_posts()
-        undo_friends()
-        undo_users()
+    # Always clear existing data first so re-running `seed all` is idempotent.
+    # Without this, dev re-seeds stack on top of each other and every post/photo
+    # shows up twice ("double photos"). start.sh still guards the live deploy with
+    # seed_if_empty, so user-generated content there is preserved across restarts.
+    undo_products()
+    undo_messages()
+    undo_notifications()
+    undo_bookmarks()
+    undo_follows()
+    undo_likes()
+    undo_comments()
+    undo_posts()
+    undo_friends()
+    undo_users()
     seed_users()
     seed_friends()
     seed_follows()
