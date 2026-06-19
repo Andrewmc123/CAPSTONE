@@ -15,3 +15,4 @@ from .message import Message
 from .profile_visit import ProfileVisit
 from .live import LiveSession, LiveViewer, LiveMessage, LiveReport
 from .product import Product
+from .group import Group, GroupMember, GroupMessage

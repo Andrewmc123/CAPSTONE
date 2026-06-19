@@ -9,6 +9,7 @@ from .follows import seed_follows, undo_follows
 from .bookmarks import seed_bookmarks, undo_bookmarks
 from .messages import seed_messages, undo_messages
 from .products import seed_products, undo_products
+from .groups import seed_groups, undo_groups
 
 from app.models.db import db, environment, SCHEMA
 
@@ -24,6 +25,7 @@ def seed():
     # Without this, dev re-seeds stack on top of each other and every post/photo
     # shows up twice ("double photos"). start.sh still guards the live deploy with
     # seed_if_empty, so user-generated content there is preserved across restarts.
+    undo_groups()
     undo_products()
     undo_messages()
     undo_notifications()
@@ -44,11 +46,13 @@ def seed():
     seed_notifications()
     seed_messages()
     seed_products()
+    seed_groups()
 
 
 # Creates the `flask seed undo` command
 @seed_commands.command('undo')
 def undo():
+    undo_groups()
     undo_products()
     undo_messages()
     undo_notifications()

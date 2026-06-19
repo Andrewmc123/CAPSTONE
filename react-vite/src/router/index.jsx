@@ -15,7 +15,7 @@ import { MessagesPage, MessageThread } from "../components/Messages";
 import { LiveDiscover, LiveRoom } from "../components/Live";
 import Layout from "./Layout";
 import UserProfilePage from "../components/UserProfilePage";
-import Friends from "../components/Friend/Friend";
+import Network from "../components/Network";
 import Camera from "../components/Camera/Camera";
 import Vault from "../components/Vault/Vault";
 import Shop from "../components/Shop";
@@ -37,6 +37,8 @@ const createAppRouter = () => {
       children: [
         { path: "/", element: <Feed tab="foryou" /> },
         { path: "/following", element: <Feed tab="following" /> },
+        { path: "/friends", element: <Feed tab="friends" /> },
+        { path: "/network", element: <Network /> },
         { path: "/video/:postId", element: <SingleVideo /> },
         { path: "/explore", element: <Explore /> },
         { path: "/shop", element: <Shop /> },
@@ -48,7 +50,6 @@ const createAppRouter = () => {
         { path: "/messages/:userId", element: <AuthCheck><MessageThread /></AuthCheck> },
         { path: "/live", element: <AuthCheck><LiveDiscover /></AuthCheck> },
         { path: "/live/:id", element: <AuthCheck><LiveRoom /></AuthCheck> },
-        { path: "/friends", element: <AuthCheck><Friends /></AuthCheck> },
         { path: "/users/:userId", element: <UserProfilePage /> },
         { path: "/home", element: <Home /> },
         { path: "/login", element: <AuthRedirect><LoginFormPage /></AuthRedirect> },
