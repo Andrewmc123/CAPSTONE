@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { FaXmark, FaHeart, FaPaperPlane, FaTrash } from "react-icons/fa6";
+import { FaXmark, FaHeart, FaPaperPlane, FaTrash, FaNoteSticky } from "react-icons/fa6";
 import { bumpCommentCount } from "../../redux/posts";
 import { useModal } from "../../context/Modal";
 import LoginFormModal from "../LoginFormModal";
 import GifPicker from "./GifPicker";
+import StickerPicker, { isStickerUrl } from "./StickerPicker";
 import EmojiPicker from "./EmojiPicker";
 import { compact, timeAgo } from "../../utils/format";
 import "./CommentsDrawer.css";
@@ -22,6 +23,7 @@ export default function CommentsDrawer({ post, onClose, targetCommentId }) {
   const [body, setBody] = useState("");
   const [pendingGif, setPendingGif] = useState(null);
   const [gifOpen, setGifOpen] = useState(false);
+  const [stickerOpen, setStickerOpen] = useState(false);
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [posting, setPosting] = useState(false);
   const [replyTo, setReplyTo] = useState(null); // { id, username } of the comment being replied to
@@ -120,6 +122,23 @@ export default function CommentsDrawer({ post, onClose, targetCommentId }) {
     }
   };
 
+  // a sticker is just an image attached to the comment (sent on tap)
+  const sendStickerNow = async (sticker) => {
+    if (gate()) return;
+    setStickerOpen(false);
+    const res = await fetch(`/api/posts/${post.id}/comments`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ body: "", gif_url: sticker.url, parent_id: replyTo?.id || null }),
+    });
+    if (res.ok) {
+      const comment = await res.json();
+      insertComment(comment);
+      setReplyTo(null);
+    }
+  };
+
   // apply `fn` to a comment whether it's top-level or a nested reply
   const mutateComment = (id, fn) => setComments((prev) => prev.map((c) => {
     if (c.id === id) return fn(c);
@@ -194,7 +213,7 @@ export default function CommentsDrawer({ post, onClose, targetCommentId }) {
               <div className="comment-main">
                 <Link to={`/users/${cm.user?.id}`} className="comment-username">@{cm.user?.username}</Link>
                 {cm.body && <p className="comment-body">{cm.body}</p>}
-                {cm.gif_url && <img className="comment-gif" src={cm.gif_url} alt="GIF comment" loading="lazy" />}
+                {cm.gif_url && <img className={`comment-gif ${isStickerUrl(cm.gif_url) ? "comment-sticker" : ""}`} src={cm.gif_url} alt={isStickerUrl(cm.gif_url) ? "sticker" : "GIF comment"} loading="lazy" />}
                 <div className="comment-meta">
                   <span>{timeAgo(cm.created_at)}</span>
                   <button className="comment-reply-btn" onClick={() => startReply(replyTarget)}>Reply</button>
@@ -238,6 +257,11 @@ export default function CommentsDrawer({ post, onClose, targetCommentId }) {
           <EmojiPicker onPick={(em) => setBody((b) => b + em)} onClose={() => setEmojiOpen(false)} />
         </div>
       )}
+      {stickerOpen && (
+        <div className="cdrawer-gif-pop">
+          <StickerPicker onSelect={sendStickerNow} onClose={() => setStickerOpen(false)} />
+        </div>
+      )}
 
       <div className="cdrawer-composer">
         {replyTo && (
@@ -261,7 +285,7 @@ export default function CommentsDrawer({ post, onClose, targetCommentId }) {
           <button
             type="button"
             className={`composer-gif-btn ${emojiOpen ? "on" : ""}`}
-            onClick={() => { setGifOpen(false); setEmojiOpen(!emojiOpen); }}
+            onClick={() => { setGifOpen(false); setStickerOpen(false); setEmojiOpen(!emojiOpen); }}
             aria-label="Emoji"
           >
             😀
@@ -269,9 +293,17 @@ export default function CommentsDrawer({ post, onClose, targetCommentId }) {
           <button
             type="button"
             className={`composer-gif-btn ${gifOpen ? "on" : ""}`}
-            onClick={() => (gate() ? null : (setEmojiOpen(false), setGifOpen(!gifOpen)))}
+            onClick={() => (gate() ? null : (setEmojiOpen(false), setStickerOpen(false), setGifOpen(!gifOpen)))}
           >
             GIF
+          </button>
+          <button
+            type="button"
+            className={`composer-gif-btn ${stickerOpen ? "on" : ""}`}
+            onClick={() => (gate() ? null : (setEmojiOpen(false), setGifOpen(false), setStickerOpen(!stickerOpen)))}
+            aria-label="Stickers"
+          >
+            <FaNoteSticky />
           </button>
           <input
             ref={inputRef}
