@@ -7,7 +7,8 @@
   margin-bottom: 18px;
 }
 .inbox-head h1 { margin: 0; font-size: 28px; }
-.inbox-readall { font-size: 13px; padding: 8px 14px; }
+.inbox-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.inbox-readall { font-size: 13px; padding: 8px 14px; white-space: nowrap; }
 
 .inbox-tabs { display: flex; gap: 8px; margin-bottom: 22px; flex-wrap: wrap; }
 
@@ -64,5 +65,14 @@
 .inbox-more { width: 100%; margin-top: 12px; }
 
 @media (max-width: 768px) {
-  .inbox-page { padding-bottom: calc(var(--bottomnav-h) + 20px); }
+  .inbox-page { padding-bottom: calc(var(--bottomnav-h) + env(safe-area-inset-bottom, 0px) + 20px); }
+  /* stack the header so the action buttons stop overflowing off-screen */
+  .inbox-head { flex-direction: column; align-items: stretch; gap: 12px; }
+  .inbox-head h1 { font-size: 24px; }
+  .inbox-actions { width: 100%; }
+  .inbox-actions .inbox-readall { flex: 1 1 auto; justify-content: center; }
+  /* friend-request rows: Accept/Decline drop to their own full-width line */
+  .inbox-requests .inbox-row { flex-wrap: wrap; }
+  .inbox-requests .inbox-row-actions { width: 100%; }
+  .inbox-requests .inbox-row-actions .inbox-mini-btn { flex: 1; }
 }

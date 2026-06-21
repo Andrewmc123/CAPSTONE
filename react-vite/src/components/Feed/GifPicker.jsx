@@ -10,10 +10,10 @@ const readSaved = () => {
   try { return JSON.parse(localStorage.getItem(SAVED_KEY)) || []; } catch { return []; }
 };
 
-// Reusable GIF picker — powers GIF comments, GIF posts and GIF stickers.
-export default function GifPicker({ onSelect, onClose, title = "Pick a GIF" }) {
+// Reusable GIF picker — powers GIF comments, GIF posts and saved-GIF stickers.
+export default function GifPicker({ onSelect, onClose, title = "Pick a GIF", initialCat = "trending" }) {
   const [query, setQuery] = useState("");
-  const [activeCat, setActiveCat] = useState("trending");
+  const [activeCat, setActiveCat] = useState(initialCat);
   const [gifs, setGifs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saved, setSaved] = useState(readSaved);
@@ -37,7 +37,8 @@ export default function GifPicker({ onSelect, onClose, title = "Pick a GIF" }) {
   };
 
   useEffect(() => {
-    load("trending");
+    if (initialCat !== "saved") load(initialCat || "trending");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onQueryChange = (value) => {

@@ -57,7 +57,7 @@ export default function Inbox() {
     <div className="page inbox-page">
       <header className="inbox-head">
         <h1>Inbox</h1>
-        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+        <div className="inbox-actions">
           <Link to="/messages" className="btn btn-ghost inbox-readall">
             <FaPaperPlane /> Messages{dmUnread > 0 ? ` (${dmUnread})` : ""}
           </Link>

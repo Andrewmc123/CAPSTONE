@@ -22,6 +22,14 @@
   overscroll-behavior: none;
 }
 
+/* On phones, fully cover the page so a modal (e.g. login) reads as a clean
+   pop-up instead of a small box floating over the visible page behind it. */
+@media (max-width: 768px) {
+  #modal-background {
+    background-color: rgba(8, 6, 14, 0.97);
+  }
+}
+
 #modal-content {
   position: relative;
   max-width: min(440px, calc(100vw - 24px));
