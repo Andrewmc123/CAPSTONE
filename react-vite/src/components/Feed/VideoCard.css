@@ -534,5 +534,7 @@
   .rail-count { color: #fff; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8); }
   .vcard-meta { right: 70px; bottom: 64px; }
   .vcard-disc { display: none; }
+  /* drop the mute button below the top tab bar so it never overlaps "Shop" */
+  .vcard-mute { top: calc(60px + env(safe-area-inset-top, 0px)); }
   .feed-slide { padding-bottom: calc(var(--bottomnav-h) + env(safe-area-inset-bottom, 0px)); }
 }

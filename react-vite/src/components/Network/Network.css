@@ -256,7 +256,21 @@
   .network-start { width: 100%; }
   .network-grid { grid-template-columns: 1fr; }
   .group-form-grid { grid-template-columns: 1fr; }
-  .gchat { width: 100vw; height: 88dvh; }
+
+  /* the group chat goes full-screen on mobile — the generic modal shell caps
+     width at 100vw-24, which made the chat overflow and slide sideways. Let it
+     fill the viewport so it sits perfectly with no horizontal scroll. */
+  #modal-content:has(.gchat) {
+    max-width: 100vw;
+    width: 100vw;
+    max-height: 100dvh;
+  }
+  .gchat {
+    width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+  }
 }
 
 @media (max-width: 768px) {
