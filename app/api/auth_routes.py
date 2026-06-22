@@ -3,6 +3,7 @@ from sqlalchemy import or_
 from app.models import (
     User, db, Notification, Message, ProfileVisit, Product,
     LiveSession, LiveViewer, LiveMessage, LiveReport,
+    Group, GroupMember, GroupMessage, Order,
 )
 from app.forms import LoginForm
 from app.forms import SignUpForm
@@ -110,6 +111,13 @@ def delete_account():
     # ORM-delete the user's live sessions so their viewers/messages cascade
     for session in LiveSession.query.filter(LiveSession.host_id == uid).all():
         db.session.delete(session)
+
+    # shop orders + network groups also point at the user with no cascade
+    Order.query.filter(Order.buyer_id == uid).delete(synchronize_session=False)
+    GroupMessage.query.filter(GroupMessage.user_id == uid).delete(synchronize_session=False)
+    GroupMember.query.filter(GroupMember.user_id == uid).delete(synchronize_session=False)
+    for grp in Group.query.filter(Group.leader_id == uid).all():
+        db.session.delete(grp)  # cascades the group's members + messages
 
     db.session.commit()  # phase 1: clear non-cascaded refs (expires stale collections)
 

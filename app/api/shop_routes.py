@@ -2,12 +2,17 @@
 Community Shop API — users post products for sale and market them,
 TikTok-Shop style. Listings are public; creating/deleting requires auth.
 """
+import json
+
 from flask import Blueprint, jsonify, request
 from flask_login import login_required, current_user
 
-from app.models import db, Product
+from app.models import db, Product, Order
 
 shop_routes = Blueprint('shop', __name__)
+
+FREE_SHIP_THRESHOLD_CENTS = 5000   # free shipping over $50
+FLAT_SHIP_CENTS = 599              # otherwise $5.99
 
 
 @shop_routes.route('/')
@@ -81,3 +86,68 @@ def delete_product(product_id):
     db.session.delete(product)
     db.session.commit()
     return jsonify({'id': product_id})
+
+
+# ---------- cart checkout / orders ----------
+
+@shop_routes.route('/orders', methods=['POST'])
+@login_required
+def place_order():
+    """Place an order. Totals are computed SERVER-SIDE from real product prices
+    (never trust the client). Demo payment — no real charge; we keep only the
+    card's last 4 for the receipt and never the full number."""
+    data = request.get_json() or {}
+    raw_items = data.get('items') or []
+    ship = data.get('shipping') or {}
+
+    if not raw_items:
+        return jsonify({'error': 'Your cart is empty'}), 400
+    for field in ('name', 'address', 'city', 'state', 'zip'):
+        if not (ship.get(field) or '').strip():
+            return jsonify({'error': 'Please complete your shipping details'}), 400
+
+    snapshot, subtotal = [], 0
+    for it in raw_items:
+        product = Product.query.get(it.get('product_id'))
+        if not product:
+            continue
+        qty = max(1, min(20, int(it.get('qty') or 1)))
+        subtotal += (product.price_cents or 0) * qty
+        snapshot.append({
+            'product_id': product.id,
+            'title': product.title,
+            'price_cents': product.price_cents or 0,
+            'qty': qty,
+            'image_url': product.image_url,
+        })
+
+    if not snapshot:
+        return jsonify({'error': 'None of those products are available anymore'}), 400
+
+    shipping_cents = 0 if subtotal >= FREE_SHIP_THRESHOLD_CENTS else FLAT_SHIP_CENTS
+    last4 = ''.join(ch for ch in str(data.get('card_last4') or '') if ch.isdigit())[-4:]
+
+    order = Order(
+        buyer_id=current_user.id,
+        items=json.dumps(snapshot),
+        subtotal_cents=subtotal,
+        shipping_cents=shipping_cents,
+        total_cents=subtotal + shipping_cents,
+        ship_name=ship.get('name', '').strip()[:120],
+        ship_address=ship.get('address', '').strip()[:255],
+        ship_city=ship.get('city', '').strip()[:80],
+        ship_state=ship.get('state', '').strip()[:40],
+        ship_zip=ship.get('zip', '').strip()[:20],
+        card_last4=last4 or None,
+        status='paid',
+    )
+    db.session.add(order)
+    db.session.commit()
+    return jsonify(order.to_dict()), 201
+
+
+@shop_routes.route('/orders')
+@login_required
+def my_orders():
+    orders = Order.query.filter_by(buyer_id=current_user.id).order_by(Order.created_at.desc()).all()
+    return jsonify({'orders': [o.to_dict() for o in orders]})

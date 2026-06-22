@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { FaBagShopping, FaPlus, FaTag, FaXmark, FaTrash } from "react-icons/fa6";
+import { FaBagShopping, FaPlus, FaTag, FaXmark, FaTrash, FaCartShopping } from "react-icons/fa6";
 import { useModal } from "../../context/Modal";
 import LoginFormModal from "../LoginFormModal";
+import ProductModal from "./ProductModal";
+import CartModal from "./CartModal";
+import { useCart } from "../../utils/cart";
 import "./Shop.css";
 
 const CATEGORIES = ["all", "fashion", "beauty", "tech", "art", "food", "home", "music", "other"];
@@ -19,6 +22,10 @@ export default function Shop() {
   const [category, setCategory] = useState("all");
   const [loading, setLoading] = useState(true);
   const [selling, setSelling] = useState(false);
+  const cart = useCart();
+  const cartCount = cart.reduce((n, i) => n + i.qty, 0);
+  const openCart = () => setModalContent(<CartModal />);
+  const openProduct = (p) => setModalContent(<ProductModal product={p} />);
 
   const load = (cat = category) => {
     setLoading(true);
@@ -53,9 +60,15 @@ export default function Shop() {
           <h1><FaBagShopping /> Shop</h1>
           <p className="text-dim">Discover and sell with the community — your storefront, your hustle.</p>
         </div>
-        <button className="btn btn-primary shop-sell-btn" onClick={onSellClick}>
-          <FaPlus /> Sell something
-        </button>
+        <div className="shop-head-actions">
+          <button className="shop-cart-btn" onClick={openCart} aria-label="Cart">
+            <FaCartShopping />
+            {cartCount > 0 && <em>{cartCount > 99 ? "99+" : cartCount}</em>}
+          </button>
+          <button className="btn btn-primary shop-sell-btn" onClick={onSellClick}>
+            <FaPlus /> Sell something
+          </button>
+        </div>
       </header>
 
       <div className="shop-cats">
@@ -83,7 +96,7 @@ export default function Shop() {
       ) : (
         <div className="shop-grid">
           {products.map((p) => (
-            <article key={p.id} className="shop-card">
+            <article key={p.id} className="shop-card" onClick={() => openProduct(p)} role="button" tabIndex={0}>
               <div className="shop-card-media">
                 {p.image_url ? (
                   <img src={p.image_url} alt={p.title} loading="lazy" />
@@ -92,7 +105,7 @@ export default function Shop() {
                 )}
                 <span className="shop-card-price">{money(p.price_cents)}</span>
                 {user && p.seller_id === user.id && (
-                  <button className="shop-card-del" onClick={() => onDelete(p.id)} aria-label="Delete listing">
+                  <button className="shop-card-del" onClick={(e) => { e.stopPropagation(); onDelete(p.id); }} aria-label="Delete listing">
                     <FaTrash />
                   </button>
                 )}
@@ -102,18 +115,16 @@ export default function Shop() {
                 {p.description && <p className="shop-card-desc">{p.description}</p>}
                 <div className="shop-card-foot">
                   {p.seller && (
-                    <Link to={`/users/${p.seller.id}`} className="shop-seller">
+                    <Link to={`/users/${p.seller.id}`} className="shop-seller" onClick={(e) => e.stopPropagation()}>
                       <img className="avatar" width={22} height={22} src={p.seller.profile_img || `https://i.pravatar.cc/40?u=${p.seller.id}`} alt="" />
                       @{p.seller.username}
                     </Link>
                   )}
                   {p.category && <span className="shop-cat-tag"><FaTag /> {p.category}</span>}
                 </div>
-                {p.link && (
-                  <a className="btn btn-primary shop-buy" href={p.link} target="_blank" rel="noopener noreferrer">
-                    Buy now
-                  </a>
-                )}
+                <button className="btn btn-primary shop-view" onClick={(e) => { e.stopPropagation(); openProduct(p); }}>
+                  View &amp; buy
+                </button>
               </div>
             </article>
           ))}
