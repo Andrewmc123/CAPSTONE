@@ -34,6 +34,9 @@
 }
 .bn-item svg { font-size: 20px; }
 .bn-item span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+/* the badge wrapper is a <span> too — don't clip it, or the inbox icon/badge
+   gets cut off once a count appears (logged-in state) */
+.bn-item .bn-badge-wrap { overflow: visible; }
 .bn-item.active { color: var(--text); }
 .bn-item.active svg { color: var(--neon); filter: drop-shadow(0 0 7px rgba(168, 85, 247, 0.55)); }
 

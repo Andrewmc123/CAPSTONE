@@ -33,7 +33,9 @@
   .studio-select { grid-template-columns: 1fr !important; }
   .studio-edit { grid-template-columns: 1fr !important; }
   .friends-page { grid-template-columns: 1fr !important; }
-  .gifpicker-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .gifpicker-grid { grid-template-columns: repeat(3, 1fr) !important; }
+  /* stickers are small squares — fit more per row so they're never oversized */
+  .sticker-picker .gifpicker-grid { grid-template-columns: repeat(4, 1fr) !important; }
   .live-grid { grid-template-columns: repeat(auto-fill, minmax(116px, 1fr)) !important; }
 
   /* upload studio: full-width preview + stacked tools */

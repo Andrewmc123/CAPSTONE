@@ -104,21 +104,13 @@ export default function CommentsDrawer({ post, onClose, targetCommentId }) {
   };
 
   // GIFs can be sent instantly — pure TikTok energy
-  const sendGifNow = async (gif) => {
+  // choosing a GIF attaches it to the composer (preview) so you can add a
+  // caption and send text + GIF together, TikTok-style. Send happens via submit().
+  const attachGif = (gif) => {
     if (gate()) return;
+    setPendingGif(gif);
     setGifOpen(false);
-    const res = await fetch(`/api/posts/${post.id}/comments`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ body: body.trim(), gif_url: gif.url, parent_id: replyTo?.id || null }),
-    });
-    if (res.ok) {
-      const comment = await res.json();
-      insertComment(comment);
-      setBody("");
-      setReplyTo(null);
-    }
+    setTimeout(() => inputRef.current?.focus(), 0);
   };
 
   // apply `fn` to a comment whether it's top-level or a nested reply
@@ -231,7 +223,7 @@ export default function CommentsDrawer({ post, onClose, targetCommentId }) {
 
       {gifOpen && (
         <div className="cdrawer-gif-pop">
-          <GifPicker onSelect={sendGifNow} onClose={() => setGifOpen(false)} title="Comment with a GIF" />
+          <GifPicker onSelect={attachGif} onClose={() => setGifOpen(false)} title="Add a GIF" />
         </div>
       )}
       {emojiOpen && (
@@ -241,7 +233,7 @@ export default function CommentsDrawer({ post, onClose, targetCommentId }) {
       )}
       {stickerOpen && (
         <div className="cdrawer-gif-pop">
-          <GifPicker initialCat="saved" onSelect={sendGifNow} onClose={() => setStickerOpen(false)} title="Your saved GIFs ⭐" />
+          <GifPicker initialCat="saved" onSelect={attachGif} onClose={() => setStickerOpen(false)} title="Your saved GIFs ⭐" />
         </div>
       )}
 

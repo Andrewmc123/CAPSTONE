@@ -7,6 +7,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  /* above all app chrome (bottom nav 80, drawers 90, share 95) so a modal —
+     e.g. the login pop-up — fully covers the feed instead of layering under
+     the video caption / tabs that have their own z-index */
+  z-index: 1000;
 }
 
 #modal-background {
