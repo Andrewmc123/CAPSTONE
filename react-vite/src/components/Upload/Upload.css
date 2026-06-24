@@ -422,6 +422,14 @@ button.studio-alt-card:hover { border-color: var(--orange); }
   padding: 2px 4px;
 }
 .cam-modes button.on { color: var(--orange); }
+.cam-modes .cam-mode-live { display: inline-flex; align-items: center; gap: 5px; color: #fff; }
+.cam-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--heart);
+  box-shadow: 0 0 8px var(--heart);
+}
 
 /* photo-mode shutter */
 .cam-shutter.photo { color: #fff; border-color: #fff; }

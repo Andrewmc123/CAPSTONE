@@ -127,7 +127,6 @@ export default function Feed({ tab = "foryou" }) {
         <NavLink to="/" end className={({ isActive }) => `feed-tab ${isActive ? "active" : ""}`}>For You</NavLink>
         <NavLink to="/following" className={({ isActive }) => `feed-tab ${isActive ? "active" : ""}`}>Following</NavLink>
         <NavLink to="/network" className={({ isActive }) => `feed-tab ${isActive ? "active" : ""}`}>Network</NavLink>
-        <NavLink to="/live" className={({ isActive }) => `feed-tab ${isActive ? "active" : ""}`}>Live</NavLink>
         <NavLink to="/shop" className={({ isActive }) => `feed-tab ${isActive ? "active" : ""}`}>Shop</NavLink>
       </div>
 

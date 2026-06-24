@@ -3,7 +3,7 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
   FaHouse, FaCompass, FaUsers, FaInbox, FaUser,
-  FaMagnifyingGlass, FaCirclePlus, FaRightFromBracket, FaVideo, FaPaperPlane, FaTowerBroadcast,
+  FaMagnifyingGlass, FaCirclePlus, FaRightFromBracket, FaVideo, FaPaperPlane,
   FaSun, FaMoon, FaBagShopping,
 } from "react-icons/fa6";
 import { thunkLogout } from "../../redux/session";
@@ -91,9 +91,6 @@ export default function Sidebar() {
         </NavLink>
         <NavLink to="/network" className={({ isActive }) => `side-item ${isActive ? "active" : ""}`}>
           <FaUsers /> <span>Network</span>
-        </NavLink>
-        <NavLink to="/live" className={({ isActive }) => `side-item ${isActive ? "active" : ""}`}>
-          <FaTowerBroadcast /> <span>Live</span>
         </NavLink>
         <NavLink to="/shop" className={({ isActive }) => `side-item ${isActive ? "active" : ""}`}>
           <FaBagShopping /> <span>Shop</span>

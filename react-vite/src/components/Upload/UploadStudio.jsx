@@ -518,11 +518,13 @@ export default function UploadStudio() {
           {/* self-timer countdown */}
           {countdown > 0 && <div className="cam-countdown">{countdown}</div>}
 
-          {/* capture modes */}
+          {/* capture modes — slide across to take a photo, record, or go Live */}
           <div className="cam-modes">
             <button className={captureMode === "photo" ? "on" : ""} onClick={() => setCaptureMode("photo")}>Photo</button>
             <button className={captureMode === "video" ? "on" : ""} onClick={() => setCaptureMode("video")}>Video</button>
-            <button onClick={() => navigate("/live")}>Live</button>
+            <button className="cam-mode-live" onClick={() => navigate("/live")}>
+              <span className="cam-live-dot" /> Live
+            </button>
           </div>
 
           {/* bottom controls: gallery · shutter · GIF */}
