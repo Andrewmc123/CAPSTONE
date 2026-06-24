@@ -294,6 +294,154 @@ button.studio-alt-card:hover { border-color: var(--orange); }
   overflow-y: auto;
 }
 
+/* add-sound pill + top spacer */
+.cam-addsound {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 62%;
+  background: rgba(10, 10, 12, 0.5);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--line-soft);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cam-addsound svg { color: var(--orange); flex-shrink: 0; }
+.cam-top-spacer { width: 40px; flex-shrink: 0; }
+
+/* right control rail */
+.cam-rail {
+  position: absolute;
+  top: 76px;
+  right: 12px;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+.cam-rail-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+}
+.cam-rail-btn .crb-ic {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(20, 16, 28, 0.55);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.12s ease;
+}
+.cam-rail-btn:active .crb-ic { transform: scale(0.92); }
+.cam-rail-btn.on .crb-ic { background: var(--grad); color: #1b0a33; }
+
+/* effects strip (opens left of the rail) */
+.cam-effects {
+  position: absolute;
+  top: 80px;
+  right: 70px;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 58%;
+  overflow-y: auto;
+  padding: 8px;
+  background: rgba(10, 10, 12, 0.55);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+}
+.cam-effect {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 7px;
+  border-radius: 9px;
+}
+.cam-effect.on { background: var(--neon-soft); }
+.cam-effect-dot { width: 24px; height: 24px; border-radius: 50%; background: var(--grad); flex-shrink: 0; }
+
+/* self-timer countdown overlay */
+.cam-countdown {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 92px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
+  background: rgba(5, 3, 9, 0.25);
+}
+
+/* capture modes (Photo · Video · Live) */
+.cam-modes {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 104px;
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+.cam-modes button {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+  padding: 2px 4px;
+}
+.cam-modes button.on { color: var(--orange); }
+
+/* photo-mode shutter */
+.cam-shutter.photo { color: #fff; border-color: #fff; }
+.cam-shutter.photo .cam-shutter-dot { background: #fff; }
+
+/* sound picker sheet */
+.cam-sound-inner {
+  width: 100%;
+  background: var(--bg-elev);
+  border-radius: 18px 18px 0 0;
+  padding: 16px 14px calc(16px + env(safe-area-inset-bottom, 0px));
+  max-height: 78%;
+  display: flex;
+  flex-direction: column;
+}
+.cam-sheet-title { display: flex; align-items: center; gap: 8px; margin: 2px 0 12px; font-size: 17px; }
+.cam-sheet-title svg { color: var(--orange); }
+.cam-sound-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
+.cam-sound-done { margin-top: 12px; }
+
 @media (max-width: 768px) {
   .cam { max-width: none; max-height: calc(100dvh - var(--bottomnav-h) - env(safe-area-inset-bottom, 0px) - 120px); }
 }

@@ -2,9 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
-  FaCloudArrowUp, FaVideo, FaWandMagicSparkles, FaMusic, FaFont,
+  FaVideo, FaWandMagicSparkles, FaMusic, FaFont,
   FaArrowLeft, FaStop, FaXmark, FaPlay, FaPause, FaImage, FaScissors,
-  FaCameraRotate, FaEllipsisVertical,
+  FaCameraRotate, FaBolt, FaClock, FaCircleHalfStroke,
 } from "react-icons/fa6";
 import { thunkCreatePost } from "../../redux/posts";
 import { FILTERS, TEXT_COLORS, TEXT_FONTS, filterCss } from "../../utils/filters";
@@ -34,7 +34,16 @@ export default function UploadStudio() {
   const [facingMode, setFacingMode] = useState("user");
   const [camError, setCamError] = useState("");
   const [camGifOpen, setCamGifOpen] = useState(false);
-  const [sideOpen, setSideOpen] = useState(false);
+  // camera controls (rail + modes)
+  const [captureMode, setCaptureMode] = useState("video"); // video | photo
+  const [flashOn, setFlashOn] = useState(false);
+  const [beautyOn, setBeautyOn] = useState(false);
+  const [camEffect, setCamEffect] = useState("none");
+  const [effectsOpen, setEffectsOpen] = useState(false);
+  const [timerLen, setTimerLen] = useState(0); // 0 | 3 | 10
+  const [countdown, setCountdown] = useState(0);
+  const [camSoundOpen, setCamSoundOpen] = useState(false);
+  const countdownRef = useRef(null);
   const fileInputRef = useRef(null);
   const liveRef = useRef(null);
   const recRef = useRef(null);
@@ -111,6 +120,58 @@ export default function UploadStudio() {
     startCamera(next);
   };
 
+  // live CSS look applied to the camera preview (beauty + effect)
+  const liveFilterCss = () => {
+    const parts = [];
+    if (beautyOn) parts.push("saturate(1.15) brightness(1.08) contrast(1.03)");
+    if (camEffect !== "none") parts.push(filterCss(camEffect));
+    return parts.join(" ") || "none";
+  };
+
+  const toggleFlash = async () => {
+    const next = !flashOn;
+    setFlashOn(next);
+    try {
+      const track = streamRef.current?.getVideoTracks?.()[0];
+      if (track?.applyConstraints) await track.applyConstraints({ advanced: [{ torch: next }] });
+    } catch { /* torch isn't supported on this device — flag stays as a UI cue */ }
+  };
+
+  const cycleTimer = () => setTimerLen((t) => (t === 0 ? 3 : t === 3 ? 10 : 0));
+
+  const capturePhoto = () => {
+    const v = liveRef.current;
+    if (!v || !v.videoWidth) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = v.videoWidth;
+    canvas.height = v.videoHeight;
+    const ctx = canvas.getContext("2d");
+    if (facingMode === "user") { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
+    ctx.filter = liveFilterCss();
+    ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob((blob) => {
+      if (blob) acceptFile(new File([blob], `aura-photo-${Date.now()}.jpg`, { type: "image/jpeg" }));
+    }, "image/jpeg", 0.9);
+  };
+
+  const runCountdown = (then) => {
+    clearInterval(countdownRef.current);
+    setCountdown(timerLen);
+    countdownRef.current = setInterval(() => {
+      setCountdown((c) => {
+        if (c <= 1) { clearInterval(countdownRef.current); then(); return 0; }
+        return c - 1;
+      });
+    }, 1000);
+  };
+
+  // shutter handler: photo or video, optionally after a self-timer countdown
+  const beginCapture = () => {
+    const action = captureMode === "photo" ? capturePhoto : startRecording;
+    if (timerLen > 0) runCountdown(action);
+    else action();
+  };
+
   // open the camera the moment we land on the capture step
   useEffect(() => {
     if (step === "select" && user) startCamera(facingMode);
@@ -153,6 +214,7 @@ export default function UploadStudio() {
 
   const closeRecorder = useCallback(() => {
     clearInterval(timerRef.current);
+    clearInterval(countdownRef.current);
     setRecording(false);
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
@@ -391,6 +453,7 @@ export default function UploadStudio() {
           <video
             ref={liveRef}
             className={`cam-live ${facingMode === "user" ? "mirror" : ""} ${dragOver ? "drag" : ""}`}
+            style={{ filter: liveFilterCss() }}
             muted
             playsInline
           />
@@ -402,35 +465,64 @@ export default function UploadStudio() {
             </div>
           )}
 
-          {/* top bar: close · status · flip */}
+          {/* top bar: close · add sound (or rec timer) · spacer */}
           <div className="cam-top">
             <button className="cam-icon" onClick={() => navigate(-1)} aria-label="Close">
               <FaXmark />
             </button>
-            {recording
-              ? <span className="cam-timer">● {recordSecs}s</span>
-              : <span className="cam-mode"><FaVideo /> Video</span>}
-            <button className="cam-icon" onClick={flipCamera} aria-label="Flip camera">
-              <FaCameraRotate />
+            {recording ? (
+              <span className="cam-timer">● {recordSecs}s</span>
+            ) : (
+              <button className="cam-addsound" onClick={() => setCamSoundOpen(true)}>
+                <FaMusic /> {pickedSound ? pickedSound.name : "Add sound"}
+              </button>
+            )}
+            <span className="cam-top-spacer" />
+          </div>
+
+          {/* right control rail */}
+          <div className="cam-rail">
+            <button className="cam-rail-btn" onClick={flipCamera}>
+              <span className="crb-ic"><FaCameraRotate /></span><span>Flip</span>
+            </button>
+            <button className={`cam-rail-btn ${flashOn ? "on" : ""}`} onClick={toggleFlash}>
+              <span className="crb-ic"><FaBolt /></span><span>Flash</span>
+            </button>
+            <button className={`cam-rail-btn ${beautyOn ? "on" : ""}`} onClick={() => setBeautyOn((v) => !v)}>
+              <span className="crb-ic"><FaWandMagicSparkles /></span><span>Beauty</span>
+            </button>
+            <button className={`cam-rail-btn ${timerLen ? "on" : ""}`} onClick={cycleTimer}>
+              <span className="crb-ic"><FaClock /></span><span>{timerLen ? `${timerLen}s` : "Timer"}</span>
+            </button>
+            <button className={`cam-rail-btn ${effectsOpen || camEffect !== "none" ? "on" : ""}`} onClick={() => setEffectsOpen((v) => !v)}>
+              <span className="crb-ic"><FaCircleHalfStroke /></span><span>Effects</span>
             </button>
           </div>
 
-          {/* side dropdown: upload · GIF · flip */}
-          <div className={`cam-side ${sideOpen ? "open" : ""}`}>
-            <button className="cam-side-toggle" onClick={() => setSideOpen((v) => !v)} aria-label="More options">
-              <FaEllipsisVertical />
-            </button>
-            <div className="cam-side-menu">
-              <button onClick={() => { setSideOpen(false); fileInputRef.current?.click(); }}>
-                <FaCloudArrowUp /><span>Upload</span>
-              </button>
-              <button onClick={() => { setSideOpen(false); setCamGifOpen(true); }}>
-                <FaWandMagicSparkles /><span>GIF</span>
-              </button>
-              <button onClick={() => { setSideOpen(false); flipCamera(); }}>
-                <FaCameraRotate /><span>Flip</span>
-              </button>
+          {/* effects strip */}
+          {effectsOpen && (
+            <div className="cam-effects">
+              {Object.entries(FILTERS).map(([key, f]) => (
+                <button
+                  key={key}
+                  className={`cam-effect ${camEffect === key ? "on" : ""}`}
+                  onClick={() => setCamEffect(key)}
+                >
+                  <span className="cam-effect-dot" style={{ filter: f.css === "none" ? "none" : f.css }} />
+                  {f.label}
+                </button>
+              ))}
             </div>
+          )}
+
+          {/* self-timer countdown */}
+          {countdown > 0 && <div className="cam-countdown">{countdown}</div>}
+
+          {/* capture modes */}
+          <div className="cam-modes">
+            <button className={captureMode === "photo" ? "on" : ""} onClick={() => setCaptureMode("photo")}>Photo</button>
+            <button className={captureMode === "video" ? "on" : ""} onClick={() => setCaptureMode("video")}>Video</button>
+            <button onClick={() => navigate("/live")}>Live</button>
           </div>
 
           {/* bottom controls: gallery · shutter · GIF */}
@@ -451,7 +543,11 @@ export default function UploadStudio() {
                 <FaStop />
               </button>
             ) : (
-              <button className="cam-shutter" onClick={startRecording} aria-label="Record">
+              <button
+                className={`cam-shutter ${captureMode === "photo" ? "photo" : ""}`}
+                onClick={beginCapture}
+                aria-label={captureMode === "photo" ? "Take photo" : "Record"}
+              >
                 <span className="cam-shutter-dot" />
               </button>
             )}
@@ -477,6 +573,33 @@ export default function UploadStudio() {
                   }}
                   onClose={() => setCamGifOpen(false)}
                 />
+              </div>
+            </div>
+          )}
+
+          {/* sound picker sheet */}
+          {camSoundOpen && (
+            <div className="cam-gif-sheet" onClick={() => setCamSoundOpen(false)}>
+              <div className="cam-sound-inner" onClick={(e) => e.stopPropagation()}>
+                <h3 className="cam-sheet-title"><FaMusic /> Add a sound</h3>
+                <div className="cam-sound-list">
+                  {sounds.length === 0 && <p className="studio-hint">No sounds available right now.</p>}
+                  {sounds.map((s) => (
+                    <button
+                      key={s.id}
+                      className={`sound-row ${pickedSound?.id === s.id ? "on" : ""}`}
+                      onClick={() => setPickedSound((cur) => (cur?.id === s.id ? null : s))}
+                    >
+                      <span className="sound-emoji">{s.emoji}</span>
+                      <span className="sound-meta">
+                        <strong>{s.name}</strong>
+                        <em>{s.artist}</em>
+                      </span>
+                      {pickedSound?.id === s.id && <span className="sound-on">✓</span>}
+                    </button>
+                  ))}
+                </div>
+                <button className="btn btn-grad cam-sound-done" onClick={() => setCamSoundOpen(false)}>Done</button>
               </div>
             </div>
           )}

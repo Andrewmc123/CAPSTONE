@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { FaFire, FaHashtag, FaMusic, FaMagnifyingGlass, FaPlus, FaCheck, FaXmark } from "react-icons/fa6";
+import { FaFire, FaHashtag, FaMusic, FaMagnifyingGlass, FaPlus, FaCheck, FaXmark, FaSliders } from "react-icons/fa6";
 import { fetchExplore, selectCollection } from "../../redux/posts";
 import { thunkToggleFollow, selectIsFollowing } from "../../redux/follows";
 import { useModal } from "../../context/Modal";
@@ -98,7 +98,7 @@ export default function Explore() {
     <div className="page explore-page">
       <header className="explore-head">
         <h1>Explore</h1>
-        <p className="text-dim">Find creators, follow new people and discover videos across Aura</p>
+        <button className="explore-filter" aria-label="Filters"><FaSliders /></button>
       </header>
 
       {/* search bar — find users by name and add them */}
@@ -107,7 +107,7 @@ export default function Explore() {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search creators, videos or #hashtags…"
+          placeholder="Search Aura"
           aria-label="Search Aura"
         />
         {query && (
@@ -174,15 +174,10 @@ export default function Explore() {
         /* ---------- default explore ---------- */
         <>
           {trending && trending.hashtags?.length > 0 && (
-            <div className="explore-trending-rail">
-              {trending.hashtags.slice(0, 8).map((h) => (
-                <Link to={`/tag/${h.tag}`} key={h.tag} className="trend-card">
-                  <span className="trend-icon"><FaHashtag /></span>
-                  <div className="trend-meta">
-                    <strong>#{h.tag}</strong>
-                    <span>{compact(h.views)} views · {h.count} videos</span>
-                  </div>
-                  <FaFire className="trend-fire" />
+            <div className="explore-trend-chips">
+              {trending.hashtags.slice(0, 10).map((h, i) => (
+                <Link to={`/tag/${h.tag}`} key={h.tag} className={`chip ${i === 0 ? "chip-hot" : ""}`}>
+                  {i === 0 ? <FaFire /> : <FaHashtag />} {h.tag}
                 </Link>
               ))}
             </div>

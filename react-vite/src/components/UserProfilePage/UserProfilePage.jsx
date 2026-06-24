@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
-  FaUserPlus, FaUserCheck, FaPen, FaShare, FaLock, FaHeart, FaBookmark, FaClapperboard, FaPaperPlane, FaRightFromBracket, FaImages,
+  FaUserPlus, FaUserCheck, FaPen, FaShare, FaLock, FaHeart, FaBookmark, FaClapperboard, FaPaperPlane, FaRightFromBracket, FaImages, FaCircleCheck,
 } from "react-icons/fa6";
 import {
   fetchUserVideos, fetchLikedVideos, fetchBookmarkedVideos, selectCollection,
@@ -104,6 +104,8 @@ export default function UserProfilePage() {
   }
 
   const followerCount = profile.followers_count;
+  const displayName = `${profile.firstname || ""} ${profile.lastname || ""}`.trim() || `@${profile.username}`;
+  const verified = profile.is_verified || (followerCount || 0) >= 10000;
 
   return (
     <div className="page profile-page">
@@ -113,91 +115,95 @@ export default function UserProfilePage() {
           src={profile.profile_img || `https://i.pravatar.cc/200?u=${profile.id}`}
           alt={profile.username}
         />
-        <div className="profile-id">
-          <h1>@{profile.username}</h1>
-          <p className="profile-name">{profile.firstname} {profile.lastname}</p>
 
-          <div className="profile-actions">
-            {isOwn ? (
-              <button
-                className="btn btn-ghost"
-                onClick={() => setModalContent(
-                  <EditProfileModal profile={profile} onSaved={setProfile} />
-                )}
-              >
-                <FaPen /> Edit profile
+        <h1 className="profile-name-row">
+          {displayName}
+          {verified && <FaCircleCheck className="profile-verified" title="Verified" />}
+        </h1>
+        <p className="profile-handle">
+          @{profile.username}{profile.city ? ` · ${profile.city}` : ""}
+        </p>
+
+        <div className="profile-stats">
+          {isOwn ? (
+            <>
+              <button className="profile-stat" onClick={() => setModalContent(<FollowListModal userId={userId} mode="following" />)}>
+                <strong>{compact(profile.following_count)}</strong><span>Following</span>
               </button>
-            ) : (
-              <>
-                <button className={`btn ${isFollowing ? "btn-ghost" : "btn-primary"}`} onClick={onFollow}>
-                  {isFollowing ? <><FaUserCheck /> Following</> : <><FaUserPlus /> Follow</>}
-                </button>
-                {sessionUser && (
-                  <Link className="btn btn-ghost" to={`/messages/${userId}`}>
-                    <FaPaperPlane /> Message
-                  </Link>
-                )}
-              </>
-            )}
-            <button className="btn btn-ghost" onClick={shareProfile} title="Copy profile link">
-              <FaShare /> Share
+              <button className="profile-stat" onClick={() => setModalContent(<FollowListModal userId={userId} mode="followers" />)}>
+                <strong>{compact(followerCount)}</strong><span>Followers</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <span className="profile-stat"><strong>{compact(profile.following_count)}</strong><span>Following</span></span>
+              <span className="profile-stat"><strong>{compact(followerCount)}</strong><span>Followers</span></span>
+            </>
+          )}
+          <span className="profile-stat aura"><strong>{compact(profile.likes_received)}</strong><span>Aura</span></span>
+        </div>
+
+        <div className="profile-actions">
+          {isOwn ? (
+            <button
+              className="btn btn-ghost"
+              onClick={() => setModalContent(
+                <EditProfileModal profile={profile} onSaved={setProfile} />
+              )}
+            >
+              <FaPen /> Edit profile
             </button>
-            {isOwn && <ThemeToggle variant="row" />}
-            {isOwn && (
-              <button className="btn btn-ghost profile-logout" onClick={logout} title="Log out">
-                <FaRightFromBracket /> Log out
+          ) : (
+            <>
+              <button className={`btn ${isFollowing ? "btn-ghost" : "btn-primary"}`} onClick={onFollow}>
+                {isFollowing ? <><FaUserCheck /> Following</> : <><FaUserPlus /> Follow</>}
               </button>
-            )}
-          </div>
-
-          <div className="profile-stats">
-            {isOwn ? (
-              <>
-                <button className="profile-stat" onClick={() => setModalContent(<FollowListModal userId={userId} mode="following" />)}>
-                  <strong>{compact(profile.following_count)}</strong> Following
-                </button>
-                <button className="profile-stat" onClick={() => setModalContent(<FollowListModal userId={userId} mode="followers" />)}>
-                  <strong>{compact(followerCount)}</strong> Followers
-                </button>
-              </>
-            ) : (
-              <>
-                <span className="profile-stat"><strong>{compact(profile.following_count)}</strong> Following</span>
-                <span className="profile-stat"><strong>{compact(followerCount)}</strong> Followers</span>
-              </>
-            )}
-            <span className="profile-stat"><strong>{compact(profile.likes_received)}</strong> Aura</span>
-          </div>
-
-          {profile.bio && <p className="profile-bio">{profile.bio}</p>}
-
-          {isOwn && visitors.length > 0 && (
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 13, color: "var(--text-dim)" }}>
-                👀 {visitors.length} recent profile {visitors.length === 1 ? "view" : "views"}
-              </span>
-              <div style={{ display: "flex" }}>
-                {visitors.slice(0, 8).map((v, i) => (
-                  <Link
-                    key={v.id}
-                    to={`/users/${v.visitor?.id}`}
-                    title={`@${v.visitor?.username}`}
-                    style={{ marginLeft: i === 0 ? 0 : -8, zIndex: 8 - i }}
-                  >
-                    <img
-                      className="avatar"
-                      width={28}
-                      height={28}
-                      style={{ border: "2px solid var(--bg, #0b0b0f)" }}
-                      src={v.visitor?.profile_img || `https://i.pravatar.cc/40?u=${v.visitor?.id}`}
-                      alt={v.visitor?.username}
-                    />
-                  </Link>
-                ))}
-              </div>
-            </div>
+              {sessionUser && (
+                <Link className="btn btn-ghost" to={`/messages/${userId}`}>
+                  <FaPaperPlane /> Message
+                </Link>
+              )}
+            </>
+          )}
+          {isOwn && <ThemeToggle variant="row" />}
+          <button className="btn btn-ghost" onClick={shareProfile} title="Copy profile link">
+            <FaShare /> Share
+          </button>
+          {isOwn && (
+            <button className="btn btn-ghost profile-logout" onClick={logout} title="Log out">
+              <FaRightFromBracket /> Log out
+            </button>
           )}
         </div>
+
+        {profile.bio && <p className="profile-bio">{profile.bio}</p>}
+
+        {isOwn && visitors.length > 0 && (
+          <div className="profile-visitors">
+            <span style={{ fontSize: 13, color: "var(--text-dim)" }}>
+              👀 {visitors.length} recent profile {visitors.length === 1 ? "view" : "views"}
+            </span>
+            <div style={{ display: "flex" }}>
+              {visitors.slice(0, 8).map((v, i) => (
+                <Link
+                  key={v.id}
+                  to={`/users/${v.visitor?.id}`}
+                  title={`@${v.visitor?.username}`}
+                  style={{ marginLeft: i === 0 ? 0 : -8, zIndex: 8 - i }}
+                >
+                  <img
+                    className="avatar"
+                    width={28}
+                    height={28}
+                    style={{ border: "2px solid var(--bg, #0b0b0f)" }}
+                    src={v.visitor?.profile_img || `https://i.pravatar.cc/40?u=${v.visitor?.id}`}
+                    alt={v.visitor?.username}
+                  />
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </header>
 
       <nav className="profile-tabs">
