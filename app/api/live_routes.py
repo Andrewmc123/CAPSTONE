@@ -7,6 +7,7 @@ from flask_login import login_required, current_user
 from datetime import datetime
 
 from app.models import db, LiveSession, LiveViewer, LiveMessage, LiveReport
+from app.gifts import gift_by_key, GIFTS_UNLOCK_AURA
 
 live_routes = Blueprint('live', __name__)
 
@@ -120,6 +121,51 @@ def post_chat(session_id):
     db.session.add(msg)
     db.session.commit()
     return jsonify(msg.to_dict()), 201
+
+
+@live_routes.route('/<int:session_id>/gift', methods=['POST'])
+@login_required
+def send_gift(session_id):
+    """Send a gift to the host: spends the sender's Bolts, credits the host Glow
+    (their tier's share) + Aura, and drops an animated message in the chat.
+    Gated — the host must have unlocked gifts (Rising tier)."""
+    s = LiveSession.query.get(session_id)
+    if not s or not s.is_live:
+        return jsonify({'error': 'Live has ended'}), 404
+    host = s.host
+    if not host or host.id == current_user.id:
+        return jsonify({'error': "You can't gift your own live"}), 400
+
+    gift = gift_by_key((request.get_json() or {}).get('gift_key'))
+    if not gift:
+        return jsonify({'error': 'Unknown gift'}), 400
+
+    if host.aura_score() < GIFTS_UNLOCK_AURA:
+        return jsonify({'error': f"@{host.username} unlocks gifts at "
+                                 f"{GIFTS_UNLOCK_AURA:,} Aura"}), 403
+    if (current_user.bolts or 0) < gift['bolts']:
+        return jsonify({'error': 'Not enough Bolts', 'need_bolts': True}), 402
+
+    # Move the value: sender pays Bolts; host gains Aura (clout) + Glow (cash share).
+    current_user.bolts -= gift['bolts']
+    host.gift_aura = (host.gift_aura or 0) + gift['aura']
+    host.glow = (host.glow or 0) + round(gift['bolts'] * host.tier()['share'])
+
+    msg = LiveMessage(
+        session_id=session_id,
+        user_id=current_user.id,
+        content=f"sent {gift['name']}",
+        gift_key=gift['key'],
+    )
+    db.session.add(msg)
+    db.session.commit()
+
+    return jsonify({
+        'message': msg.to_dict(),
+        'gift': gift,
+        'bolts': current_user.bolts,
+        'host_aura': host.aura_score(),
+    }), 201
 
 
 @live_routes.route('/<int:session_id>/chat/toggle', methods=['POST'])

@@ -2,6 +2,7 @@ from .db import db, environment, SCHEMA, add_prefix_for_prod
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from datetime import datetime
+from app.gifts import tier_for, GIFTS_UNLOCK_AURA
 
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
@@ -19,6 +20,12 @@ class User(db.Model, UserMixin):
     bio = db.Column(db.String(255), default='')
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+
+    # Aura economy — Bolts (viewer coins), Glow (creator cashable), gift_aura
+    # (clout earned from gifts received, added on top of likes).
+    bolts = db.Column(db.Integer, default=500, nullable=False)
+    glow = db.Column(db.Integer, default=0, nullable=False)
+    gift_aura = db.Column(db.Integer, default=0, nullable=False)
 
     # Existing relationships
     posts = db.relationship('Post', back_populates='user', cascade="all, delete-orphan")
@@ -85,6 +92,17 @@ class User(db.Model, UserMixin):
     def total_likes_received(self):
         return sum(len(post.likes) for post in self.posts)
 
+    def aura_score(self):
+        """Total Aura (clout) = likes received + Aura earned from gifts."""
+        return self.total_likes_received() + (self.gift_aura or 0)
+
+    def tier(self):
+        return tier_for(self.aura_score())
+
+    def gifts_unlocked(self):
+        """A creator's lives accept gifts once they reach the Rising tier."""
+        return self.aura_score() >= GIFTS_UNLOCK_AURA
+
     def to_dict(self):
         # Collect accepted friends from both directions, de-duplicated by user
         # id. A friendship can be stored as two rows (sent + received) and the
@@ -112,6 +130,10 @@ class User(db.Model, UserMixin):
 
         accepted_friends = list(friends_by_id.values())
 
+        likes = self.total_likes_received()
+        aura = likes + (self.gift_aura or 0)
+        tier = tier_for(aura)
+
         return {
             'id': self.id,
             'username': self.username,
@@ -126,7 +148,13 @@ class User(db.Model, UserMixin):
             'friends_count': len(accepted_friends),
             'followers_count': len(self.followers),
             'following_count': len(self.following),
-            'likes_received': self.total_likes_received(),
+            'likes_received': likes,
+            'aura': aura,
+            'tier': tier['name'],
+            'tier_key': tier['key'],
+            'gifts_unlocked': aura >= GIFTS_UNLOCK_AURA,
+            'bolts': self.bolts,
+            'glow': self.glow,
             'video_count': len(self.posts),
             'vault_people_count': len(self.vault_people),
             'vault_photos_count': len(self.vault_photos)

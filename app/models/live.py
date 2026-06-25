@@ -38,6 +38,10 @@ class LiveSession(db.Model):
             'max_viewers': self.MAX_VIEWERS,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'host': self.host.to_dict_basic() if self.host else None,
+            # Aura economy: can viewers gift this host, and what tier are they?
+            'host_aura': self.host.aura_score() if self.host else 0,
+            'host_tier': self.host.tier()['name'] if self.host else None,
+            'gifts_unlocked': self.host.gifts_unlocked() if self.host else False,
         }
         if include_frame:
             data['current_frame'] = self.current_frame
@@ -85,6 +89,7 @@ class LiveMessage(db.Model):
     session_id = db.Column(db.Integer, db.ForeignKey(add_prefix_for_prod('live_sessions.id')), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey(add_prefix_for_prod('users.id')), nullable=False)
     content = db.Column(db.String(500), nullable=False)
+    gift_key = db.Column(db.String(40))   # set when this message is a sent gift
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     session = db.relationship('LiveSession', back_populates='messages')
@@ -95,6 +100,7 @@ class LiveMessage(db.Model):
             'id': self.id,
             'user_id': self.user_id,
             'content': self.content,
+            'gift_key': self.gift_key,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'user': self.user.to_dict_basic() if self.user else None,
         }

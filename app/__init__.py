@@ -21,6 +21,7 @@ from .api.upload_routes import upload_routes
 from .api.vault_routes import vault_routes
 from .api.message_routes import message_routes
 from .api.live_routes import live_routes
+from .api.wallet_routes import wallet_routes
 from .api.shop_routes import shop_routes
 from .api.group_routes import group_routes
 from .seeds import seed_commands
@@ -54,6 +55,7 @@ app.register_blueprint(upload_routes, url_prefix='/api/uploads')
 app.register_blueprint(vault_routes, url_prefix='/api/vault')
 app.register_blueprint(message_routes, url_prefix='/api/messages')
 app.register_blueprint(live_routes, url_prefix='/api/live')
+app.register_blueprint(wallet_routes, url_prefix='/api/wallet')
 app.register_blueprint(shop_routes, url_prefix='/api/shop')
 app.register_blueprint(group_routes, url_prefix='/api/groups')
 

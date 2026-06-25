@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
-  FaUserPlus, FaUserCheck, FaPen, FaShare, FaLock, FaHeart, FaBookmark, FaClapperboard, FaPaperPlane, FaRightFromBracket, FaImages, FaCircleCheck,
+  FaUserPlus, FaUserCheck, FaPen, FaShare, FaLock, FaHeart, FaBookmark, FaClapperboard, FaPaperPlane, FaRightFromBracket, FaImages, FaCircleCheck, FaBolt,
 } from "react-icons/fa6";
 import {
   fetchUserVideos, fetchLikedVideos, fetchBookmarkedVideos, selectCollection,
@@ -124,6 +124,12 @@ export default function UserProfilePage() {
           @{profile.username}{profile.city ? ` · ${profile.city}` : ""}
         </p>
 
+        {profile.tier && (
+          <span className={`profile-tier tier-${profile.tier_key || "standard"}`}>
+            <FaBolt /> {profile.tier}
+          </span>
+        )}
+
         <div className="profile-stats">
           {isOwn ? (
             <>
@@ -140,7 +146,7 @@ export default function UserProfilePage() {
               <span className="profile-stat"><strong>{compact(followerCount)}</strong><span>Followers</span></span>
             </>
           )}
-          <span className="profile-stat aura"><strong>{compact(profile.likes_received)}</strong><span>Aura</span></span>
+          <span className="profile-stat aura"><strong>{compact(profile.aura ?? profile.likes_received)}</strong><span>Aura</span></span>
         </div>
 
         <div className="profile-actions">

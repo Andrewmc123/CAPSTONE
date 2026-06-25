@@ -27,7 +27,31 @@
   font-size: 22px;
 }
 .profile-verified { color: var(--neon); font-size: 18px; filter: drop-shadow(0 0 6px rgba(168, 85, 247, 0.5)); }
-.profile-handle { margin: 0 0 16px; color: var(--text-dim); font-size: 14px; }
+.profile-handle { margin: 0 0 10px; color: var(--text-dim); font-size: 14px; }
+
+.profile-tier {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 14px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  color: var(--text-dim);
+}
+.profile-tier svg { font-size: 11px; }
+.profile-tier.tier-rising { color: var(--neon); border-color: rgba(168, 85, 247, 0.4); }
+.profile-tier.tier-pro { color: #e3b8ff; border-color: rgba(199, 125, 255, 0.5); background: var(--neon-soft); }
+.profile-tier.tier-icon {
+  color: #1b0a33;
+  background: var(--grad);
+  border-color: transparent;
+}
 
 .profile-stats { display: flex; gap: 34px; justify-content: center; margin-bottom: 18px; }
 .profile-stat {
