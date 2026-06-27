@@ -47,6 +47,12 @@ def seed_users():
          "firstname": "Penny", "lastname": "Barker", "profile_img": "https://i.pravatar.cc/300?img=32",
          "gift_aura": 920000,
          "bio": "The official unofficial pet page 🐶🐱 your daily serotonin"},
+        # Demo creator with the 24-hour live feature unlocked (10K followers,
+        # Icon-tier Aura). Log in as aria@aa.io / password to run a 24h live.
+        {"username": "aria.live", "email": "aria@aa.io", "password": "password",
+         "firstname": "Aria", "lastname": "Vega", "profile_img": "https://i.pravatar.cc/300?img=45",
+         "gift_aura": 2500000, "extra_followers": 10000, "bolts": 5000,
+         "bio": "24/7 good vibes ✨ your fav 24-hour livestreamer · #aura"},
     ]
 
     for u in users_data:

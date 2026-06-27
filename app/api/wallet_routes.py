@@ -7,7 +7,10 @@ from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 
 from app.models import db
-from app.gifts import GIFT_CATALOG, TIERS, GIFTS_UNLOCK_AURA, BOLT_PACKS
+from app.gifts import (
+    GIFT_CATALOG, TIERS, GIFTS_UNLOCK_AURA, BOLT_PACKS, FREE_GIFT_KEY,
+    LIVE_24H_MIN_FOLLOWERS, LIVE_24H_MIN_AURA,
+)
 
 wallet_routes = Blueprint('wallet', __name__)
 
@@ -18,11 +21,16 @@ def wallet_state(user):
         'bolts': user.bolts,
         'glow': user.glow,
         'aura': user.aura_score(),
+        'followers': user.follower_count(),
         'tier': tier['name'],
         'tier_key': tier['key'],
         'share': tier['share'],
         'gifts_unlocked': user.gifts_unlocked(),
         'unlock_aura': GIFTS_UNLOCK_AURA,
+        'can_24h_live': user.can_24h_live(),
+        'free_gift_key': FREE_GIFT_KEY,
+        'free_gift_ready': user.free_gift_ready(),
+        'free_gift_resets_at': user.free_gift_resets_at(),
     }
 
 
@@ -41,6 +49,8 @@ def gift_catalog():
         'tiers': TIERS,
         'unlock_aura': GIFTS_UNLOCK_AURA,
         'packs': BOLT_PACKS,
+        'free_gift_key': FREE_GIFT_KEY,
+        'live_24h': {'min_followers': LIVE_24H_MIN_FOLLOWERS, 'min_aura': LIVE_24H_MIN_AURA},
     })
 
 

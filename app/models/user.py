@@ -1,8 +1,11 @@
 from .db import db, environment, SCHEMA, add_prefix_for_prod
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
-from datetime import datetime
-from app.gifts import tier_for, GIFTS_UNLOCK_AURA
+from datetime import datetime, timedelta
+from app.gifts import (
+    tier_for, GIFTS_UNLOCK_AURA,
+    LIVE_24H_MIN_FOLLOWERS, LIVE_24H_MIN_AURA, FREE_GIFT_COOLDOWN_HOURS,
+)
 
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
@@ -26,6 +29,11 @@ class User(db.Model, UserMixin):
     bolts = db.Column(db.Integer, default=500, nullable=False)
     glow = db.Column(db.Integer, default=0, nullable=False)
     gift_aura = db.Column(db.Integer, default=0, nullable=False)
+
+    # Base/seeded follower count (added on top of real Follow rows) + the
+    # daily-free-gift cooldown timestamp.
+    extra_followers = db.Column(db.Integer, default=0, nullable=False)
+    free_gift_used_at = db.Column(db.DateTime)
 
     # Existing relationships
     posts = db.relationship('Post', back_populates='user', cascade="all, delete-orphan")
@@ -103,6 +111,27 @@ class User(db.Model, UserMixin):
         """A creator's lives accept gifts once they reach the Rising tier."""
         return self.aura_score() >= GIFTS_UNLOCK_AURA
 
+    def follower_count(self):
+        """Real followers plus any seeded/base followers."""
+        return len(self.followers) + (self.extra_followers or 0)
+
+    def can_24h_live(self):
+        """24-hour live unlocks at enough followers AND enough Aura."""
+        return (self.follower_count() >= LIVE_24H_MIN_FOLLOWERS
+                and self.aura_score() >= LIVE_24H_MIN_AURA)
+
+    def free_gift_ready(self):
+        """Has this user's daily free gift recharged?"""
+        if not self.free_gift_used_at:
+            return True
+        return datetime.utcnow() - self.free_gift_used_at >= timedelta(hours=FREE_GIFT_COOLDOWN_HOURS)
+
+    def free_gift_resets_at(self):
+        """ISO time the next free gift is available (None if ready now)."""
+        if self.free_gift_ready() or not self.free_gift_used_at:
+            return None
+        return (self.free_gift_used_at + timedelta(hours=FREE_GIFT_COOLDOWN_HOURS)).isoformat()
+
     def to_dict(self):
         # Collect accepted friends from both directions, de-duplicated by user
         # id. A friendship can be stored as two rows (sent + received) and the
@@ -146,13 +175,16 @@ class User(db.Model, UserMixin):
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
             'friends': accepted_friends,
             'friends_count': len(accepted_friends),
-            'followers_count': len(self.followers),
+            'followers_count': self.follower_count(),
             'following_count': len(self.following),
             'likes_received': likes,
             'aura': aura,
             'tier': tier['name'],
             'tier_key': tier['key'],
             'gifts_unlocked': aura >= GIFTS_UNLOCK_AURA,
+            'can_24h_live': self.can_24h_live(),
+            'free_gift_ready': self.free_gift_ready(),
+            'free_gift_resets_at': self.free_gift_resets_at(),
             'bolts': self.bolts,
             'glow': self.glow,
             'video_count': len(self.posts),
@@ -168,5 +200,5 @@ class User(db.Model, UserMixin):
             'firstname': self.firstname,
             'lastname': self.lastname,
             'bio': self.bio or '',
-            'followers_count': len(self.followers),
+            'followers_count': self.follower_count(),
         }

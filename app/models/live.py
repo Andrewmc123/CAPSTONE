@@ -20,6 +20,14 @@ class LiveSession(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     ended_at = db.Column(db.DateTime)
 
+    # 24-hour live mode + the stats it tracks across the stream.
+    is_24h = db.Column(db.Boolean, default=False, nullable=False)
+    ends_at = db.Column(db.DateTime)            # start + 24h, drives the countdown
+    peak_viewers = db.Column(db.Integer, default=0, nullable=False)
+    start_aura = db.Column(db.Integer, default=0, nullable=False)        # host Aura snapshot at start
+    start_followers = db.Column(db.Integer, default=0, nullable=False)   # host followers snapshot at start
+    rewards_paid = db.Column(db.Boolean, default=False, nullable=False)  # top-supporter payout done once
+
     host = db.relationship('User', backref='live_sessions')
     viewers = db.relationship('LiveViewer', back_populates='session', cascade='all, delete-orphan')
     messages = db.relationship('LiveMessage', back_populates='session', cascade='all, delete-orphan')
@@ -42,6 +50,12 @@ class LiveSession(db.Model):
             'host_aura': self.host.aura_score() if self.host else 0,
             'host_tier': self.host.tier()['name'] if self.host else None,
             'gifts_unlocked': self.host.gifts_unlocked() if self.host else False,
+            # 24-hour live mode + live stats.
+            'is_24h': self.is_24h,
+            'ends_at': self.ends_at.isoformat() if self.ends_at else None,
+            'peak_viewers': self.peak_viewers or 0,
+            'aura_gained': max(0, self.host.aura_score() - (self.start_aura or 0)) if (self.is_24h and self.host) else 0,
+            'followers_gained': max(0, self.host.follower_count() - (self.start_followers or 0)) if (self.is_24h and self.host) else 0,
         }
         if include_frame:
             data['current_frame'] = self.current_frame
@@ -90,6 +104,7 @@ class LiveMessage(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey(add_prefix_for_prod('users.id')), nullable=False)
     content = db.Column(db.String(500), nullable=False)
     gift_key = db.Column(db.String(40))   # set when this message is a sent gift
+    free = db.Column(db.Boolean, default=False, nullable=False)   # sent via the daily free gift
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     session = db.relationship('LiveSession', back_populates='messages')
@@ -101,6 +116,7 @@ class LiveMessage(db.Model):
             'user_id': self.user_id,
             'content': self.content,
             'gift_key': self.gift_key,
+            'free': self.free,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'user': self.user.to_dict_basic() if self.user else None,
         }

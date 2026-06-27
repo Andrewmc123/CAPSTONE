@@ -4,12 +4,69 @@ video frames, live chat, and host moderation (mute chat, kick, report).
 """
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
-from datetime import datetime
+from datetime import datetime, timedelta
+from sqlalchemy import or_
 
-from app.models import db, LiveSession, LiveViewer, LiveMessage, LiveReport
-from app.gifts import gift_by_key, GIFTS_UNLOCK_AURA
+from app.models import db, User, LiveSession, LiveViewer, LiveMessage, LiveReport
+from app.gifts import (
+    gift_by_key, GIFTS_UNLOCK_AURA, FREE_GIFT_KEY, FREE_GIFT_COOLDOWN_HOURS,
+    LIVE_24H_HOURS, LIVE_24H_REWARDS,
+)
 
 live_routes = Blueprint('live', __name__)
+
+
+def top_supporters(session, limit=3):
+    """Rank a session's gifters by Bolts actually spent (the paid "top subs").
+    Free daily gifts contribute 0 Bolts, so they can't farm the reward board."""
+    tally = {}
+    for m in session.messages:
+        if not m.gift_key:
+            continue
+        gift = gift_by_key(m.gift_key)
+        if not gift:
+            continue
+        spent = 0 if m.free else gift['bolts']
+        row = tally.setdefault(m.user_id, {
+            'user_id': m.user_id,
+            'user': m.user.to_dict_basic() if m.user else None,
+            'aura': 0,
+            'bolts': 0,
+            'gifts': 0,
+        })
+        row['aura'] += gift['aura']
+        row['bolts'] += spent
+        row['gifts'] += 1
+    ranked = sorted(tally.values(), key=lambda r: (r['bolts'], r['aura']), reverse=True)
+    return ranked[:limit]
+
+
+def finalize_live(session, mark_ended=True):
+    """End a session and, for a 24h live, pay its top supporters their Bolts
+    thank-you — exactly once (guarded by rewards_paid). Returns the recap or None."""
+    recap = None
+    if session.is_24h and not session.rewards_paid:
+        host = session.host
+        winners = [w for w in top_supporters(session, len(LIVE_24H_REWARDS)) if w['bolts'] > 0]
+        rewarded = []
+        for i, sup in enumerate(winners):
+            reward = LIVE_24H_REWARDS[i]
+            u = User.query.get(sup['user_id'])
+            if u:
+                u.bolts = (u.bolts or 0) + reward
+            rewarded.append({'user': sup['user'], 'aura': sup['aura'], 'bolts': sup['bolts'], 'reward': reward})
+        session.rewards_paid = True
+        recap = {
+            'aura_gained': max(0, host.aura_score() - (session.start_aura or 0)) if host else 0,
+            'followers_gained': max(0, host.follower_count() - (session.start_followers or 0)) if host else 0,
+            'peak_viewers': session.peak_viewers or 0,
+            'rewarded': rewarded,
+        }
+    if mark_ended:
+        session.is_live = False
+        if not session.ended_at:
+            session.ended_at = datetime.utcnow()
+    return recap
 
 
 @live_routes.route('/active')
@@ -23,13 +80,23 @@ def active_lives():
 @live_routes.route('/start', methods=['POST'])
 @login_required
 def start_live():
-    """Start a new live broadcast (ends any existing one by this host first)."""
+    """Start a new live broadcast (ends any existing one by this host first).
+    Pass is_24h=true for a 24-hour live — gated behind followers + Aura."""
+    data = request.get_json() or {}
+    is_24h = bool(data.get('is_24h'))
+    if is_24h and not current_user.can_24h_live():
+        return jsonify({'error': '24-hour live unlocks at 2,000 followers and 10,000 Aura',
+                        'locked': True}), 403
+
     LiveSession.query.filter_by(host_id=current_user.id, is_live=True)\
         .update({'is_live': False, 'ended_at': datetime.utcnow()})
-    data = request.get_json() or {}
     session = LiveSession(
         host_id=current_user.id,
         title=(data.get('title') or '').strip()[:120] or f"{current_user.username} is live",
+        is_24h=is_24h,
+        ends_at=datetime.utcnow() + timedelta(hours=LIVE_24H_HOURS) if is_24h else None,
+        start_aura=current_user.aura_score() if is_24h else 0,
+        start_followers=current_user.follower_count() if is_24h else 0,
     )
     db.session.add(session)
     db.session.commit()
@@ -43,11 +110,16 @@ def get_live(session_id):
     s = LiveSession.query.get(session_id)
     if not s:
         return jsonify({'error': 'Live not found'}), 404
+    # Auto-close a 24h live whose countdown has run out (pays rewards once).
+    if s.is_live and s.is_24h and s.ends_at and datetime.utcnow() >= s.ends_at:
+        finalize_live(s, mark_ended=True)
+        db.session.commit()
     return jsonify({
         **s.to_dict(include_frame=True),
         'is_host': s.host_id == current_user.id,
         'viewers': [v.to_dict() for v in s.active_viewers()],
         'messages': [m.to_dict() for m in s.messages[-50:]],
+        'top_supporters': top_supporters(s) if s.is_24h else [],
     })
 
 
@@ -67,6 +139,11 @@ def join_live(session_id):
         if len(s.active_viewers()) >= LiveSession.MAX_VIEWERS:
             return jsonify({'error': f'This live is full ({LiveSession.MAX_VIEWERS} viewers max)'}), 403
         db.session.add(LiveViewer(session_id=session_id, user_id=current_user.id))
+        db.session.commit()
+    # Track the max concurrent viewers reached during the stream.
+    count = len(s.active_viewers())
+    if count > (s.peak_viewers or 0):
+        s.peak_viewers = count
         db.session.commit()
     return jsonify({'ok': True})
 
@@ -88,10 +165,13 @@ def end_live(session_id):
         return jsonify({'error': 'Live not found'}), 404
     if s.host_id != current_user.id:
         return jsonify({'error': 'Only the host can end the live'}), 403
-    s.is_live = False
-    s.ended_at = datetime.utcnow()
+    if not s.is_live:
+        # Already ended — never re-run the reward payout.
+        return jsonify({'ok': True, 'recap': None})
+
+    recap = finalize_live(s, mark_ended=True)
     db.session.commit()
-    return jsonify({'ok': True})
+    return jsonify({'ok': True, 'recap': recap})
 
 
 @live_routes.route('/<int:session_id>/frame', methods=['POST'])
@@ -143,19 +223,36 @@ def send_gift(session_id):
     if host.aura_score() < GIFTS_UNLOCK_AURA:
         return jsonify({'error': f"@{host.username} unlocks gifts at "
                                  f"{GIFTS_UNLOCK_AURA:,} Aura"}), 403
-    if (current_user.bolts or 0) < gift['bolts']:
+    # The daily free gift (one entry-level gift every 24h) spends no Bolts and
+    # credits the host Aura only — never Glow, so it can't be farmed for cash.
+    # Claim it with an atomic conditional UPDATE so racing requests can't both
+    # take the free path.
+    now = datetime.utcnow()
+    is_free = False
+    if gift['key'] == FREE_GIFT_KEY:
+        cutoff = now - timedelta(hours=FREE_GIFT_COOLDOWN_HOURS)
+        claimed = User.query.filter(
+            User.id == current_user.id,
+            or_(User.free_gift_used_at.is_(None), User.free_gift_used_at <= cutoff),
+        ).update({User.free_gift_used_at: now}, synchronize_session=False)
+        if claimed == 1:
+            is_free = True
+            current_user.free_gift_used_at = now   # reflect for the response
+
+    if not is_free and (current_user.bolts or 0) < gift['bolts']:
         return jsonify({'error': 'Not enough Bolts', 'need_bolts': True}), 402
 
-    # Move the value: sender pays Bolts; host gains Aura (clout) + Glow (cash share).
-    current_user.bolts -= gift['bolts']
     host.gift_aura = (host.gift_aura or 0) + gift['aura']
-    host.glow = (host.glow or 0) + round(gift['bolts'] * host.tier()['share'])
+    if not is_free:
+        current_user.bolts -= gift['bolts']
+        host.glow = (host.glow or 0) + round(gift['bolts'] * host.tier()['share'])
 
     msg = LiveMessage(
         session_id=session_id,
         user_id=current_user.id,
         content=f"sent {gift['name']}",
         gift_key=gift['key'],
+        free=is_free,
     )
     db.session.add(msg)
     db.session.commit()
@@ -163,7 +260,10 @@ def send_gift(session_id):
     return jsonify({
         'message': msg.to_dict(),
         'gift': gift,
+        'free': is_free,
         'bolts': current_user.bolts,
+        'free_gift_ready': current_user.free_gift_ready(),
+        'free_gift_resets_at': current_user.free_gift_resets_at(),
         'host_aura': host.aura_score(),
     }), 201
 

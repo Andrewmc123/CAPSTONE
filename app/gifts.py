@@ -45,6 +45,19 @@ BOLT_PACKS = {
     "whale":   {"bolts": 20_000, "cents": 19999},
 }
 
+# Daily free gift — every user can send ONE of these every 24h with no Bolts
+# spent. It credits the creator Aura (clout) only, never Glow (cash), so it
+# can't be farmed for real money.
+FREE_GIFT_KEY = "spark"
+FREE_GIFT_COOLDOWN_HOURS = 24
+
+# 24-hour live feature — unlocked once a creator has both enough followers and
+# enough Aura. After the stream ends, the top supporters get a thank-you in Bolts.
+LIVE_24H_MIN_FOLLOWERS = 2_000
+LIVE_24H_MIN_AURA = 10_000
+LIVE_24H_HOURS = 24
+LIVE_24H_REWARDS = [500, 300, 200]   # Bolts for the 1st / 2nd / 3rd top supporter
+
 _GIFTS_BY_KEY = {g["key"]: g for g in GIFT_CATALOG}
 
 

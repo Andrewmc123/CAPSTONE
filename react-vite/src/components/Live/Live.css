@@ -151,3 +151,76 @@
 .gift-takeover .gt-user { font-size: 14px; font-weight: 700; color: var(--orange); }
 @keyframes takeover { 0% { opacity: 0; } 12% { opacity: 1; } 82% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes gtpop { 0% { transform: scale(.3) rotate(-12deg); } 30% { transform: scale(1.12) rotate(4deg); } 50% { transform: scale(1); } 100% { transform: scale(1.04); } }
+
+/* ===== 24-hour live ===== */
+.live-go-actions { display: flex; gap: 8px; }
+.live-24-locked { opacity: 0.7; }
+.live-lock-msg { color: var(--orange); font-size: 13px; margin: 8px 0 0; font-weight: 700; }
+
+.live-badge.badge-24 { background: var(--grad); color: #1b0a33; }
+.live-countdown {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(5,3,9,0.55); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,194,51,0.4); border-radius: 999px;
+  padding: 3px 10px; font-size: 13px; font-weight: 800; color: var(--orange);
+  font-variant-numeric: tabular-nums;
+}
+
+/* push host controls / viewer list below the stats strip on a 24h live */
+.live-stage.is24 .live-host-controls,
+.live-stage.is24 .live-viewer-list { top: 104px; }
+.live-stage.is24 .live-earn { top: 100px; }
+
+.live-24-stats {
+  position: absolute; top: 56px; left: 50%; transform: translateX(-50%);
+  z-index: 6; display: flex; gap: 8px;
+  background: rgba(5,3,9,0.5); backdrop-filter: blur(8px);
+  border: 1px solid var(--line-soft, rgba(255,255,255,0.12)); border-radius: 14px;
+  padding: 7px 10px; max-width: 92%;
+}
+.l24 { display: flex; flex-direction: column; align-items: center; min-width: 52px; color: #fff; }
+.l24 svg { font-size: 13px; color: var(--orange); margin-bottom: 2px; }
+.l24 b { font-size: 14px; font-weight: 800; line-height: 1; }
+.l24 span { font-size: 9px; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
+.l24-top b { color: var(--orange); max-width: 78px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* daily free gift */
+.live-gift-btn.has-free { position: relative; }
+.live-gift-btn.has-free::after {
+  content: ""; position: absolute; top: -2px; right: -2px;
+  width: 11px; height: 11px; border-radius: 50%;
+  background: var(--orange); border: 2px solid #000;
+}
+.gift-free-hint {
+  display: flex; align-items: center; gap: 7px; margin: 0 0 10px;
+  font-size: 12.5px; font-weight: 700; color: var(--orange);
+}
+.gift-card.free { border-color: var(--orange); }
+.gift-card.free .gc-ic { background: var(--grad); color: #1b0a33; }
+.gift-card .gc-free {
+  position: absolute; top: 5px; right: 6px;
+  background: var(--orange); color: #1a0e00; font-size: 8px; font-weight: 900;
+  letter-spacing: 0.5px; padding: 1px 5px; border-radius: 6px;
+}
+.gift-card.free .gc-cost { color: var(--orange); }
+
+/* 24-hour live recap */
+.recap-card {
+  width: min(440px, 92%); margin: auto;
+  background: var(--bg-elev); border: 1px solid var(--line);
+  border-radius: 18px; padding: 22px; text-align: center;
+}
+.recap-card h2 { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0 0 16px; font-size: 21px; }
+.recap-card h2 svg { color: var(--orange); }
+.recap-stats { display: flex; justify-content: center; gap: 24px; margin-bottom: 18px; }
+.recap-stats div { display: flex; flex-direction: column; }
+.recap-stats b { font-size: 22px; font-weight: 900; color: var(--orange); }
+.recap-stats span { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.4px; }
+.recap-rewards { text-align: left; border-top: 1px solid var(--line); padding-top: 14px; margin-bottom: 16px; }
+.recap-rewards h3 { display: flex; align-items: center; gap: 7px; font-size: 14px; margin: 0 0 10px; }
+.recap-rewards h3 svg { color: var(--orange); }
+.recap-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 0; font-size: 13px; }
+.recap-rank { font-weight: 700; }
+.recap-aura { color: var(--text-dim); display: inline-flex; align-items: center; gap: 4px; }
+.recap-aura svg { color: var(--orange); }
+.recap-reward { color: var(--orange); font-weight: 800; }

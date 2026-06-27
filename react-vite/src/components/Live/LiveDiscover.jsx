@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { FaTowerBroadcast, FaUsers } from "react-icons/fa6";
+import { FaTowerBroadcast, FaUsers, FaClock, FaLock } from "react-icons/fa6";
 import { useModal } from "../../context/Modal";
 import LoginFormModal from "../LoginFormModal";
 import "./Live.css";
@@ -12,6 +12,8 @@ export default function LiveDiscover() {
   const { setModalContent } = useModal();
   const [sessions, setSessions] = useState([]);
   const [starting, setStarting] = useState(false);
+  const [me, setMe] = useState(null);
+  const [lockMsg, setLockMsg] = useState("");
 
   const load = useCallback(() => {
     fetch("/api/live/active", { credentials: "include" })
@@ -26,19 +28,34 @@ export default function LiveDiscover() {
     return () => clearInterval(t);
   }, [load]);
 
-  const goLive = async () => {
+  // wallet → can_24h_live eligibility for the 24-hour button
+  useEffect(() => {
+    if (!user) return;
+    fetch("/api/wallet/me", { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setMe(d))
+      .catch(() => {});
+  }, [user]);
+
+  const can24 = me?.can_24h_live ?? user?.can_24h_live ?? false;
+
+  const goLive = async (is24 = false) => {
     if (!user) return setModalContent(<LoginFormModal />);
+    setLockMsg("");
     setStarting(true);
     const res = await fetch("/api/live/start", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ title: "" }),
+      body: JSON.stringify({ title: "", is_24h: is24 }),
     });
     setStarting(false);
     if (res.ok) {
       const s = await res.json();
       navigate(`/live/${s.id}`);
+    } else {
+      const d = await res.json().catch(() => ({}));
+      setLockMsg(d.error || "Couldn't start the live.");
     }
   };
 
@@ -46,10 +63,21 @@ export default function LiveDiscover() {
     <div className="page live-discover">
       <header className="live-discover-head">
         <h1><FaTowerBroadcast /> Live</h1>
-        <button className="btn btn-primary" onClick={goLive} disabled={starting}>
-          {starting ? "Starting…" : "Go Live"}
-        </button>
+        <div className="live-go-actions">
+          <button className="btn btn-ghost" onClick={() => goLive(false)} disabled={starting}>
+            {starting ? "Starting…" : "Go Live"}
+          </button>
+          <button
+            className={`btn ${can24 ? "btn-grad" : "btn-ghost live-24-locked"}`}
+            onClick={() => (can24 ? goLive(true) : setLockMsg("24-hour live unlocks at 2,000 followers and 10,000 Aura."))}
+            disabled={starting}
+            title={can24 ? "Start a 24-hour live" : "Unlock at 2,000 followers + 10,000 Aura"}
+          >
+            {can24 ? <><FaClock /> 24-Hour Live</> : <><FaLock /> 24-Hour Live</>}
+          </button>
+        </div>
       </header>
+      {lockMsg && <p className="live-lock-msg">{lockMsg}</p>}
 
       {sessions.length === 0 ? (
         <div className="live-empty">
@@ -61,7 +89,7 @@ export default function LiveDiscover() {
           {sessions.map((s) => (
             <Link key={s.id} to={`/live/${s.id}`} className="live-card">
               <div className="live-card-top">
-                <span className="live-badge">LIVE</span>
+                <span className="live-badge">{s.is_24h ? "24H LIVE" : "LIVE"}</span>
                 <span className="live-viewers"><FaUsers /> {s.viewer_count}/{s.max_viewers}</span>
               </div>
               <img

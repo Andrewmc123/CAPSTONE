@@ -4,7 +4,7 @@ import {
   FaXmark, FaPaperPlane, FaUsers, FaComment, FaCommentSlash,
   FaUserSlash, FaFlag, FaTowerBroadcast, FaGift, FaBolt, FaGem, FaLock, FaPlus,
   FaFire, FaLink, FaCrown, FaWandMagicSparkles, FaFeather, FaGlobe, FaStar,
-  FaGuitar, FaHandFist, FaRocket,
+  FaGuitar, FaHandFist, FaRocket, FaClock, FaUserPlus, FaTrophy,
 } from "react-icons/fa6";
 import "./Live.css";
 
@@ -20,6 +20,21 @@ const GIFT_ICONS = {
 function GiftIcon({ k }) {
   const Ico = GIFT_ICONS[k] || FaGift;
   return <Ico />;
+}
+
+// ends_at comes from the server as naive UTC ISO — treat it as UTC.
+function msUntil(iso, nowTs) {
+  if (!iso) return null;
+  const t = new Date(iso.endsWith("Z") ? iso : `${iso}Z`).getTime();
+  return t - nowTs;
+}
+function fmtCountdown(ms) {
+  if (ms == null) return null;
+  const s = Math.max(0, Math.floor(ms / 1000));
+  const h = String(Math.floor(s / 3600)).padStart(2, "0");
+  const m = String(Math.floor((s % 3600) / 60)).padStart(2, "0");
+  const ss = String(s % 60).padStart(2, "0");
+  return `${h}:${m}:${ss}`;
 }
 
 export default function LiveRoom() {
@@ -38,6 +53,8 @@ export default function LiveRoom() {
   const [giftErr, setGiftErr] = useState("");
   const [flying, setFlying] = useState([]);
   const [takeover, setTakeover] = useState(null);
+  const [recap, setRecap] = useState(null);
+  const [nowTs, setNowTs] = useState(() => Date.now());
   const seenGifts = useRef(null);
 
   const videoRef = useRef(null);
@@ -47,10 +64,17 @@ export default function LiveRoom() {
 
   const isHost = session?.is_host;
   const chatOff = !session?.chat_enabled;
+  const is24h = session?.is_24h;
   const giftMap = useMemo(
     () => Object.fromEntries((catalog?.gifts || []).map((g) => [g.key, g])),
     [catalog]
   );
+  const countdown = useMemo(() => {
+    if (!is24h) return null;
+    const ms = msUntil(session?.ends_at, nowTs);
+    if (ms == null) return null;
+    return ms <= 0 ? "Ending…" : fmtCountdown(ms);
+  }, [is24h, session?.ends_at, nowTs]);
 
   const fetchState = useCallback(async () => {
     const res = await fetch(`/api/live/${sid}`, { credentials: "include" });
@@ -75,6 +99,12 @@ export default function LiveRoom() {
     fetch("/api/wallet/gifts").then((r) => r.json()).then(setCatalog).catch(() => {});
     loadWallet();
   }, [loadWallet]);
+
+  // tick once a second so the countdown and the daily-free-gift readiness stay live
+  useEffect(() => {
+    const t = setInterval(() => setNowTs(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
 
   // join + poll room state
   useEffect(() => {
@@ -181,7 +211,12 @@ export default function LiveRoom() {
     });
     if (res.ok) {
       const d = await res.json();
-      setWallet((w) => (w ? { ...w, bolts: d.bolts } : w));
+      setWallet((w) => (w ? {
+        ...w,
+        bolts: d.bolts,
+        free_gift_ready: d.free_gift_ready ?? w.free_gift_ready,
+        free_gift_resets_at: d.free_gift_resets_at ?? w.free_gift_resets_at,
+      } : w));
       fetchState();
     } else {
       const d = await res.json().catch(() => ({}));
@@ -210,9 +245,24 @@ export default function LiveRoom() {
   };
 
   const endLive = async () => {
-    await fetch(`/api/live/${sid}/end`, { method: "POST", credentials: "include" });
-    navigate("/live");
+    const res = await fetch(`/api/live/${sid}/end`, { method: "POST", credentials: "include" });
+    const d = await res.json().catch(() => ({}));
+    if (d.recap) setRecap(d.recap);   // 24h: show the recap, then navigate on close
+    else navigate("/live");
   };
+
+  const freeGiftKey = catalog?.free_gift_key;
+  // recompute readiness client-side so the free gift flips on when the cooldown
+  // elapses while the room stays open (wallet snapshot may be stale)
+  const freeReady = useMemo(() => {
+    if (!wallet) return false;
+    if (wallet.free_gift_ready) return true;
+    if (!wallet.free_gift_resets_at) return false;
+    const resetMs = new Date(
+      wallet.free_gift_resets_at.endsWith("Z") ? wallet.free_gift_resets_at : `${wallet.free_gift_resets_at}Z`
+    ).getTime();
+    return nowTs >= resetMs;
+  }, [wallet, nowTs]);
 
   if (error) {
     return (
@@ -230,7 +280,7 @@ export default function LiveRoom() {
 
   return (
     <div className="live-room">
-      <div className="live-stage">
+      <div className={`live-stage ${is24h ? "is24" : ""}`}>
         {isHost ? (
           <video ref={videoRef} autoPlay playsInline muted className="live-video" />
         ) : session.current_frame ? (
@@ -263,12 +313,25 @@ export default function LiveRoom() {
             <img className="avatar" width={34} height={34} src={session.host?.profile_img || `https://i.pravatar.cc/60?u=${session.host_id}`} alt="" />
             <span>@{session.host?.username}</span>
           </Link>
-          <span className="live-badge">LIVE</span>
+          <span className={`live-badge ${is24h ? "badge-24" : ""}`}>{is24h ? "24H LIVE" : "LIVE"}</span>
+          {is24h && countdown && <span className="live-countdown"><FaClock /> {countdown}</span>}
           <span className="live-viewers"><FaUsers /> {session.viewer_count}/{session.max_viewers}</span>
           <button className="live-x" onClick={isHost ? endLive : () => navigate("/live")} aria-label="Close">
             <FaXmark />
           </button>
         </div>
+
+        {/* 24-hour live stats */}
+        {is24h && (
+          <div className="live-24-stats">
+            <div className="l24"><FaBolt /><b>{(session.aura_gained || 0).toLocaleString()}</b><span>Aura</span></div>
+            <div className="l24"><FaUserPlus /><b>{(session.followers_gained || 0).toLocaleString()}</b><span>Followers</span></div>
+            <div className="l24"><FaUsers /><b>{session.peak_viewers || 0}</b><span>Peak</span></div>
+            {session.top_supporters?.[0] && (
+              <div className="l24 l24-top"><FaTrophy /><b>@{session.top_supporters[0].user?.username}</b><span>Top sub</span></div>
+            )}
+          </div>
+        )}
 
         {isHost && (
           <div className="live-earn">
@@ -322,7 +385,7 @@ export default function LiveRoom() {
           </div>
           <form className="live-chat-bar" onSubmit={sendChat}>
             {!isHost && (
-              <button type="button" className="live-gift-btn" onClick={() => setGiftOpen(true)} aria-label="Send a gift">
+              <button type="button" className={`live-gift-btn ${freeReady ? "has-free" : ""}`} onClick={() => setGiftOpen(true)} aria-label="Send a gift">
                 <FaGift />
               </button>
             )}
@@ -345,23 +408,28 @@ export default function LiveRoom() {
                 <button className="gift-topup" onClick={() => topUp("pro")}><FaPlus /> Get Bolts</button>
                 <button className="gift-close" onClick={() => setGiftOpen(false)} aria-label="Close"><FaXmark /></button>
               </div>
+              {freeReady && <p className="gift-free-hint"><FaGift /> Your daily free gift is ready — send it on the house</p>}
               {giftErr && <p className="gift-err">{giftErr}</p>}
 
               {session.gifts_unlocked ? (
                 <div className="gift-grid">
-                  {(catalog?.gifts || []).map((g) => (
-                    <button
-                      key={g.key}
-                      className={`gift-card r-${g.rarity}`}
-                      onClick={() => sendGift(g)}
-                      disabled={(wallet?.bolts ?? 0) < g.bolts}
-                    >
-                      {g.takeover && <span className="gc-tk">★</span>}
-                      <span className="gc-ic"><GiftIcon k={g.icon} /></span>
-                      <span className="gc-name">{g.name}</span>
-                      <span className="gc-cost"><FaBolt /> {g.bolts.toLocaleString()}</span>
-                    </button>
-                  ))}
+                  {(catalog?.gifts || []).map((g) => {
+                    const free = g.key === freeGiftKey && freeReady;
+                    const disabled = !free && (wallet?.bolts ?? 0) < g.bolts;
+                    return (
+                      <button
+                        key={g.key}
+                        className={`gift-card r-${g.rarity} ${free ? "free" : ""}`}
+                        onClick={() => sendGift(g)}
+                        disabled={disabled}
+                      >
+                        {free ? <span className="gc-free">FREE</span> : (g.takeover && <span className="gc-tk">★</span>)}
+                        <span className="gc-ic"><GiftIcon k={g.icon} /></span>
+                        <span className="gc-name">{g.name}</span>
+                        <span className="gc-cost">{free ? "Daily free" : <><FaBolt /> {g.bolts.toLocaleString()}</>}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="gift-locked">
@@ -372,6 +440,33 @@ export default function LiveRoom() {
                   </p>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* 24-hour live recap (host, on end) */}
+        {recap && (
+          <div className="gift-sheet" onClick={() => navigate("/live")}>
+            <div className="recap-card" onClick={(e) => e.stopPropagation()}>
+              <h2><FaClock /> 24-hour live complete</h2>
+              <div className="recap-stats">
+                <div><b>{(recap.aura_gained || 0).toLocaleString()}</b><span>Aura gained</span></div>
+                <div><b>{(recap.followers_gained || 0).toLocaleString()}</b><span>Followers</span></div>
+                <div><b>{recap.peak_viewers || 0}</b><span>Peak viewers</span></div>
+              </div>
+              {recap.rewarded?.length > 0 && (
+                <div className="recap-rewards">
+                  <h3><FaTrophy /> Top supporters — Aura thanks you</h3>
+                  {recap.rewarded.map((r, i) => (
+                    <div className="recap-row" key={i}>
+                      <span className="recap-rank">{["🥇", "🥈", "🥉"][i] || "🎁"} @{r.user?.username}</span>
+                      <span className="recap-aura"><FaBolt /> {(r.aura || 0).toLocaleString()}</span>
+                      <span className="recap-reward">+{r.reward} Bolts</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <button className="btn btn-grad" onClick={() => navigate("/live")}>Done</button>
             </div>
           </div>
         )}
