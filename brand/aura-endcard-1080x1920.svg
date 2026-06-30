@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="78%">
+      <stop offset="0%" stop-color="#281d42"/>
+      <stop offset="50%" stop-color="#120d22"/>
+      <stop offset="100%" stop-color="#060409"/>
+    </radialGradient>
+    <radialGradient id="bloom" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#a855f7" stop-opacity="0.55"/>
+      <stop offset="55%" stop-color="#7c3aed" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#7c3aed" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="core" cx="38%" cy="33%" r="80%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="30%" stop-color="#ecd9ff"/>
+      <stop offset="66%" stop-color="#c026d3"/>
+      <stop offset="100%" stop-color="#6d28d9"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="50%" stop-color="#ec4899"/>
+      <stop offset="100%" stop-color="#22d3ee"/>
+    </linearGradient>
+    <linearGradient id="wm" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="52%" stop-color="#fbcfe8"/>
+      <stop offset="100%" stop-color="#a5f3fc"/>
+    </linearGradient>
+    <filter id="soft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="26"/></filter>
+  </defs>
+
+  <rect width="1080" height="1920" fill="url(#bg)"/>
+  <circle cx="540" cy="700" r="560" fill="url(#bloom)"/>
+
+  <!-- orb -->
+  <circle cx="540" cy="700" r="220" fill="url(#bloom)" filter="url(#soft)"/>
+  <circle cx="540" cy="700" r="218" fill="none" stroke="url(#ring)" stroke-width="3" opacity="0.4"/>
+  <circle cx="540" cy="700" r="180" fill="none" stroke="url(#ring)" stroke-width="7" opacity="0.75"/>
+  <circle cx="540" cy="700" r="116" fill="url(#core)"/>
+  <ellipse cx="502" cy="660" rx="38" ry="25" fill="#ffffff" opacity="0.5"/>
+
+  <!-- wordmark -->
+  <text x="540" y="1130" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-weight="bold" font-size="208" letter-spacing="-6" fill="url(#wm)">Aura</text>
+
+  <!-- divider -->
+  <rect x="438" y="1198" width="204" height="3" rx="1.5" fill="url(#ring)" opacity="0.75"/>
+
+  <!-- tagline -->
+  <text x="540" y="1278" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-weight="600" font-size="38" letter-spacing="7" fill="#cbb9ef">SHARE TO THE WORLD YOUR AURA</text>
+</svg>

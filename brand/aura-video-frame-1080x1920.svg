@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920">
+  <defs>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8b5cf6"/><stop offset="50%" stop-color="#ec4899"/><stop offset="100%" stop-color="#22d3ee"/>
+    </linearGradient>
+    <radialGradient id="core" cx="38%" cy="33%" r="80%">
+      <stop offset="0%" stop-color="#ffffff"/><stop offset="34%" stop-color="#ecd9ff"/>
+      <stop offset="68%" stop-color="#c026d3"/><stop offset="100%" stop-color="#6d28d9"/>
+    </radialGradient>
+    <radialGradient id="bloom" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#a855f7" stop-opacity="0.7"/><stop offset="60%" stop-color="#7c3aed" stop-opacity="0.15"/><stop offset="100%" stop-color="#7c3aed" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="scrimB" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity="0.55"/>
+    </linearGradient>
+    <linearGradient id="scrimT" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.34"/><stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="soft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="14"/></filter>
+    <filter id="ish" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.5"/></filter>
+  </defs>
+
+  <!-- edge scrims for legibility (centre stays clear; video shows through) -->
+  <rect x="0" y="0" width="1080" height="250" fill="url(#scrimT)"/>
+  <rect x="0" y="1230" width="1080" height="690" fill="url(#scrimB)"/>
+
+  <!-- ===== TOP BAR ===== -->
+  <g font-family="Segoe UI, Arial, sans-serif" fill="#fff" filter="url(#ish)">
+    <circle cx="64" cy="96" r="20" fill="none" stroke="url(#ring)" stroke-width="4"/>
+    <circle cx="64" cy="96" r="8" fill="url(#core)"/>
+    <text x="94" y="106" font-size="34" font-weight="bold">Aura</text>
+    <text x="452" y="106" font-size="34" font-weight="600" fill="#d7d2e6" opacity="0.8">Following</text>
+    <text x="612" y="106" font-size="34" font-weight="bold">For You</text>
+    <rect x="612" y="120" width="92" height="4" rx="2" fill="#fff"/>
+    <g stroke="#fff" stroke-width="5" stroke-linecap="round" fill="none" transform="translate(990,80)">
+      <circle cx="14" cy="14" r="13"/><path d="M24 24 L34 34"/>
+    </g>
+  </g>
+
+  <!-- ===== RIGHT ACTION RAIL ===== -->
+  <g font-family="Segoe UI, Arial, sans-serif" fill="#fff" text-anchor="middle" filter="url(#ish)">
+    <!-- avatar + follow badge -->
+    <circle cx="998" cy="998" r="36" fill="none" stroke="url(#ring)" stroke-width="5"/>
+    <circle cx="998" cy="998" r="30" fill="#3a2f55"/>
+    <circle cx="998" cy="993" r="12" fill="#cbb9ef"/><path d="M978 1018 q20 -22 40 0 z" fill="#cbb9ef"/>
+    <circle cx="998" cy="1040" r="15" fill="#ec4899"/>
+    <path d="M998 1031 v18 M989 1040 h18" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/>
+
+    <!-- AURA POINTS (the signature engagement) -->
+    <circle cx="998" cy="1150" r="46" fill="url(#bloom)" filter="url(#soft)"/>
+    <circle cx="998" cy="1150" r="33" fill="none" stroke="url(#ring)" stroke-width="6"/>
+    <circle cx="998" cy="1150" r="15" fill="url(#core)"/>
+    <text x="998" y="1218" font-size="30" font-weight="bold">2.4K</text>
+    <text x="998" y="1248" font-size="20" font-weight="600" fill="#cbb9ef">aura</text>
+
+    <!-- comments -->
+    <g transform="translate(998,1320)">
+      <rect x="-34" y="-26" width="68" height="48" rx="14" fill="#fff"/>
+      <polygon points="-20,20 -2,20 -28,40" fill="#fff"/>
+      <circle cx="-14" cy="-2" r="4.5" fill="#15101f"/><circle cx="2" cy="-2" r="4.5" fill="#15101f"/><circle cx="18" cy="-2" r="4.5" fill="#15101f"/>
+    </g>
+    <text x="998" y="1388" font-size="30" font-weight="bold">318</text>
+
+    <!-- share -->
+    <g transform="translate(998,1470)">
+      <polygon points="-32,-4 32,-30 8,34 0,8" fill="#fff"/>
+    </g>
+    <text x="998" y="1532" font-size="30" font-weight="bold">Share</text>
+
+    <!-- save -->
+    <g transform="translate(998,1610)">
+      <path d="M-24 -28 h48 a6 6 0 0 1 6 6 v52 l-30 -18 l-30 18 v-52 a6 6 0 0 1 6 -6 z" fill="#fff"/>
+    </g>
+    <text x="998" y="1672" font-size="30" font-weight="bold">Save</text>
+  </g>
+
+  <!-- ===== BOTTOM-LEFT CAPTION ===== -->
+  <g font-family="Segoe UI, Arial, sans-serif" fill="#fff" filter="url(#ish)">
+    <text x="48" y="1648" font-size="42" font-weight="bold">@yourhandle</text>
+    <text x="48" y="1704" font-size="34" fill="#f2eefc">your edited clip goes here ✨</text>
+    <text x="48" y="1748" font-size="30" fill="#dcd4ef" opacity="0.9">#aura  #fyp</text>
+    <g transform="translate(48,1786)">
+      <circle cx="13" cy="6" r="9" fill="#fff"/><rect x="20" y="-22" width="5" height="26" fill="#fff"/><path d="M20 -22 l16 -4 v8 l-16 4 z" fill="#fff"/>
+      <text x="56" y="14" font-size="28" fill="#fff">original sound — Aura</text>
+    </g>
+  </g>
+</svg>
