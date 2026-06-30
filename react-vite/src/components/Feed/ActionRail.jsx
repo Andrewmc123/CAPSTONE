@@ -1,14 +1,15 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
-  FaStar, FaEye, FaCommentDots, FaBookmark, FaShare, FaPlus, FaCheck, FaEllipsisVertical, FaTrash,
+  FaEye, FaCommentDots, FaBookmark, FaShare, FaPlus, FaCheck, FaEllipsisVertical, FaTrash,
 } from "react-icons/fa6";
 import { thunkToggleLike, thunkToggleBookmark, thunkDeletePost } from "../../redux/posts";
 import { thunkToggleFollow, selectIsFollowing } from "../../redux/follows";
 import { useModal } from "../../context/Modal";
 import LoginFormModal from "../LoginFormModal";
 import ShareSheet from "./ShareSheet";
+import AuraOrb from "../common/AuraOrb";
 import { compact } from "../../utils/format";
 
 export default function ActionRail({ post, onOpenComments }) {
@@ -20,7 +21,9 @@ export default function ActionRail({ post, onOpenComments }) {
   const location = useLocation();
   const [shareOpen, setShareOpen] = useState(false);
   const [likePop, setLikePop] = useState(false);
+  const [burstKey, setBurstKey] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
+  const burstTimer = useRef(null);
 
   const onDelete = async () => {
     setMenuOpen(false);
@@ -40,7 +43,9 @@ export default function ActionRail({ post, onOpenComments }) {
 
   const onLike = gate(() => {
     setLikePop(true);
-    setTimeout(() => setLikePop(false), 450);
+    setBurstKey((k) => k + 1); // remount the star ring so the animation restarts
+    clearTimeout(burstTimer.current);
+    burstTimer.current = setTimeout(() => setLikePop(false), 2300);
     dispatch(thunkToggleLike(post));
   });
 
@@ -90,7 +95,18 @@ export default function ActionRail({ post, onOpenComments }) {
       </div>
 
       <button className={`rail-btn aura-btn ${post.liked ? "aura-on" : ""} ${likePop ? "pop" : ""}`} onClick={onLike} aria-label={post.liked ? "Remove aura" : "Give aura"}>
-        <span className="rail-icon"><FaStar /></span>
+        <span className="rail-icon aura-orb-icon">
+          <AuraOrb size={36} className="rail-aura-orb" />
+          <span className="aura-burst" aria-hidden="true" />
+          <span className="aura-burst aura-burst-2" aria-hidden="true" />
+          {likePop && (
+            <span className="aura-stars" key={burstKey} aria-hidden="true">
+              {Array.from({ length: 12 }).map((_, i) => (
+                <i key={i} className="aura-star" style={{ "--a": `${i * 30}deg`, "--delay": `${i * 28}ms` }} />
+              ))}
+            </span>
+          )}
+        </span>
         <span className="rail-count">{compact(post.like_count)}</span>
         <span className="rail-tag">aura</span>
       </button>

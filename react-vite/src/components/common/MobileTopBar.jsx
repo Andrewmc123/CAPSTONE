@@ -1,5 +1,6 @@
 import { Link, NavLink } from "react-router-dom";
 import { FaBagShopping, FaUsers } from "react-icons/fa6";
+import AuraOrb from "./AuraOrb";
 import "./MobileTopBar.css";
 
 // Slim mobile-only app bar: brand on the left, quick access to Network + Shop on
@@ -9,7 +10,10 @@ import "./MobileTopBar.css";
 export default function MobileTopBar() {
   return (
     <header className="mtopbar">
-      <Link to="/" className="mtopbar-brand abln-logo">Aura</Link>
+      <Link to="/" className="mtopbar-brand aura-mark">
+        <AuraOrb size={30} />
+        <span className="aura-word">Aura</span>
+      </Link>
       <nav className="mtopbar-actions">
         <NavLink to="/network" className={({ isActive }) => `mtopbar-btn ${isActive ? "active" : ""}`} aria-label="Network" title="Network">
           <FaUsers />

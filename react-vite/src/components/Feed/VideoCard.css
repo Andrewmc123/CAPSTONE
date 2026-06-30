@@ -347,13 +347,101 @@
 .rail-btn:hover .rail-icon { background: var(--bg-hover); transform: scale(1.05); }
 .rail-count { font-size: 12.5px; font-weight: 700; color: var(--text-dim); }
 
-/* ---- Aura reaction (was "like"): glowing purple+gold orb ---- */
-.aura-btn .rail-icon { color: #e3d2ff; }
-.rail-btn.aura-on .rail-icon {
-  color: #ffd24a;
-  border-color: rgba(168, 85, 247, 0.65);
-  box-shadow: 0 0 18px rgba(168, 85, 247, 0.55), 0 0 12px rgba(255, 210, 74, 0.45);
+/* ---- Aura reaction (was "like"): the Aura energy orb ---- */
+.aura-btn .rail-icon.aura-orb-icon {
+  background: rgba(20, 16, 30, 0.55);
+  border-color: rgba(168, 85, 247, 0.4);
+  overflow: visible;
+  position: relative;
 }
+.rail-aura-orb {
+  width: 36px;
+  height: 36px;
+  filter: drop-shadow(0 0 5px rgba(168, 85, 247, 0.6));
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+.rail-btn.aura-on .rail-icon.aura-orb-icon {
+  border-color: rgba(255, 194, 51, 0.7);
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.55), 0 0 14px rgba(255, 210, 74, 0.5);
+}
+.rail-btn.aura-on .rail-aura-orb {
+  filter: drop-shadow(0 0 9px rgba(255, 194, 51, 0.85)) drop-shadow(0 0 5px rgba(168, 85, 247, 0.7));
+}
+.aura-btn.pop .rail-aura-orb { animation: aura-orb-press 0.6s ease; }
+@keyframes aura-orb-press {
+  0% { transform: scale(1); }
+  28% { transform: scale(1.42); }
+  55% { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+
+/* expanding aura-glow rings on press */
+.aura-burst {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 46px;
+  height: 46px;
+  margin: -23px 0 0 -23px;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(circle, rgba(199, 125, 255, 0.6) 0%, rgba(255, 194, 51, 0.28) 45%, rgba(168, 85, 247, 0) 72%);
+}
+.aura-btn.pop .aura-burst { animation: aura-glow 0.7s ease-out; }
+.aura-btn.pop .aura-burst-2 { animation: aura-glow 0.7s ease-out 0.1s; }
+@keyframes aura-glow {
+  0% { opacity: 0.85; transform: scale(0.35); }
+  70% { opacity: 0.35; }
+  100% { opacity: 0; transform: scale(3); }
+}
+
+/* aura stars: 12 gold motes burst out and form a spinning ring around the orb */
+.aura-stars {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+.aura-star {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, #ffd24a 45%, rgba(255, 194, 51, 0) 75%);
+  opacity: 0;
+  transform: rotate(var(--a)) translateY(-6px) scale(0);
+  animation: aura-star-form 1.85s cubic-bezier(0.2, 0.7, 0.2, 1) var(--delay) both;
+  will-change: transform, opacity;
+}
+.aura-star::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 5px;
+  width: 2px;
+  height: 13px;
+  margin-left: -1px;
+  border-radius: 2px;
+  background: linear-gradient(to bottom, rgba(255, 210, 120, 0.9), rgba(199, 125, 255, 0));
+}
+@keyframes aura-star-form {
+  0%   { opacity: 0; transform: rotate(var(--a)) translateY(-6px) scale(0); }
+  22%  { opacity: 1; transform: rotate(var(--a)) translateY(-34px) scale(1.25); }
+  40%  { opacity: 1; transform: rotate(var(--a)) translateY(-29px) scale(1); }
+  78%  { opacity: 0.95; transform: rotate(calc(var(--a) + 16deg)) translateY(-29px) scale(0.92); }
+  100% { opacity: 0; transform: rotate(calc(var(--a) + 28deg)) translateY(-29px) scale(0.2); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aura-star { animation-duration: 0.4s; }
+}
+
 .rail-tag {
   font-size: 9px;
   font-weight: 800;
@@ -363,7 +451,7 @@
   margin-top: -3px;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.85);
 }
-.rail-btn.pop .rail-icon { animation: abln-pop 0.45s ease; }
+.rail-btn.pop:not(.aura-btn) .rail-icon { animation: abln-pop 0.45s ease; }
 .rail-btn.bookmarked .rail-icon {
   color: var(--orange);
   border-color: rgba(255, 194, 51, 0.55);

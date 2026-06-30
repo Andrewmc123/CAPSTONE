@@ -118,6 +118,25 @@ img { -webkit-user-drag: none; }
   text-shadow: none;
 }
 
+/* ---------- Aura mark (orb + wordmark) ---------- */
+.aura-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+.aura-orb {
+  display: block;
+  flex-shrink: 0;
+}
+.aura-word {
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  color: var(--text);
+  font-size: 22px;
+  line-height: 1;
+}
+.mtopbar-brand .aura-word { font-size: 20px; }
+
 /* ---------- buttons ---------- */
 .btn {
   display: inline-flex;

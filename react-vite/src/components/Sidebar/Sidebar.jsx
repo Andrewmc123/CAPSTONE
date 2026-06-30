@@ -13,6 +13,7 @@ import { thunkGetUserNotifications } from "../../redux/notification";
 import { fetchUnreadCount } from "../../redux/messages";
 import { useModal } from "../../context/Modal";
 import LoginFormModal from "../LoginFormModal";
+import AuraOrb from "../common/AuraOrb";
 import "./Sidebar.css";
 
 export default function Sidebar() {
@@ -68,8 +69,11 @@ export default function Sidebar() {
   return (
     <aside className="sidebar">
       <NavLink to="/" className="sidebar-logo-link">
-        <div className="abln-logo sidebar-logo">Aura</div>
-        <div className="abln-logo-sub">You got Aura?</div>
+        <div className="aura-mark">
+          <AuraOrb size={36} />
+          <span className="aura-word sidebar-logo">Aura</span>
+        </div>
+        <div className="abln-logo-sub">Share your aura to the world</div>
       </NavLink>
 
       <form className="sidebar-search" onSubmit={submitSearch}>

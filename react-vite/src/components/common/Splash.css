@@ -1,0 +1,58 @@
+.aura-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 42%, #2a1450 0%, #150b29 46%, #0a0710 100%);
+  transition: opacity 0.6s ease;
+}
+.aura-splash--out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.aura-splash-rings {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+.aura-splash-rings::before,
+.aura-splash-rings::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(168, 85, 247, 0.22);
+}
+.aura-splash-rings::before { width: 222px; height: 222px; }
+.aura-splash-rings::after { width: 292px; height: 292px; border-color: rgba(168, 85, 247, 0.1); }
+
+.aura-splash .aura-orb {
+  filter: drop-shadow(0 0 30px rgba(168, 85, 247, 0.55));
+  animation: auraPulse 2.6s ease-in-out infinite;
+}
+@keyframes auraPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.045); }
+}
+
+.aura-splash-word {
+  font-size: 52px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  background: linear-gradient(135deg, #ecd9ff 0%, #c77dff 45%, #ffc233 115%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.aura-splash-tag {
+  font-size: 12px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(233, 213, 255, 0.62);
+  margin-top: 6px;
+}
