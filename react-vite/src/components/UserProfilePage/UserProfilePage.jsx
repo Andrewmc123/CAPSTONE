@@ -1,21 +1,18 @@
 import { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
-  FaUserPlus, FaUserCheck, FaPen, FaShare, FaLock, FaHeart, FaBookmark, FaClapperboard, FaPaperPlane, FaRightFromBracket, FaImages, FaBolt, FaPlus, FaGear,
+  FaUserPlus, FaUserCheck, FaShare, FaLock, FaHeart, FaBookmark, FaClapperboard, FaPaperPlane, FaImages, FaBolt, FaPlus, FaGear,
 } from "react-icons/fa6";
 import {
   fetchUserVideos, fetchLikedVideos, fetchBookmarkedVideos, selectCollection,
 } from "../../redux/posts";
-import { thunkLogout } from "../../redux/session";
-import { thunkToggleFollow, selectIsFollowing, fetchUserFollowLists, clearFollows } from "../../redux/follows";
+import { thunkToggleFollow, selectIsFollowing, fetchUserFollowLists } from "../../redux/follows";
 import { useModal } from "../../context/Modal";
 import LoginFormModal from "../LoginFormModal";
-import EditProfileModal from "./EditProfileModal";
 import FollowListModal from "./FollowListModal";
 import VideoGrid from "../VideoGrid";
 import Vault from "../Vault";
-import ThemeToggle from "../common/ThemeToggle";
 import VerifiedAvatar from "../common/VerifiedAvatar";
 import AuraCheck from "../common/AuraCheck";
 import StoryComposer from "../Stories/StoryComposer";
@@ -27,7 +24,6 @@ import "./UserProfilePage.css";
 export default function UserProfilePage() {
   const { userId } = useParams();
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const sessionUser = useSelector((s) => s.session.user);
   const isFollowing = useSelector(selectIsFollowing(Number(userId)));
   const { setModalContent } = useModal();
@@ -92,12 +88,6 @@ export default function UserProfilePage() {
     try {
       await navigator.clipboard.writeText(url);
     } catch { /* ignore */ }
-  };
-
-  const logout = async () => {
-    await dispatch(thunkLogout());
-    dispatch(clearFollows());
-    navigate("/");
   };
 
   if (!profile) {
@@ -179,19 +169,9 @@ export default function UserProfilePage() {
 
         <div className="profile-actions">
           {isOwn ? (
-            <>
-              <button
-                className="btn btn-ghost"
-                onClick={() => setModalContent(
-                  <EditProfileModal profile={profile} onSaved={setProfile} />
-                )}
-              >
-                <FaPen /> Edit profile
-              </button>
-              <Link className="btn btn-ghost profile-settings-btn" to="/settings" aria-label="Settings" title="Settings">
-                <FaGear />
-              </Link>
-            </>
+            <Link className="btn btn-ghost profile-settings-btn" to="/settings" title="Settings">
+              <FaGear /> Settings
+            </Link>
           ) : (
             <>
               <button className={`btn ${isFollowing ? "btn-ghost" : "btn-primary"}`} onClick={onFollow}>
@@ -204,15 +184,9 @@ export default function UserProfilePage() {
               )}
             </>
           )}
-          {isOwn && <ThemeToggle variant="row" />}
           <button className="btn btn-ghost" onClick={shareProfile} title="Copy profile link">
             <FaShare /> Share
           </button>
-          {isOwn && (
-            <button className="btn btn-ghost profile-logout" onClick={logout} title="Log out">
-              <FaRightFromBracket /> Log out
-            </button>
-          )}
         </div>
 
         {profile.bio && <p className="profile-bio">{profile.bio}</p>}
