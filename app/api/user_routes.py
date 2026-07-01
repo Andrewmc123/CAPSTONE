@@ -53,6 +53,12 @@ def update_profile():
         current_user.firstname = data['firstname'].strip()[:30]
     if data.get('lastname'):
         current_user.lastname = data['lastname'].strip()[:30]
+    if 'city' in data:
+        current_user.city = (data.get('city') or '').strip()[:80]
+    if 'birthdate' in data:
+        current_user.birthdate = (data.get('birthdate') or '').strip()[:10] or None
+    if 'address' in data:
+        current_user.address = (data.get('address') or '').strip()[:200]
 
     db.session.commit()
     return current_user.to_dict()

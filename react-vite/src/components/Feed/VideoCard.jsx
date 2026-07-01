@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { FaPlay, FaVolumeHigh, FaVolumeXmark, FaMusic, FaCompactDisc, FaStar } from "react-icons/fa6";
+import { FaPlay, FaVolumeHigh, FaVolumeXmark, FaMusic, FaCompactDisc, FaStar, FaLocationDot } from "react-icons/fa6";
 import { thunkAddView, thunkToggleLike } from "../../redux/posts";
 import { useModal } from "../../context/Modal";
 import LoginFormModal from "../LoginFormModal";
@@ -9,6 +9,7 @@ import { filterCss, TEXT_FONTS } from "../../utils/filters";
 import { splitCaption } from "../../utils/format";
 import ActionRail from "./ActionRail";
 import ImageCarousel from "./ImageCarousel";
+import AuraCheck from "../common/AuraCheck";
 import "./VideoCard.css";
 
 // global mute shared across cards (TikTok behavior), persisted.
@@ -275,9 +276,15 @@ export default function VideoCard({ post, active, onOpenComments, standalone = f
 
         {/* caption block */}
         <div className="vcard-meta" onClick={(e) => e.stopPropagation()}>
-          <Link to={`/users/${post.user?.id}`} className="vcard-username">
-            @{post.user?.username}
-          </Link>
+          <span className="vcard-userrow">
+            <Link to={`/users/${post.user?.id}`} className="vcard-username">
+              @{post.user?.username}
+            </Link>
+            <AuraCheck tierKey={post.user?.tier_key} size={16} />
+          </span>
+          {post.location && (
+            <div className="vcard-location"><FaLocationDot /> {post.location}</div>
+          )}
           <p className={`vcard-caption ${captionOpen ? "open" : ""}`} onClick={() => setCaptionOpen(!captionOpen)}>
             {captionParts.map((part, i) =>
               part.type === "tag" ? (

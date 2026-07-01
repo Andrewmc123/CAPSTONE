@@ -1,0 +1,69 @@
+.bday-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 40%, rgba(42, 20, 80, 0.92), rgba(10, 7, 16, 0.96));
+  backdrop-filter: blur(4px);
+  animation: bday-fade 0.4s ease;
+}
+@keyframes bday-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.bday-card {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 34px 30px;
+  border-radius: 22px;
+  background: rgba(27, 22, 38, 0.9);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  box-shadow: 0 0 60px rgba(168, 85, 247, 0.4);
+  max-width: 86vw;
+  animation: bday-pop 0.5s cubic-bezier(0.2, 0.8, 0.2, 1.2);
+}
+@keyframes bday-pop { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.bday-emoji { font-size: 54px; line-height: 1; }
+.bday-title {
+  margin-top: 10px;
+  font-size: 28px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ecd9ff, #c77dff 45%, #ffc233);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.bday-sub { margin-top: 6px; color: rgba(233, 213, 255, 0.75); font-size: 14px; }
+.bday-close {
+  margin-top: 20px;
+  padding: 10px 22px;
+  border: 0;
+  border-radius: 999px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  background: linear-gradient(135deg, #a855f7, #c77dff 45%, #ffc233);
+  box-shadow: 0 0 18px rgba(168, 85, 247, 0.5);
+}
+
+/* falling confetti */
+.bday-confetti { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.bday-confetti i {
+  position: absolute;
+  top: -12px;
+  width: 9px;
+  height: 14px;
+  border-radius: 2px;
+  background: #ffc233;
+  opacity: 0.9;
+  animation: bday-fall 3.4s linear infinite;
+}
+.bday-confetti i:nth-child(3n) { background: #a855f7; }
+.bday-confetti i:nth-child(3n+1) { background: #ff6ec7; }
+.bday-confetti i:nth-child(4n) { background: #66e0ff; width: 7px; height: 7px; border-radius: 50%; }
+@keyframes bday-fall {
+  0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(102vh) rotate(540deg); opacity: 0.9; }
+}

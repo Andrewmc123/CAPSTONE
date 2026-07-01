@@ -172,6 +172,7 @@ def create_post():
         sound_name=data.get('sound_name'),
         sound_url=data.get('sound_url'),
         edit_data=edit_data,
+        location=(data.get('location') or '').strip()[:120] or None,
         views=0,
         shares=0,
     )

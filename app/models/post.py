@@ -23,6 +23,7 @@ class Post(db.Model):
     views = db.Column(db.Integer, default=0)
     shares = db.Column(db.Integer, default=0)
     edit_data = db.Column(db.Text)                       # JSON: filters, trim, speed, text overlays
+    location = db.Column(db.String(120))                 # optional place tag shown on the post
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
 
@@ -69,6 +70,7 @@ class Post(db.Model):
             'views': self.views or 0,
             'shares': self.shares or 0,
             'edit_data': self.parsed_edit_data(),
+            'location': self.location or '',
             'hashtags': self.hashtags,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,

@@ -2,6 +2,7 @@ from .db import db
 from .user import User
 from .db import environment, SCHEMA
 from .post import Post
+from .story import Story
 from .likes import Like
 from .notification import Notification
 from .friend import Friend

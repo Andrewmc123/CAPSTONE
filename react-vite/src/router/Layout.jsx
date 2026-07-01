@@ -7,6 +7,7 @@ import Sidebar from "../components/Sidebar";
 import BottomNav from "../components/BottomNav";
 import MobileTopBar from "../components/common/MobileTopBar";
 import Splash from "../components/common/Splash";
+import BirthdayGreeting from "../components/common/BirthdayGreeting";
 import "./Layout.css";
 
 const CHROMELESS = ["/login", "/signup", "/home"];
@@ -53,6 +54,7 @@ export default function Layout() {
           </main>
           {!chromeless && <BottomNav />}
           <Modal />
+          <BirthdayGreeting />
         </div>
       )}
     </ModalProvider>

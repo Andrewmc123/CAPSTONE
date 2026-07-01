@@ -7,6 +7,8 @@ import { useModal } from "../../context/Modal";
 import LoginFormModal from "../LoginFormModal";
 import GifPicker from "./GifPicker";
 import EmojiPicker from "./EmojiPicker";
+import VerifiedAvatar from "../common/VerifiedAvatar";
+import AuraCheck from "../common/AuraCheck";
 import { compact, timeAgo } from "../../utils/format";
 import "./CommentsDrawer.css";
 
@@ -182,10 +184,13 @@ export default function CommentsDrawer({ post, onClose, targetCommentId }) {
               key={cm.id}
             >
               <Link to={`/users/${cm.user?.id}`}>
-                <img className="avatar" width={isReply ? 28 : 36} height={isReply ? 28 : 36} src={cm.user?.profile_img || `https://i.pravatar.cc/60?u=${cm.user?.id}`} alt="" />
+                <VerifiedAvatar user={cm.user} size={isReply ? 28 : 36} sparkle={false} />
               </Link>
               <div className="comment-main">
-                <Link to={`/users/${cm.user?.id}`} className="comment-username">@{cm.user?.username}</Link>
+                <span className="comment-userline">
+                  <Link to={`/users/${cm.user?.id}`} className="comment-username">@{cm.user?.username}</Link>
+                  <AuraCheck tierKey={cm.user?.tier_key} size={13} />
+                </span>
                 {cm.body && <p className="comment-body">{cm.body}</p>}
                 {cm.gif_url && <img className="comment-gif" src={cm.gif_url} alt="GIF comment" loading="lazy" />}
                 <div className="comment-meta">

@@ -15,6 +15,7 @@ import { MessagesPage, MessageThread } from "../components/Messages";
 import { LiveDiscover, LiveRoom } from "../components/Live";
 import Layout from "./Layout";
 import UserProfilePage from "../components/UserProfilePage";
+import SettingsPage from "../components/Settings/SettingsPage";
 import Network from "../components/Network";
 import Camera from "../components/Camera/Camera";
 import Vault from "../components/Vault/Vault";
@@ -50,6 +51,7 @@ const createAppRouter = () => {
         { path: "/live", element: <AuthCheck><LiveDiscover /></AuthCheck> },
         { path: "/live/:id", element: <AuthCheck><LiveRoom /></AuthCheck> },
         { path: "/users/:userId", element: <UserProfilePage /> },
+        { path: "/settings", element: <SettingsPage /> },
         { path: "/home", element: <Home /> },
         { path: "/login", element: <AuthRedirect><LoginFormPage /></AuthRedirect> },
         { path: "/signup", element: <AuthRedirect><SignupFormPage /></AuthRedirect> },

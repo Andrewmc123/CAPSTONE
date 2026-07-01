@@ -42,7 +42,8 @@ class Comment(db.Model):
             "user": {
                 "id": self.user.id,
                 "username": self.user.username,
-                "profile_img": self.user.profile_img
+                "profile_img": self.user.profile_img,
+                "tier_key": self.user.tier()['key']
             }
         }
         if include_replies:

@@ -12,6 +12,7 @@ from .api.notification_routes import notification_routes
 from .api.likes_routes import likes_routes
 from .api.comments_routes import comments_routes
 from .api.post_routes import post_routes
+from .api.story_routes import story_routes
 from .api.follow_routes import follow_routes
 from .api.bookmark_routes import bookmark_routes
 from .api.gif_routes import gif_routes
@@ -24,6 +25,7 @@ from .api.live_routes import live_routes
 from .api.wallet_routes import wallet_routes
 from .api.shop_routes import shop_routes
 from .api.group_routes import group_routes
+from .api.settings_routes import settings_routes
 from .seeds import seed_commands
 from .config import Config
 
@@ -46,6 +48,7 @@ app.register_blueprint(notification_routes, url_prefix='/api/notifications')
 app.register_blueprint(likes_routes, url_prefix='/api/likes')
 app.register_blueprint(comments_routes, url_prefix='/api/comments')
 app.register_blueprint(post_routes, url_prefix='/api/posts')
+app.register_blueprint(story_routes, url_prefix='/api/stories')
 app.register_blueprint(follow_routes, url_prefix='/api/follows')
 app.register_blueprint(bookmark_routes, url_prefix='/api/bookmarks')
 app.register_blueprint(gif_routes, url_prefix='/api/gifs')
@@ -58,6 +61,7 @@ app.register_blueprint(live_routes, url_prefix='/api/live')
 app.register_blueprint(wallet_routes, url_prefix='/api/wallet')
 app.register_blueprint(shop_routes, url_prefix='/api/shop')
 app.register_blueprint(group_routes, url_prefix='/api/groups')
+app.register_blueprint(settings_routes, url_prefix='/api/settings')
 
 db.init_app(app)
 Migrate(app, db)

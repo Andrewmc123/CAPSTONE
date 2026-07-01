@@ -96,6 +96,7 @@
 .composer-replying button:hover { color: var(--text); }
 
 .comment-main { flex: 1; min-width: 0; }
+.comment-userline { display: inline-flex; align-items: center; gap: 4px; }
 .comment-username { font-weight: 700; font-size: 13.5px; color: var(--text-dim); }
 .comment-username:hover { color: var(--neon); }
 .comment-body { margin: 3px 0 4px; font-size: 14.5px; line-height: 1.45; word-wrap: break-word; }

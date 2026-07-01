@@ -72,6 +72,7 @@ export default function UploadStudio() {
 
   // details
   const [caption, setCaption] = useState("");
+  const [location, setLocation] = useState("");
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState("");
 
@@ -408,6 +409,7 @@ export default function UploadStudio() {
         sound_name: pickedSound ? pickedSound.name : null,
         sound_url: pickedSound ? pickedSound.url : null,
         edit_data,
+        location: location.trim(),
       }));
 
       if (result.post) {
@@ -851,6 +853,16 @@ export default function UploadStudio() {
                 </button>
               ))}
             </div>
+
+            <label className="edit-label">Location</label>
+            <input
+              className="input details-location"
+              type="text"
+              maxLength={120}
+              placeholder="📍 Add a location (optional)"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+            />
 
             {error && <p className="edit-error">{error}</p>}
 

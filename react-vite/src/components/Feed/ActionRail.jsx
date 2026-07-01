@@ -10,6 +10,7 @@ import { useModal } from "../../context/Modal";
 import LoginFormModal from "../LoginFormModal";
 import ShareSheet from "./ShareSheet";
 import AuraOrb from "../common/AuraOrb";
+import VerifiedAvatar from "../common/VerifiedAvatar";
 import { compact } from "../../utils/format";
 
 export default function ActionRail({ post, onOpenComments }) {
@@ -77,11 +78,7 @@ export default function ActionRail({ post, onOpenComments }) {
 
       <div className="rail-avatar-wrap">
         <Link to={`/users/${post.user?.id}`}>
-          <img
-            className="avatar rail-avatar"
-            src={post.user?.profile_img || `https://i.pravatar.cc/80?u=${post.user?.id}`}
-            alt={post.user?.username}
-          />
+          <VerifiedAvatar user={post.user} size={48} className="rail-avatar" />
         </Link>
         {!isOwnPost && (
           <button

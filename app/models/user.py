@@ -35,8 +35,22 @@ class User(db.Model, UserMixin):
     extra_followers = db.Column(db.Integer, default=0, nullable=False)
     free_gift_used_at = db.Column(db.DateTime)
 
+    # User settings — privacy, comment/message gates, activity visibility, and
+    # per-type notification preferences (see resolved_notif_prefs()).
+    is_private = db.Column(db.Boolean, default=False, nullable=False)
+    allow_comments = db.Column(db.String(20), default='everyone', nullable=False)
+    allow_messages = db.Column(db.String(20), default='everyone', nullable=False)
+    show_activity = db.Column(db.Boolean, default=True, nullable=False)
+    notif_prefs = db.Column(db.JSON)
+
+    # Extended profile — shown in Settings › General
+    city = db.Column(db.String(80))
+    birthdate = db.Column(db.String(10))   # 'YYYY-MM-DD'
+    address = db.Column(db.String(200))
+
     # Existing relationships
     posts = db.relationship('Post', back_populates='user', cascade="all, delete-orphan")
+    stories = db.relationship('Story', back_populates='user', cascade="all, delete-orphan")
     likes = db.relationship('Like', back_populates='user', cascade='all, delete')
     comments = db.relationship('Comment', back_populates='user', cascade='all, delete-orphan')
 
@@ -115,6 +129,14 @@ class User(db.Model, UserMixin):
         """Real followers plus any seeded/base followers."""
         return len(self.followers) + (self.extra_followers or 0)
 
+    def active_stories(self):
+        """Stories that haven't hit their 24h expiry yet."""
+        now = datetime.utcnow()
+        return [s for s in self.stories if s.expires_at and s.expires_at > now]
+
+    def has_active_story(self):
+        return len(self.active_stories()) > 0
+
     def can_24h_live(self):
         """24-hour live unlocks at enough followers AND enough Aura."""
         return (self.follower_count() >= LIVE_24H_MIN_FOLLOWERS
@@ -131,6 +153,19 @@ class User(db.Model, UserMixin):
         if self.free_gift_ready() or not self.free_gift_used_at:
             return None
         return (self.free_gift_used_at + timedelta(hours=FREE_GIFT_COOLDOWN_HOURS)).isoformat()
+
+    def resolved_notif_prefs(self):
+        """Per-type notification prefs — every key defaults to True, with any
+        stored overrides merged on top."""
+        defaults = {
+            'likes': True,
+            'comments': True,
+            'follows': True,
+            'live': True,
+            'mentions': True,
+        }
+        defaults.update(self.notif_prefs or {})
+        return defaults
 
     def to_dict(self):
         # Collect accepted friends from both directions, de-duplicated by user
@@ -181,6 +216,7 @@ class User(db.Model, UserMixin):
             'aura': aura,
             'tier': tier['name'],
             'tier_key': tier['key'],
+            'has_story': self.has_active_story(),
             'gifts_unlocked': aura >= GIFTS_UNLOCK_AURA,
             'can_24h_live': self.can_24h_live(),
             'free_gift_ready': self.free_gift_ready(),
@@ -189,7 +225,15 @@ class User(db.Model, UserMixin):
             'glow': self.glow,
             'video_count': len(self.posts),
             'vault_people_count': len(self.vault_people),
-            'vault_photos_count': len(self.vault_photos)
+            'vault_photos_count': len(self.vault_photos),
+            'is_private': self.is_private,
+            'allow_comments': self.allow_comments,
+            'allow_messages': self.allow_messages,
+            'show_activity': self.show_activity,
+            'notif_prefs': self.resolved_notif_prefs(),
+            'city': self.city or '',
+            'birthdate': self.birthdate or '',
+            'address': self.address or '',
         }
 
     def to_dict_basic(self):
@@ -201,4 +245,5 @@ class User(db.Model, UserMixin):
             'lastname': self.lastname,
             'bio': self.bio or '',
             'followers_count': self.follower_count(),
+            'tier_key': self.tier()['key'],
         }

@@ -19,6 +19,45 @@
   margin-bottom: 12px;
 }
 
+/* story ring (tap avatar to view) + add-to-story button */
+.profile-avatar-btn {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  line-height: 0;
+  margin-bottom: 12px;
+}
+.story-ring {
+  display: inline-block;
+  padding: 3px;
+  border-radius: 50%;
+  background: conic-gradient(from 210deg, #a855f7, #ffc233, #ff6ec7, #c77dff, #a855f7);
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.4);
+}
+.story-ring .profile-avatar,
+.story-ring .vavatar {
+  box-shadow: 0 0 0 3px var(--bg);
+  border-radius: 50%;
+  margin-bottom: 0;
+}
+.add-story-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--grad);
+  color: #fff;
+  border: 0;
+  cursor: pointer;
+  font-size: 12px;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+  transition: transform 0.12s ease;
+}
+.add-story-btn:hover { transform: scale(1.1); }
+
 .profile-name-row {
   display: flex;
   align-items: center;

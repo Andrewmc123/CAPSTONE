@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
-  FaUserPlus, FaUserCheck, FaPen, FaShare, FaLock, FaHeart, FaBookmark, FaClapperboard, FaPaperPlane, FaRightFromBracket, FaImages, FaCircleCheck, FaBolt,
+  FaUserPlus, FaUserCheck, FaPen, FaShare, FaLock, FaHeart, FaBookmark, FaClapperboard, FaPaperPlane, FaRightFromBracket, FaImages, FaBolt, FaPlus, FaGear,
 } from "react-icons/fa6";
 import {
   fetchUserVideos, fetchLikedVideos, fetchBookmarkedVideos, selectCollection,
@@ -16,6 +16,11 @@ import FollowListModal from "./FollowListModal";
 import VideoGrid from "../VideoGrid";
 import Vault from "../Vault";
 import ThemeToggle from "../common/ThemeToggle";
+import VerifiedAvatar from "../common/VerifiedAvatar";
+import AuraCheck from "../common/AuraCheck";
+import StoryComposer from "../Stories/StoryComposer";
+import StoryViewer from "../Stories/StoryViewer";
+import { thunkFetchUserStories } from "../../redux/stories";
 import { compact } from "../../utils/format";
 import "./UserProfilePage.css";
 
@@ -105,20 +110,43 @@ export default function UserProfilePage() {
 
   const followerCount = profile.followers_count;
   const displayName = `${profile.firstname || ""} ${profile.lastname || ""}`.trim() || `@${profile.username}`;
-  const verified = profile.is_verified || (followerCount || 0) >= 10000;
+
+  const refreshProfile = () =>
+    fetch(`/api/users/${userId}`, { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => setProfile(d))
+      .catch(() => {});
+
+  const openStoryComposer = () => setModalContent(<StoryComposer onPosted={refreshProfile} />);
+
+  const openStoryViewer = async () => {
+    const stories = await dispatch(thunkFetchUserStories(Number(userId)));
+    if (stories && stories.length) {
+      setModalContent(<StoryViewer stories={stories} canDelete={isOwn} onChanged={refreshProfile} />);
+    }
+  };
 
   return (
     <div className="page profile-page">
       <header className="profile-head">
-        <img
-          className="avatar profile-avatar"
-          src={profile.profile_img || `https://i.pravatar.cc/200?u=${profile.id}`}
-          alt={profile.username}
-        />
+        {profile.has_story ? (
+          <button className="profile-avatar-btn" onClick={openStoryViewer} aria-label="View story">
+            <span className="story-ring">
+              <VerifiedAvatar user={profile} size={88} badge className="profile-avatar" />
+            </span>
+          </button>
+        ) : (
+          <VerifiedAvatar user={profile} size={96} badge className="profile-avatar" />
+        )}
 
         <h1 className="profile-name-row">
           {displayName}
-          {verified && <FaCircleCheck className="profile-verified" title="Verified" />}
+          <AuraCheck tierKey={profile.tier_key} size={20} />
+          {isOwn && (
+            <button className="add-story-btn" onClick={openStoryComposer} aria-label="Add to your story" title="Add to your story">
+              <FaPlus />
+            </button>
+          )}
         </h1>
         <p className="profile-handle">
           @{profile.username}{profile.city ? ` · ${profile.city}` : ""}
@@ -151,14 +179,19 @@ export default function UserProfilePage() {
 
         <div className="profile-actions">
           {isOwn ? (
-            <button
-              className="btn btn-ghost"
-              onClick={() => setModalContent(
-                <EditProfileModal profile={profile} onSaved={setProfile} />
-              )}
-            >
-              <FaPen /> Edit profile
-            </button>
+            <>
+              <button
+                className="btn btn-ghost"
+                onClick={() => setModalContent(
+                  <EditProfileModal profile={profile} onSaved={setProfile} />
+                )}
+              >
+                <FaPen /> Edit profile
+              </button>
+              <Link className="btn btn-ghost profile-settings-btn" to="/settings" aria-label="Settings" title="Settings">
+                <FaGear />
+              </Link>
+            </>
           ) : (
             <>
               <button className={`btn ${isFollowing ? "btn-ghost" : "btn-primary"}`} onClick={onFollow}>
