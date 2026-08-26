@@ -16,9 +16,25 @@ export default function SearchPage() {
   const [results, setResults] = useState({ users: [], posts: [], hashtags: [] });
   const [loading, setLoading] = useState(false);
 
+  // Keep the box in step with the URL (back/forward, or a link into /search)
+  // without clobbering what is being typed right now.
   useEffect(() => {
-    setInput(q);
-    if (!q) return;
+    setInput((cur) => (cur.trim() === q ? cur : q));
+  }, [q]);
+
+  // Search as you type, debounced so we do not fire a request per keystroke.
+  useEffect(() => {
+    const typed = input.trim();
+    if (typed === q) return undefined;
+    const t = setTimeout(() => setParams(typed ? { q: typed } : {}, { replace: true }), 300);
+    return () => clearTimeout(t);
+  }, [input, q, setParams]);
+
+  useEffect(() => {
+    if (!q) {
+      setResults({ users: [], posts: [], hashtags: [] });
+      return undefined;
+    }
     let alive = true;
     setLoading(true);
     fetch(`/api/discover/search?q=${encodeURIComponent(q)}`, { credentials: "include" })

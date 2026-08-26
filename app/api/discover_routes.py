@@ -2,11 +2,12 @@
 Discover / Explore API — trending hashtags, sounds, creators, search,
 category browsing for the Explore grid.
 """
+import re
 from collections import Counter, defaultdict
 
 from flask import Blueprint, request
 from flask_login import current_user
-from sqlalchemy import or_
+from sqlalchemy import and_, or_
 from sqlalchemy.orm import joinedload, selectinload
 
 from app.models import Post, User
@@ -54,6 +55,48 @@ CATEGORY_KEYWORDS = {
     'travel':  ['travel', 'trip', 'beach', 'city', 'adventure', 'sunset', 'nature'],
 }
 
+
+def _search_words(q):
+    """Split a query into lowercase words.
+
+    Separators are dropped so "john rangers", "john_rangers" and "#nightout"
+    all reduce to plain words that match usernames and hashtags alike.
+    """
+    return [w for w in re.split(r'[^0-9a-z]+', q.lower()) if w]
+
+
+def _engagement(post):
+    """Rough popularity score, used to break ties between equal matches."""
+    return (post.views or 0) + len(post.likes) * 50
+
+
+def _user_rank(user, raw_query, words):
+    """Lower sorts first: exact handle, then prefix, then anywhere."""
+    handle = (user.username or '').lower()
+    needle = raw_query.strip().lower().lstrip('@')
+    full_name = f"{user.firstname or ''} {user.lastname or ''}".strip().lower()
+
+    if handle == needle:
+        return 0
+    if handle.startswith(needle):
+        return 1
+    if full_name == needle:
+        return 2
+    if any(handle.startswith(w) for w in words):
+        return 3
+    if needle in handle:
+        return 4
+    return 5
+
+
+def _post_rank(post, words):
+    """Lower sorts first: caption matches beat author/sound-only matches."""
+    body = (post.body or '').lower()
+    if all(w in body for w in words):
+        return 0
+    if any(w in body for w in words):
+        return 1
+    return 2
 
 def viewer_id():
     return current_user.id if current_user.is_authenticated else None
@@ -132,34 +175,75 @@ def hashtag_videos(tag):
 
 @discover_routes.route('/search')
 def search():
-    """Global search: users, videos and hashtags — public."""
+    """Global search across creators, videos and hashtags — public.
+
+    The query is split into words and every word has to match something, so
+    "john rangers" finds @John_Rangers21 and "beach drone" finds the caption
+    that mentions both. A word matches a creator on their username or real
+    name, and a video on its caption, sound, location or the name of whoever
+    posted it.
+    """
     q = (request.args.get('q') or '').strip()
+    try:
+        limit = min(max(int(request.args.get('limit', 24)), 1), 48)
+    except (TypeError, ValueError):
+        limit = 24
+
     if not q:
-        return {'users': [], 'posts': [], 'hashtags': []}
+        return {'users': [], 'posts': [], 'hashtags': [], 'query': ''}
 
-    like = f'%{q}%'
-    users = User.query.filter(or_(
-        User.username.ilike(like),
-        User.firstname.ilike(like),
-        User.lastname.ilike(like),
-    )).limit(12).all()
+    words = _search_words(q)
+    if not words:
+        return {'users': [], 'posts': [], 'hashtags': [], 'query': q}
 
-    posts = Post.query.options(*POST_OPTS()).filter(Post.body.ilike(like))\
-        .order_by(Post.created_at.desc()).limit(24).all()
+    # ---- creators -------------------------------------------------------
+    user_clauses = [
+        or_(
+            User.username.ilike(f'%{w}%'),
+            User.firstname.ilike(f'%{w}%'),
+            User.lastname.ilike(f'%{w}%'),
+        )
+        for w in words
+    ]
+    users = User.query.filter(and_(*user_clauses)).all()
+    users.sort(key=lambda u: (_user_rank(u, q, words), -u.follower_count()))
 
+    # ---- videos ---------------------------------------------------------
+    # Joined to the author so a creator's name matches their videos too.
+    post_clauses = [
+        or_(
+            Post.body.ilike(f'%{w}%'),
+            Post.sound_name.ilike(f'%{w}%'),
+            Post.location.ilike(f'%{w}%'),
+            User.username.ilike(f'%{w}%'),
+            User.firstname.ilike(f'%{w}%'),
+            User.lastname.ilike(f'%{w}%'),
+        )
+        for w in words
+    ]
+    posts = (
+        Post.query.options(*POST_OPTS())
+        .join(User, Post.user_id == User.id)
+        .filter(and_(*post_clauses))
+        .all()
+    )
+    posts.sort(key=lambda p: (_post_rank(p, words), -_engagement(p)))
+
+    # ---- hashtags -------------------------------------------------------
     tag_counts = Counter()
     for p in Post.query.all():
         for tag in p.hashtags:
-            if q.lstrip('#').lower() in tag.lower():
-                tag_counts[tag.lower()] += 1
+            lowered = tag.lower()
+            if any(w in lowered for w in words):
+                tag_counts[lowered] += 1
 
     uid = viewer_id()
     return {
-        'users': [u.to_dict_basic() for u in users],
-        'posts': [p.to_dict(uid) for p in posts],
+        'query': q,
+        'users': [u.to_dict_basic() for u in users[:12]],
+        'posts': [p.to_dict(uid) for p in posts[:limit]],
         'hashtags': [{'tag': t, 'count': c} for t, c in tag_counts.most_common(8)],
     }
-
 
 @discover_routes.route('/sounds')
 def sounds():

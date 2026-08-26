@@ -669,3 +669,65 @@ button.studio-alt-card:hover { border-color: var(--orange); }
   .details-preview { max-width: 250px; margin: 0 auto; }
   .studio { padding-bottom: calc(var(--bottomnav-h) + 30px); }
 }
+
+/* ---- recording length ------------------------------------------------- */
+.cam-lengths {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 146px;
+  z-index: 12;
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+}
+
+.cam-lengths button {
+  padding: 5px 13px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.cam-lengths button:hover:not(:disabled) { color: #fff; }
+.cam-lengths button.on { background: #fff; color: #111; }
+.cam-lengths button:disabled { opacity: 0.4; cursor: default; }
+
+/* elapsed / limit readout while rolling */
+.cam-timer em {
+  font-style: normal;
+  opacity: 0.7;
+  font-weight: 600;
+}
+
+/* an upload that busts the ceiling */
+.cam-length-error {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 40;
+  max-width: 320px;
+  padding: 20px 22px;
+  border-radius: var(--radius-lg);
+  background: rgba(12, 12, 18, 0.94);
+  border: 1px solid var(--line);
+  text-align: center;
+}
+.cam-length-error p { margin: 0 0 14px; line-height: 1.45; }
+.cam-length-error button {
+  padding: 8px 20px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--neon);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}

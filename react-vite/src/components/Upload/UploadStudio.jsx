@@ -12,6 +12,23 @@ import GifPicker from "../Feed/GifPicker";
 import { splitCaption } from "../../utils/format";
 import "./Upload.css";
 
+// How long a recording is allowed to run. The picker sits under the shutter;
+// recording stops itself the moment the chosen limit is reached.
+const RECORD_LENGTHS = [
+  { label: "30s", secs: 30 },
+  { label: "1 min", secs: 60 },
+  { label: "5 min", secs: 300 },
+  { label: "10 min", secs: 600 },
+];
+
+// Nothing on Aura may be longer than the largest option, uploads included.
+const MAX_VIDEO_SECS = RECORD_LENGTHS[RECORD_LENGTHS.length - 1].secs;
+
+const clock = (secs) => {
+  const s = Math.max(0, Math.round(secs));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+};
+
 const SPEEDS = [0.5, 1, 1.5, 2];
 const SUGGESTED_TAGS = ["fyp", "aboutlastnight", "funny", "dance", "vibes", "gif", "food", "gaming", "sports", "animals"];
 
@@ -41,6 +58,8 @@ export default function UploadStudio() {
   const [camEffect, setCamEffect] = useState("none");
   const [effectsOpen, setEffectsOpen] = useState(false);
   const [timerLen, setTimerLen] = useState(0); // 0 | 3 | 10
+  const [maxSecs, setMaxSecs] = useState(60);  // chosen recording limit
+  const [lengthError, setLengthError] = useState("");
   const [countdown, setCountdown] = useState(0);
   const [camSoundOpen, setCamSoundOpen] = useState(false);
   const countdownRef = useRef(null);
@@ -77,11 +96,7 @@ export default function UploadStudio() {
   const [error, setError] = useState("");
 
   // ---------- select step ----------
-  const acceptFile = useCallback((picked) => {
-    if (!picked) return;
-    const kind = picked.type.startsWith("video")
-      ? "video"
-      : picked.type === "image/gif" ? "gif" : "image";
+  const openPicked = useCallback((picked, kind) => {
     setFile(picked);
     setMediaKind(kind);
     setGifPost(null);
@@ -89,6 +104,43 @@ export default function UploadStudio() {
     setPreviewUrl(url);
     setStep(kind === "video" ? "edit" : "details");
   }, []);
+
+  const acceptFile = useCallback((picked) => {
+    if (!picked) return;
+    const kind = picked.type.startsWith("video")
+      ? "video"
+      : picked.type === "image/gif" ? "gif" : "image";
+
+    // Uploads skip the recorder, so the ceiling has to be enforced here too.
+    if (kind === "video") {
+      const probe = document.createElement("video");
+      probe.preload = "metadata";
+      const probeUrl = URL.createObjectURL(picked);
+      probe.onloadedmetadata = () => {
+        URL.revokeObjectURL(probeUrl);
+        if (Number.isFinite(probe.duration) && probe.duration > MAX_VIDEO_SECS + 1) {
+          setLengthError(
+            `That video is ${clock(probe.duration)} long — Aura caps videos at ${clock(MAX_VIDEO_SECS)}. Trim it and try again.`
+          );
+        } else {
+          setLengthError("");
+          openPicked(picked, kind);
+        }
+      };
+      // if the browser cannot read the metadata, let it through rather than
+      // blocking a perfectly good upload
+      probe.onerror = () => {
+        URL.revokeObjectURL(probeUrl);
+        setLengthError("");
+        openPicked(picked, kind);
+      };
+      probe.src = probeUrl;
+      return;
+    }
+
+    setLengthError("");
+    openPicked(picked, kind);
+  }, [openPicked]);
 
   const onDrop = (e) => {
     e.preventDefault();
@@ -212,6 +264,11 @@ export default function UploadStudio() {
     setRecording(false);
     if (recRef.current && recRef.current.state !== "inactive") recRef.current.stop();
   };
+
+  // A take ends itself the moment it reaches the chosen limit.
+  useEffect(() => {
+    if (recording && recordSecs >= maxSecs) stopRecording();
+  }, [recording, recordSecs, maxSecs]);
 
   const closeRecorder = useCallback(() => {
     clearInterval(timerRef.current);
@@ -467,13 +524,22 @@ export default function UploadStudio() {
             </div>
           )}
 
+          {lengthError && (
+            <div className="cam-length-error" role="alert">
+              <p>{lengthError}</p>
+              <button onClick={() => setLengthError("")}>Got it</button>
+            </div>
+          )}
+
           {/* top bar: close · add sound (or rec timer) · spacer */}
           <div className="cam-top">
             <button className="cam-icon" onClick={() => navigate(-1)} aria-label="Close">
               <FaXmark />
             </button>
             {recording ? (
-              <span className="cam-timer">● {recordSecs}s</span>
+              <span className="cam-timer">
+                ● {clock(recordSecs)} <em>/ {clock(maxSecs)}</em>
+              </span>
             ) : (
               <button className="cam-addsound" onClick={() => setCamSoundOpen(true)}>
                 <FaMusic /> {pickedSound ? pickedSound.name : "Add sound"}
@@ -519,6 +585,23 @@ export default function UploadStudio() {
 
           {/* self-timer countdown */}
           {countdown > 0 && <div className="cam-countdown">{countdown}</div>}
+
+          {/* how long this take may run — video mode only, locked while rolling */}
+          {captureMode === "video" && (
+            <div className="cam-lengths" role="group" aria-label="Maximum video length">
+              {RECORD_LENGTHS.map(({ label, secs }) => (
+                <button
+                  key={secs}
+                  className={maxSecs === secs ? "on" : ""}
+                  disabled={recording}
+                  aria-pressed={maxSecs === secs}
+                  onClick={() => setMaxSecs(secs)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* capture modes — slide across to take a photo, record, or go Live */}
           <div className="cam-modes">
