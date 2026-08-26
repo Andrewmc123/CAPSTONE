@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   FaHouse, FaCompass, FaUsers, FaInbox, FaUser,
   FaMagnifyingGlass, FaCirclePlus, FaRightFromBracket, FaVideo, FaPaperPlane,
-  FaSun, FaMoon, FaBagShopping,
+  FaSun, FaMoon, FaBagShopping, FaChevronDown,
 } from "react-icons/fa6";
 import { thunkLogout } from "../../redux/session";
 import { getTheme, toggleTheme } from "../../utils/theme";
@@ -14,7 +14,20 @@ import { fetchUnreadCount } from "../../redux/messages";
 import { useModal } from "../../context/Modal";
 import LoginFormModal from "../LoginFormModal";
 import AuraOrb from "../common/AuraOrb";
+import OnlineUsers from "./OnlineUsers";
+import PresenceDot from "../common/PresenceDot";
+import { PRESENCE_LABELS } from "../common/presence";
 import "./Sidebar.css";
+
+// The four browsing destinations, collapsed into one dropdown group.
+const BROWSE_ITEMS = [
+  { to: "/", label: "For You", icon: FaHouse, end: true },
+  { to: "/explore", label: "Explore", icon: FaCompass },
+  { to: "/network", label: "Network", icon: FaUsers },
+  { to: "/shop", label: "Shop", icon: FaBagShopping },
+];
+
+const BROWSE_ROUTES = BROWSE_ITEMS.map((i) => i.to);
 
 export default function Sidebar() {
   const dispatch = useDispatch();
@@ -27,6 +40,11 @@ export default function Sidebar() {
   const { setModalContent } = useModal();
   const [query, setQuery] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  // The collapsed "Browse" group. Starts open when the current page lives
+  // inside it, so the active link is never hidden behind a closed dropdown.
+  const [browseOpen, setBrowseOpen] = useState(() =>
+    BROWSE_ROUTES.includes(location.pathname)
+  );
   const [theme, setTheme] = useState(getTheme());
   const menuRef = useRef(null);
 
@@ -59,6 +77,10 @@ export default function Sidebar() {
     }
   };
 
+  // Your own bead. The server only reports 'online' while it has seen a recent
+  // request from you, so a stale tab correctly reads as offline.
+  const myPresence = user?.presence || "offline";
+
   const logout = async () => {
     await dispatch(thunkLogout());
     dispatch(clearFollows());
@@ -87,18 +109,30 @@ export default function Sidebar() {
       </form>
 
       <nav className="sidebar-nav">
-        <NavLink to="/" end className={({ isActive }) => `side-item ${isActive ? "active" : ""}`}>
-          <FaHouse /> <span>For You</span>
-        </NavLink>
-        <NavLink to="/explore" className={({ isActive }) => `side-item ${isActive ? "active" : ""}`}>
-          <FaCompass /> <span>Explore</span>
-        </NavLink>
-        <NavLink to="/network" className={({ isActive }) => `side-item ${isActive ? "active" : ""}`}>
-          <FaUsers /> <span>Network</span>
-        </NavLink>
-        <NavLink to="/shop" className={({ isActive }) => `side-item ${isActive ? "active" : ""}`}>
-          <FaBagShopping /> <span>Shop</span>
-        </NavLink>
+        <div className={`side-group ${browseOpen ? "open" : ""}`}>
+          <button
+            type="button"
+            className="side-item side-group-toggle"
+            aria-expanded={browseOpen}
+            onClick={() => setBrowseOpen((v) => !v)}
+          >
+            <FaCompass />
+            <span>Browse</span>
+            <FaChevronDown className="side-group-caret" />
+          </button>
+          <div className="side-group-items" hidden={!browseOpen}>
+            {BROWSE_ITEMS.map(({ to, label, icon: Icon, end }) => (
+              <NavLink
+                key={to}
+                to={to}
+                end={end}
+                className={({ isActive }) => `side-item side-sub-item ${isActive ? "active" : ""}`}
+              >
+                <Icon /> <span>{label}</span>
+              </NavLink>
+            ))}
+          </div>
+        </div>
         <NavLink to="/upload" onClick={requireLogin} className={({ isActive }) => `side-item upload ${isActive ? "active" : ""}`}>
           <FaCirclePlus /> <span>Upload</span>
         </NavLink>
@@ -137,6 +171,8 @@ export default function Sidebar() {
         </div>
       )}
 
+      <OnlineUsers user={user} />
+
       {user && suggestions.length > 0 && (
         <div className="sidebar-suggested">
           <h4>Suggested creators</h4>
@@ -156,8 +192,14 @@ export default function Sidebar() {
         {user && (
           <div className="sidebar-user" ref={menuRef}>
             <button className="sidebar-user-btn" onClick={() => setMenuOpen(!menuOpen)}>
-              <img src={user.profile_img || "https://i.pravatar.cc/60?u=abln"} alt="" className="avatar" width={34} height={34} />
-              <span className="sidebar-username">@{user.username}</span>
+              <span className="online-avatar-wrap">
+                <img src={user.profile_img || "https://i.pravatar.cc/60?u=abln"} alt="" className="avatar" width={34} height={34} />
+                <PresenceDot presence={myPresence} size={11} className="online-bead" />
+              </span>
+              <span className="sidebar-username">
+                @{user.username}
+                <em className="sidebar-presence-label">{PRESENCE_LABELS[myPresence]}</em>
+              </span>
             </button>
             {menuOpen && (
               <div className="sidebar-menu fade-in">

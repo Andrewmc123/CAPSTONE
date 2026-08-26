@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { FaTowerBroadcast, FaUsers, FaClock, FaLock } from "react-icons/fa6";
 import { useModal } from "../../context/Modal";
 import LoginFormModal from "../LoginFormModal";
+import FeedTabs from "../common/FeedTabs";
 import "./Live.css";
 
 export default function LiveDiscover() {
@@ -61,6 +62,7 @@ export default function LiveDiscover() {
 
   return (
     <div className="page live-discover">
+      <FeedTabs variant="solid" />
       <header className="live-discover-head">
         <h1><FaTowerBroadcast /> Live</h1>
         <div className="live-go-actions">

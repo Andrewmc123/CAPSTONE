@@ -3,7 +3,7 @@ from flask import Flask, send_from_directory, redirect, request
 from flask_cors import CORS
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect, generate_csrf
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user
 from .models import db, User
 from .api.user_routes import user_routes
 from .api.auth_routes import auth_routes
@@ -75,6 +75,15 @@ def https_redirect():
             url = request.url.replace('http://', 'https://', 1)
             code = 301
             return redirect(url, code=code)
+
+
+@app.before_request
+def track_presence():
+    """Keep last_seen fresh for whoever is signed in, so the online dots in
+    the sidebar reflect real activity rather than just a live session cookie.
+    touch_presence() rate-limits the write to once a minute."""
+    if current_user.is_authenticated and current_user.touch_presence():
+        db.session.commit()
 
 
 @app.after_request

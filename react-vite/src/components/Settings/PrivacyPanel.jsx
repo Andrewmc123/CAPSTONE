@@ -1,3 +1,5 @@
+import PresenceDot from "../common/PresenceDot";
+
 function Toggle({ checked, onChange, label }) {
   return (
     <button
@@ -27,6 +29,10 @@ export default function PrivacyPanel({ settings, onChange }) {
   }
 
   const isPrivate = !!settings.is_private;
+  const presenceStatus = settings.presence_status || 'active';
+  // Preview the bead the way other people will see it: picking "active" only
+  // shows green while you're actually around, so preview it as online.
+  const presencePreview = presenceStatus === 'active' ? 'online' : presenceStatus;
   const allowComments = settings.allow_comments || 'everyone';
   const allowMessages = settings.allow_messages || 'everyone';
   const showActivity = settings.show_activity !== false;
@@ -34,6 +40,30 @@ export default function PrivacyPanel({ settings, onChange }) {
   return (
     <section className="settings-section">
       <div className="settings-section-title">Privacy</div>
+
+      <div className="settings-row">
+        <div className="settings-row-main">
+          <label className="settings-row-label" htmlFor="privacy-presence">
+            Availability
+          </label>
+          <div className="settings-row-sub">
+            What the green dot next to your picture tells everyone else.
+          </div>
+        </div>
+        <div className="settings-row-control settings-presence-control">
+          <PresenceDot presence={presencePreview} size={13} />
+          <select
+            id="privacy-presence"
+            className="settings-select"
+            value={presenceStatus}
+            onChange={(e) => onChange({ presence_status: e.target.value })}
+          >
+            <option value="active">Active</option>
+            <option value="dnd">Do not disturb</option>
+            <option value="offline">Appear offline</option>
+          </select>
+        </div>
+      </div>
 
       <div className="settings-row">
         <div className="settings-row-main">

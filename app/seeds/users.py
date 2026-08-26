@@ -1,5 +1,6 @@
 from app.models import db, User, environment, SCHEMA
 from sqlalchemy.sql import text
+from datetime import datetime, timedelta
 
 def seed_users():
     users_data = [
@@ -60,6 +61,20 @@ def seed_users():
         if not existing_user:
             user = User(**u)
             db.session.add(user)
+
+    db.session.commit()
+
+    # Give the seeded crowd a spread of presence states so the sidebar's online
+    # rail shows all three dots out of the box: a couple on do-not-disturb, a
+    # third of them idle/offline, the rest green.
+    now = datetime.utcnow()
+    for user in User.query.all():
+        if user.id % 5 == 0:
+            user.presence_status = 'dnd'
+        if user.id % 3 == 0:
+            user.last_seen = now - timedelta(days=2)
+        else:
+            user.last_seen = now
 
     db.session.commit()
 

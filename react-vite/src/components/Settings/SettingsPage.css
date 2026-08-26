@@ -284,3 +284,10 @@ textarea.settings-input {
   font-weight: 600;
   color: var(--orange);
 }
+
+/* availability row — bead sits beside the picker so the choice is visible */
+.settings-presence-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}

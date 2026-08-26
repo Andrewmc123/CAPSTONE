@@ -1,3 +1,5 @@
+import os
+
 from .db import db, environment, SCHEMA, add_prefix_for_prod
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
@@ -6,6 +8,19 @@ from app.gifts import (
     tier_for, GIFTS_UNLOCK_AURA,
     LIVE_24H_MIN_FOLLOWERS, LIVE_24H_MIN_AURA, FREE_GIFT_COOLDOWN_HOURS,
 )
+
+# How long after their last request a user still counts as online, and how
+# often last_seen is actually written back (see touch_presence).
+#
+# The window is env-tunable because seeded accounts never make requests: on a
+# demo database everyone decays to grey after a few minutes, which is honest
+# but looks broken. Raise PRESENCE_WINDOW_MINUTES when showing the app off.
+ONLINE_WINDOW_MINUTES = int(os.environ.get('PRESENCE_WINDOW_MINUTES', 5))
+PRESENCE_TOUCH_SECONDS = 60
+
+# The three states a user can pick in Settings › Privacy.
+PRESENCE_CHOICES = ('active', 'dnd', 'offline')
+
 
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
@@ -42,6 +57,13 @@ class User(db.Model, UserMixin):
     allow_messages = db.Column(db.String(20), default='everyone', nullable=False)
     show_activity = db.Column(db.Boolean, default=True, nullable=False)
     notif_prefs = db.Column(db.JSON)
+
+    # Presence — `presence_status` is the user's own choice from Settings
+    # ('active' | 'dnd' | 'offline'); `last_seen` is stamped automatically on
+    # every authenticated request. Green only shows when both agree the user
+    # is around — see effective_presence().
+    presence_status = db.Column(db.String(10), default='active', nullable=False)
+    last_seen = db.Column(db.DateTime)
 
     # Extended profile — shown in Settings › General
     city = db.Column(db.String(80))
@@ -154,6 +176,34 @@ class User(db.Model, UserMixin):
             return None
         return (self.free_gift_used_at + timedelta(hours=FREE_GIFT_COOLDOWN_HOURS)).isoformat()
 
+    def effective_presence(self):
+        """The status other people see.
+
+        'offline' is a deliberate choice to stay hidden, so it always wins.
+        Otherwise a dot only lights up while the user has actually been seen
+        inside the online window — someone who set do-not-disturb and then
+        closed the tab is gone, not busy.
+        """
+        chosen = self.presence_status or 'active'
+        if chosen == 'offline':
+            return 'offline'
+        recently_seen = (
+            self.last_seen is not None
+            and datetime.utcnow() - self.last_seen <= timedelta(minutes=ONLINE_WINDOW_MINUTES)
+        )
+        if not recently_seen:
+            return 'offline'
+        return 'dnd' if chosen == 'dnd' else 'online'
+
+    def touch_presence(self):
+        """Stamp last_seen, but only once a minute — this runs on every
+        authenticated request and a write per request would be wasteful."""
+        now = datetime.utcnow()
+        if self.last_seen and now - self.last_seen < timedelta(seconds=PRESENCE_TOUCH_SECONDS):
+            return False
+        self.last_seen = now
+        return True
+
     def resolved_notif_prefs(self):
         """Per-type notification prefs — every key defaults to True, with any
         stored overrides merged on top."""
@@ -231,6 +281,9 @@ class User(db.Model, UserMixin):
             'allow_messages': self.allow_messages,
             'show_activity': self.show_activity,
             'notif_prefs': self.resolved_notif_prefs(),
+            'presence': self.effective_presence(),
+            'presence_status': self.presence_status or 'active',
+            'last_seen': self.last_seen.isoformat() if self.last_seen else None,
             'city': self.city or '',
             'birthdate': self.birthdate or '',
             'address': self.address or '',
@@ -246,4 +299,5 @@ class User(db.Model, UserMixin):
             'bio': self.bio or '',
             'followers_count': self.follower_count(),
             'tier_key': self.tier()['key'],
+            'presence': self.effective_presence(),
         }

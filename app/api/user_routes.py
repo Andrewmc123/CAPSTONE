@@ -93,3 +93,45 @@ def my_visitors():
         'visitors': [v.to_dict() for v in visits],
         'count': len(visits),
     }
+
+
+@user_routes.route('/online')
+@login_required
+def online_users():
+    """People to show in the sidebar's presence list.
+
+    Everyone the current user follows, ordered so the people who are actually
+    around float to the top (online, then do-not-disturb, then offline). Falls
+    back to the wider user list when you don't follow anyone yet, so a new
+    account doesn't stare at an empty rail.
+    """
+    following_ids = [f.followed_id for f in current_user.following]
+
+    if following_ids:
+        users = User.query.filter(User.id.in_(following_ids)).all()
+    else:
+        users = User.query.filter(User.id != current_user.id).limit(30).all()
+
+    rank = {'online': 0, 'dnd': 1, 'offline': 2}
+    rows = []
+    for u in users:
+        presence = u.effective_presence()
+        rows.append({
+            'id': u.id,
+            'username': u.username,
+            'profile_img': u.profile_img,
+            'presence': presence,
+            'last_seen': u.last_seen.isoformat() if u.last_seen else None,
+        })
+
+    rows.sort(key=lambda r: (rank.get(r['presence'], 3), r['username'].lower()))
+
+    return {
+        'users': rows[:20],
+        'online_count': sum(1 for r in rows if r['presence'] == 'online'),
+        'me': {
+            'id': current_user.id,
+            'presence': current_user.effective_presence(),
+            'presence_status': current_user.presence_status or 'active',
+        },
+    }

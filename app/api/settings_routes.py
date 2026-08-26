@@ -2,6 +2,7 @@ from flask import Blueprint, request
 from flask_login import login_required, current_user
 
 from ..models import db
+from ..models.user import PRESENCE_CHOICES
 
 settings_routes = Blueprint('settings', __name__)
 
@@ -18,6 +19,8 @@ def _serialize():
         'allow_comments': current_user.allow_comments,
         'allow_messages': current_user.allow_messages,
         'show_activity': current_user.show_activity,
+        'presence_status': current_user.presence_status or 'active',
+        'presence': current_user.effective_presence(),
         'notif_prefs': current_user.resolved_notif_prefs(),
     }
 
@@ -52,6 +55,9 @@ def update_settings():
 
     if 'allow_messages' in data and data['allow_messages'] in _AUDIENCE_CHOICES:
         current_user.allow_messages = data['allow_messages']
+
+    if 'presence_status' in data and data['presence_status'] in PRESENCE_CHOICES:
+        current_user.presence_status = data['presence_status']
 
     if 'notif_prefs' in data and isinstance(data['notif_prefs'], dict):
         merged = current_user.resolved_notif_prefs()

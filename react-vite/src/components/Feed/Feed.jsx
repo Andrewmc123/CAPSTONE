@@ -4,6 +4,8 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { fetchFeedPage, selectFeedPosts, selectFeed } from "../../redux/posts";
 import { useModal } from "../../context/Modal";
 import LoginFormModal from "../LoginFormModal";
+import FeedTabs from "../common/FeedTabs";
+import { TOP_TAB_ROUTES } from "../common/topTabs";
 import VideoCard from "./VideoCard";
 import CommentsDrawer from "./CommentsDrawer";
 import "./Feed.css";
@@ -21,9 +23,9 @@ export default function Feed({ tab = "foryou" }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [commentsPostId, setCommentsPostId] = useState(null);
 
-  // TikTok-style swipe between the top tabs (For You · Following · Network · Live · Shop)
-  const SWIPE_ROUTES = ["/", "/following", "/network", "/live", "/shop"];
-  const curIdx = tab === "following" ? 1 : 0;
+  // TikTok-style swipe between the top tabs (Live · Following · Aura Worldwide)
+  const SWIPE_ROUTES = TOP_TAB_ROUTES;
+  const curIdx = tab === "following" ? 1 : 2;
   const onTouchStart = (e) => {
     const t = e.touches[0];
     touchStart.current = { x: t.clientX, y: t.clientY, target: e.target };
@@ -123,12 +125,7 @@ export default function Feed({ tab = "foryou" }) {
 
   return (
     <div className="feed-wrap">
-      <div className="feed-tabs">
-        <NavLink to="/" end className={({ isActive }) => `feed-tab ${isActive ? "active" : ""}`}>For You</NavLink>
-        <NavLink to="/following" className={({ isActive }) => `feed-tab ${isActive ? "active" : ""}`}>Following</NavLink>
-        <NavLink to="/network" className={({ isActive }) => `feed-tab ${isActive ? "active" : ""}`}>Network</NavLink>
-        <NavLink to="/shop" className={({ isActive }) => `feed-tab ${isActive ? "active" : ""}`}>Shop</NavLink>
-      </div>
+      <FeedTabs />
 
       <div
         className={`feed-scroller ${commentsPostId ? "with-drawer" : ""}`}

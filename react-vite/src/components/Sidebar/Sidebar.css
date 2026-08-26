@@ -164,3 +164,110 @@
 @media (max-width: 768px) {
   .sidebar { display: none; }
 }
+
+/* ---- Browse dropdown group ------------------------------------------- */
+.side-group { display: flex; flex-direction: column; }
+
+.side-group-toggle {
+  width: 100%;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.side-group-caret {
+  margin-left: auto;
+  font-size: 12px;
+  opacity: 0.7;
+  transition: transform 0.18s ease;
+}
+.side-group.open .side-group-caret { transform: rotate(180deg); }
+
+.side-group-items {
+  display: flex;
+  flex-direction: column;
+}
+.side-group-items[hidden] { display: none; }
+
+/* nested links sit slightly inset from their parent */
+.side-sub-item {
+  padding-left: 26px;
+  font-size: 15px;
+}
+
+/* ---- Online / presence rail ------------------------------------------ */
+.sidebar-online { margin-top: 14px; }
+
+.sidebar-online h4 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted, rgba(255, 255, 255, 0.55));
+}
+
+.online-count {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.18);
+  color: #22c55e;
+}
+
+.online-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 240px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.online-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 6px;
+  border-radius: 10px;
+  transition: background 0.15s ease;
+}
+.online-row:hover { background: var(--hover, rgba(255, 255, 255, 0.07)); }
+
+/* avatar + bead anchored to its bottom-right corner */
+.online-avatar-wrap {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.online-bead {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+}
+
+/* offline faces sit back a little so the online ones read first */
+.online-avatar-wrap.presence-offline .avatar { opacity: 0.55; }
+
+.online-name {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-presence-label {
+  display: block;
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted, rgba(255, 255, 255, 0.5));
+}
