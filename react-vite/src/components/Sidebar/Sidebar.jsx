@@ -8,7 +8,7 @@ import {
 } from "react-icons/fa6";
 import { thunkLogout } from "../../redux/session";
 import { getTheme, toggleTheme } from "../../utils/theme";
-import { fetchMyFollows, clearFollows, fetchSuggestions } from "../../redux/follows";
+import { fetchMyFollows, clearFollows } from "../../redux/follows";
 import { thunkGetUserNotifications } from "../../redux/notification";
 import { fetchUnreadCount } from "../../redux/messages";
 import { useModal } from "../../context/Modal";
@@ -36,7 +36,6 @@ export default function Sidebar() {
   const user = useSelector((s) => s.session.user);
   const unread = useSelector((s) => s.notifications?.unreadCount || 0);
   const dmUnread = useSelector((s) => s.messages?.unreadTotal || 0);
-  const suggestions = useSelector((s) => s.follows.suggestions);
   const { setModalContent } = useModal();
   const [query, setQuery] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
@@ -54,7 +53,6 @@ export default function Sidebar() {
       dispatch(thunkGetUserNotifications());
       dispatch(fetchUnreadCount());
     }
-    dispatch(fetchSuggestions(5));
   }, [dispatch, user]);
 
   useEffect(() => {
@@ -172,21 +170,6 @@ export default function Sidebar() {
       )}
 
       <OnlineUsers user={user} />
-
-      {user && suggestions.length > 0 && (
-        <div className="sidebar-suggested">
-          <h4>Suggested creators</h4>
-          {suggestions.map((u) => (
-            <NavLink key={u.id} to={`/users/${u.id}`} className="suggested-row">
-              <img src={u.profile_img || `https://i.pravatar.cc/60?u=${u.id}`} alt="" className="avatar" width={32} height={32} />
-              <div className="suggested-meta">
-                <strong>{u.username}</strong>
-                <span>{u.firstname} {u.lastname}</span>
-              </div>
-            </NavLink>
-          ))}
-        </div>
-      )}
 
       <div className="sidebar-footer">
         {user && (
