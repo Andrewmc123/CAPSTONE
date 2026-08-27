@@ -1,24 +1,24 @@
 /* top tabs — Live · Following · Aura Worldwide
-   The three labels are very different lengths, so centring the row as a group
-   leaves it looking lopsided (a 34px "Live" against a 126px "Aura Worldwide").
-   Each tab gets an equal share of a fixed-width row instead: the middle tab
-   lands on the exact centre line and the row reads as balanced. */
+   The labels are very different lengths ("Live" vs "Aura Worldwide"), so
+   equal-width slots push the words apart by wildly different amounts and the
+   row reads as lopsided. Even gaps between the words, with the whole block
+   centred, is what actually looks even. */
 .feed-tabs {
   display: flex;
   align-items: center;
-  width: min(100%, 460px);
-  margin: 0 auto;
-  padding: 6px 8px;
+  justify-content: center;
+  gap: 26px;
+  width: 100%;
+  padding: 6px 14px;
 }
 
 .feed-tab {
-  flex: 1 1 0;
-  min-width: 0;
+  flex: 0 0 auto;
   position: relative;
-  padding: 5px 4px;
+  padding: 5px 2px;
   font-weight: 700;
-  font-size: 16px;
-  text-align: center;
+  font-size: 15px;
+  letter-spacing: 0.01em;
   white-space: nowrap;
   transition: color 0.15s ease;
 }
@@ -64,8 +64,8 @@
   box-shadow: 0 0 10px rgba(168, 85, 247, 0.7);
 }
 
-/* narrow phones: shrink the type rather than let the longest label clip */
+/* narrow phones: tighten the gaps and the type before anything can clip */
 @media (max-width: 420px) {
-  .feed-tab { font-size: 14px; padding: 5px 2px; }
-  .feed-tabs { padding: 6px 4px; }
+  .feed-tabs { gap: 16px; padding: 6px 8px; }
+  .feed-tab { font-size: 13.5px; }
 }
