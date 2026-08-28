@@ -224,3 +224,14 @@
 .recap-aura { color: var(--text-dim); display: inline-flex; align-items: center; gap: 4px; }
 .recap-aura svg { color: var(--orange); }
 .recap-reward { color: var(--orange); font-weight: 800; }
+
+/* same drag-across behaviour as the feed */
+.live-discover {
+  transition: transform 0.24s cubic-bezier(0.22, 0.61, 0.36, 1);
+  touch-action: pan-y;
+}
+.live-discover.swiping { transition: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .live-discover { transition: none; }
+}

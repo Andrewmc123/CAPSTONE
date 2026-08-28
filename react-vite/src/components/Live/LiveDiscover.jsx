@@ -5,6 +5,8 @@ import { FaTowerBroadcast, FaUsers, FaClock, FaLock } from "react-icons/fa6";
 import { useModal } from "../../context/Modal";
 import LoginFormModal from "../LoginFormModal";
 import FeedTabs from "../common/FeedTabs";
+import useTabSwipe from "../../utils/useTabSwipe";
+import { TOP_TAB_ROUTES } from "../common/topTabs";
 import "./Live.css";
 
 export default function LiveDiscover() {
@@ -60,9 +62,16 @@ export default function LiveDiscover() {
     }
   };
 
+  // Live sits at index 0, so this is what lets you swipe back out of it.
+  const swipe = useTabSwipe({ index: 0, routes: TOP_TAB_ROUTES });
+
   return (
-    <div className="page live-discover">
-      <FeedTabs variant="solid" />
+    <div
+      className={`page live-discover ${swipe.dragging ? "swiping" : ""}`}
+      style={{ transform: `translateX(${swipe.offset}px)` }}
+      {...swipe.handlers}
+    >
+      <FeedTabs variant="solid" fraction={swipe.fraction} />
       <header className="live-discover-head">
         <h1><FaTowerBroadcast /> Live</h1>
         <div className="live-go-actions">

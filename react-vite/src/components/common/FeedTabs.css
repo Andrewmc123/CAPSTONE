@@ -4,6 +4,7 @@
    row reads as lopsided. Even gaps between the words, with the whole block
    centred, is what actually looks even. */
 .feed-tabs {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -50,18 +51,24 @@
 .feed-tabs-solid .feed-tab:hover { color: var(--text, #fff); }
 .feed-tabs-solid .feed-tab.active { color: var(--text, #fff); }
 
-/* underline sits under the label, centred inside the tab's own slot */
-.feed-tab.active::after {
-  content: "";
+/* one underline for the whole row: it slides between tabs, and tracks the
+   swipe gesture while a drag is in progress */
+.feed-tabs-bar {
   position: absolute;
-  left: 50%;
-  bottom: -1px;
-  transform: translateX(-50%);
-  width: 22px;
+  left: 0;
+  bottom: 1px;
   height: 3px;
   border-radius: 2px;
   background: var(--neon);
   box-shadow: 0 0 10px rgba(168, 85, 247, 0.7);
+  transition: transform 0.22s ease, width 0.22s ease;
+  will-change: transform, width;
+}
+/* while the finger is down the bar must not lag behind it */
+.feed-tabs-bar.dragging { transition: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .feed-tabs-bar { transition: none; }
 }
 
 /* narrow phones: tighten the gaps and the type before anything can clip */

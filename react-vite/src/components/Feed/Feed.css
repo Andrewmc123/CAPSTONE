@@ -56,3 +56,14 @@
 .feed-gate-logo { font-size: 40px; margin-bottom: 10px; }
 .feed-gate-card h2 { margin: 8px 0 6px; font-size: 21px; }
 .feed-gate-card p { color: var(--text-dim); margin: 0 0 18px; line-height: 1.5; }
+
+/* the feed follows the finger during a cross-swipe, then springs back */
+.feed-scroller {
+  transition: transform 0.24s cubic-bezier(0.22, 0.61, 0.36, 1);
+  touch-action: pan-y;
+}
+.feed-scroller.swiping { transition: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .feed-scroller { transition: none; }
+}

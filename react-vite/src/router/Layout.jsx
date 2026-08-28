@@ -11,7 +11,7 @@ import BirthdayGreeting from "../components/common/BirthdayGreeting";
 import "./Layout.css";
 
 const CHROMELESS = ["/login", "/signup", "/home"];
-const SPLASH_MIN_MS = 1700;   // keep the launch screen up at least this long
+const SPLASH_MIN_MS = 2100;   // long enough for the wordmark to finish landing
 
 // full-screen, immersive screens that get no mobile app bar
 const isImmersive = (path) =>

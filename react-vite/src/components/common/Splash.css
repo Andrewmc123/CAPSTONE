@@ -6,6 +6,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
   background: radial-gradient(circle at 50% 42%, #2a1450 0%, #150b29 46%, #0a0710 100%);
   transition: opacity 0.6s ease;
 }
@@ -14,6 +15,29 @@
   pointer-events: none;
 }
 
+/* ---- synthwave horizon, running toward the viewer -------------------- */
+.aura-splash-grid {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 220%;
+  height: 46%;
+  transform: translateX(-50%) perspective(300px) rotateX(74deg);
+  transform-origin: 50% 100%;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(168, 85, 247, 0.38) 0 1px, transparent 1px 68px),
+    repeating-linear-gradient(0deg,  rgba(168, 85, 247, 0.30) 0 1px, transparent 1px 68px);
+  -webkit-mask-image: linear-gradient(to top, #000 0%, transparent 76%);
+  mask-image: linear-gradient(to top, #000 0%, transparent 76%);
+  animation: auraGridRun 2.6s linear infinite;
+  pointer-events: none;
+}
+@keyframes auraGridRun {
+  from { background-position: 0 0, 0 0; }
+  to   { background-position: 0 0, 0 68px; }
+}
+
+/* ---- orb: rings collapse inward, then the orb breathes ---------------- */
 .aura-splash-rings {
   position: relative;
   display: flex;
@@ -27,32 +51,134 @@
   position: absolute;
   border-radius: 50%;
   border: 1px solid rgba(168, 85, 247, 0.22);
+  animation: auraRingIn 1.15s cubic-bezier(0.19, 0.9, 0.26, 1) both;
 }
 .aura-splash-rings::before { width: 222px; height: 222px; }
-.aura-splash-rings::after { width: 292px; height: 292px; border-color: rgba(168, 85, 247, 0.1); }
+.aura-splash-rings::after {
+  width: 292px;
+  height: 292px;
+  border-color: rgba(168, 85, 247, 0.1);
+  animation-delay: 0.12s;
+}
+@keyframes auraRingIn {
+  0%   { transform: scale(1.55); opacity: 0; }
+  60%  { opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
 
 .aura-splash .aura-orb {
   filter: drop-shadow(0 0 30px rgba(168, 85, 247, 0.55));
-  animation: auraPulse 2.6s ease-in-out infinite;
+  animation:
+    auraOrbCharge 1.1s cubic-bezier(0.19, 0.9, 0.26, 1) both,
+    auraPulse 2.6s ease-in-out 1.1s infinite;
+}
+@keyframes auraOrbCharge {
+  0%   { transform: scale(0.72); opacity: 0; filter: drop-shadow(0 0 4px rgba(168, 85, 247, 0.2)); }
+  70%  { transform: scale(1.08); opacity: 1; filter: drop-shadow(0 0 46px rgba(168, 85, 247, 0.85)); }
+  100% { transform: scale(1); opacity: 1; }
 }
 @keyframes auraPulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.045); }
 }
 
+/* ---- wordmark: chrome letters landing one at a time ------------------- */
 .aura-splash-word {
+  display: flex;
   font-size: 52px;
   font-weight: 800;
   letter-spacing: 1px;
-  background: linear-gradient(135deg, #ecd9ff 0%, #c77dff 45%, #ffc233 115%);
+}
+.aura-splash-word span {
+  display: inline-block;
+  /* Y2K chrome, warmed at the bottom so it stays on-brand */
+  background: linear-gradient(
+    177deg,
+    #ffffff 0%,
+    #dfe6f5 30%,
+    #9aa3ba 48%,
+    #ffffff 58%,
+    #e2c9ff 80%,
+    #ffc233 100%
+  );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  animation:
+    auraLetterIn 0.9s cubic-bezier(0.2, 0.9, 0.25, 1.2) both,
+    auraVhsSettle 1.5s ease-out both;
+  animation-delay: calc(var(--i) * 95ms);
 }
+
+/* drops in, overshoots, then a short neon flicker as it settles */
+@keyframes auraLetterIn {
+  0%   { opacity: 0; transform: translateY(22px) scale(0.84); filter: blur(7px); }
+  55%  { opacity: 1; transform: translateY(-5px) scale(1.07); filter: blur(0); }
+  68%  { opacity: 0.5; }
+  76%  { opacity: 1; }
+  86%  { opacity: 0.72; }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* VHS colour fringing that resolves into a clean neon glow */
+@keyframes auraVhsSettle {
+  0%, 35% {
+    text-shadow:
+      -3px 0 rgba(255, 0, 92, 0.75),
+       3px 0 rgba(0, 226, 255, 0.75),
+       0 0 26px rgba(168, 85, 247, 0.5);
+  }
+  100% {
+    text-shadow:
+      0 0 0 rgba(255, 0, 92, 0),
+      0 0 0 rgba(0, 226, 255, 0),
+      0 0 22px rgba(168, 85, 247, 0.6);
+  }
+}
+
 .aura-splash-tag {
   font-size: 12px;
   letter-spacing: 3px;
   text-transform: uppercase;
   color: rgba(233, 213, 255, 0.62);
   margin-top: 6px;
+  animation: auraTagIn 0.9s ease-out 0.62s both;
+}
+@keyframes auraTagIn {
+  from { opacity: 0; letter-spacing: 11px; }
+  to   { opacity: 1; letter-spacing: 3px; }
+}
+
+/* ---- CRT scanlines over the whole thing ------------------------------- */
+.aura-splash-scan {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.55;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.045) 0 1px,
+    transparent 1px 3px
+  );
+  animation: auraScanDrift 7s linear infinite;
+}
+@keyframes auraScanDrift {
+  from { background-position: 0 0; }
+  to   { background-position: 0 24px; }
+}
+
+/* ---- respect a reduced-motion preference ------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  .aura-splash-grid,
+  .aura-splash-scan { animation: none; }
+  .aura-splash-rings::before,
+  .aura-splash-rings::after,
+  .aura-splash .aura-orb,
+  .aura-splash-tag { animation: none; opacity: 1; transform: none; }
+  .aura-splash-word span {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    text-shadow: 0 0 22px rgba(168, 85, 247, 0.6);
+  }
 }
